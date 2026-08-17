@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>لوحة تحكم المدير | الخبير للاستشارات القانونية</title>
+<!-- Official manager dashboard: admin.html -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Tajawal,Arial,sans-serif;color:#263043;background:#f6f7f9;min-height:100vh}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.page{min-height:100vh;padding:30px}
+.auth,.recovery{width:min(440px,100%);margin:7vh auto 0;background:#fff;border:1px solid #e6e8ec;border-radius:20px;padding:36px;box-shadow:0 18px 50px rgba(23,32,51,.08)}
+.mark{width:64px;height:64px;display:grid;place-items:center;margin:0 auto 18px;border-radius:50%;background:#172033;color:#d4b57e;font-size:32px}
+.auth h1,.recovery h1{text-align:center;margin:0;color:#172033}
+.sub{text-align:center;color:#718096;margin:8px 0 28px}
+.auth label,.recovery label{display:block;margin:14px 0 7px;font-weight:700}
+.auth input,.recovery input,.search,.filter,.followup-form input,.followup-form select,.followup-form textarea{width:100%;border:1px solid #d8dde5;border-radius:10px;padding:13px 14px;outline:0;background:#fff}
+.auth input:focus,.recovery input:focus,.search:focus,.filter:focus,.followup-form input:focus,.followup-form select:focus,.followup-form textarea:focus{border-color:#b8955f;box-shadow:0 0 0 3px rgba(184,149,95,.12)}
+#loginBtn,#updatePasswordBtn{width:100%;border:0;border-radius:10px;margin-top:22px;padding:13px;background:#b8955f;color:#fff;font-weight:800}
+.msg,.recovery-msg{min-height:24px;text-align:center;color:#c0392b}
+.dashboard{width:min(1400px,100%);margin:auto}
+.head{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-bottom:24px}
+.eyebrow{color:#8d6e3f;font-weight:800;margin:0 0 4px}.head h1{margin:0;color:#172033}.email{color:#718096;margin:6px 0 0}
+.logout,.secondary{border:1px solid #e6e8ec;background:#fff;color:#263043;border-radius:10px;padding:10px 16px;font-weight:700}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}
+.stat{background:#fff;border:1px solid #e6e8ec;border-radius:16px;padding:22px}.stat span{color:#718096}.stat strong{display:block;color:#172033;font-size:34px;margin-top:8px}.stat small{display:block;margin-top:5px;color:#9aa3b2}
+.panel{background:#fff;border:1px solid #e6e8ec;border-radius:18px;overflow:hidden}
+.toolbar{display:flex;justify-content:space-between;align-items:end;gap:18px;padding:22px;border-bottom:1px solid #e6e8ec}
+.toolbar h2{margin:0;color:#172033}.small{margin:5px 0 0;color:#718096}
+.actions{display:flex;gap:10px;width:min(620px,100%)}.actions .search{flex:1}
+.filter-row{display:grid;grid-template-columns:1.2fr 1fr 1fr auto;gap:10px;width:100%;margin-top:12px}
+.table-wrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:1050px}
+th,td{padding:14px 16px;text-align:right;border-bottom:1px solid #eef0f3;white-space:nowrap}
+th{background:#fafafa;color:#718096;font-size:14px}tr:hover td{background:#fcfbf8}
+.view{border:0;border-radius:8px;padding:8px 13px;background:#172033;color:#fff}
+.status-select{border:1px solid #d8dde5;border-radius:8px;padding:7px 9px;background:#fff;color:#263043}
+.status-new{background:#fff7e6}.status-contacted{background:#eef6ff}.status-progress{background:#f5efff}.status-completed{background:#eef9f1}.status-cancelled{background:#fff0f0}
+.save-msg{font-size:13px;color:#718096;margin-right:8px}.empty{text-align:center;padding:35px;color:#718096}
+.dashboard-note{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;padding:12px 16px;background:#fff;border:1px solid #e6e8ec;border-radius:12px;color:#718096}
+.modal{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px}.backdrop{position:absolute;inset:0;background:rgba(10,16,28,.58)}
+.modal-card{position:relative;z-index:1;width:min(850px,100%);max-height:92vh;overflow:auto;background:#fff;border-radius:18px;padding:28px;box-shadow:0 25px 80px rgba(0,0,0,.25)}
+.modal-card h2{margin:0 0 22px;color:#172033}.close{position:absolute;left:16px;top:12px;width:38px;height:38px;border:0;border-radius:50%;background:#f1f2f4;font-size:25px}
+.details{display:grid;grid-template-columns:1fr 1fr;gap:14px}.detail{border:1px solid #e6e8ec;border-radius:12px;padding:14px;background:#fbfbfc}.full{grid-column:1/-1}
+.label{display:block;color:#718096;font-size:13px;margin-bottom:6px}.value{white-space:pre-wrap;overflow-wrap:anywhere}
+.followups{margin-top:24px;border-top:1px solid #e6e8ec;padding-top:22px}.followups h3{margin:0 0 14px;color:#172033}
+.followup-list{display:grid;gap:10px;margin-bottom:18px}.followup-item{border:1px solid #e6e8ec;border-radius:12px;padding:14px;background:#fbfbfc}
+.followup-meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px}.badge{display:inline-block;border-radius:20px;padding:4px 9px;background:#eef1f5;font-size:12px}
+.followup-form{border:1px solid #e6e8ec;border-radius:14px;padding:18px;background:#fafafa}
+.followup-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.followup-grid .full{grid-column:1/-1}
+.followup-form textarea{min-height:90px;resize:vertical}.add-followup{margin-top:14px;border:0;border-radius:10px;padding:12px 18px;background:#172033;color:#fff;font-weight:800}
+.followup-msg{min-height:22px;margin:10px 0 0;color:#718096}.followup-error{color:#c0392b}.followup-success{color:#217a45}
+.followup-preview{margin-top:22px;border-top:1px solid #e6e8ec;padding-top:22px}
+.followup-preview h3{margin:0 0 12px;color:#172033}
+.latest-followup{border:1px solid #dfe4eb;border-radius:14px;padding:16px;background:#fbfcfd}
+.latest-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.latest-item{border:1px solid #e6e8ec;border-radius:10px;padding:12px;background:#fff}
+.latest-item .label{margin-bottom:5px}
+.latest-item .value{font-weight:500;line-height:1.7}
+.followup-history{display:grid;gap:10px;margin-top:12px}
+.history-item{border:1px solid #e6e8ec;border-radius:12px;padding:14px;background:#fff}
+.history-head{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}
+.history-item p{margin:7px 0;line-height:1.7}
+.no-followup{border:1px dashed #d8dde5;border-radius:12px;padding:18px;text-align:center;color:#718096;background:#fafafa}
+.assignment-section{margin-top:24px;border-top:1px solid #e6e8ec;padding-top:22px}.assignment-grid{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:end}.assignment-action{display:flex;gap:8px;align-items:center}.assignment-action .add-followup{margin-top:0}.assignment-edit{padding:12px 18px}.assignment-section .small{margin-bottom:14px}
+@media(max-width:900px){.filter-row{grid-template-columns:1fr 1fr}.followup-grid{grid-template-columns:1fr}.followup-grid .full{grid-column:auto}.assignment-grid{grid-template-columns:1fr}}
+@media(max-width:800px){.page{padding:16px}.head,.toolbar{align-items:stretch;flex-direction:column}.stats{grid-template-columns:1fr}.actions{width:100%}.details{grid-template-columns:1fr}.full{grid-column:auto}}
+@media(max-width:520px){.auth,.recovery{padding:24px 18px}.actions{flex-direction:column}.filter-row{grid-template-columns:1fr}.dashboard-note{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<main class="page">
+<section id="login" class="auth">
+<div class="mark">⚖</div><h1>لوحة تحكم المدير</h1><p class="sub">الخبير للاستشارات القانونية</p>
+<form id="loginForm">
+<label for="email">البريد الإلكتروني</label><input id="email" type="email" autocomplete="username" required>
+<label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" required>
+<button id="loginBtn" type="submit">تسجيل الدخول</button><p id="loginMsg" class="msg"></p>
+</form>
+</section>
+
+<section id="dashboard" class="dashboard hidden">
+<header class="head"><div><p class="eyebrow">الإدارة</p><h1>لوحة تحكم طلبات الاستشارات</h1><p id="adminEmail" class="email"></p></div><button id="logout" class="logout">تسجيل الخروج</button></header>
+<section class="stats">
+<article class="stat"><span>إجمالي الطلبات</span><strong id="total">0</strong></article>
+<article class="stat"><span>طلبات اليوم</span><strong id="today">0</strong></article>
+<article class="stat"><span>طلبات هذا الأسبوع</span><strong id="week">0</strong></article>
+</section>
+<section class="panel">
+<div class="toolbar"><div><h2>طلبات العملاء</h2><p id="status" class="small"></p><p class="small">يمكن للمدير تغيير حالة أي طلب وحفظها مباشرة.</p></div>
+<div class="actions" style="display:block"><input id="search" class="search" type="search" placeholder="بحث بالاسم أو الهاتف أو البريد أو الخدمة...">
+<div class="filter-row">
+<select id="statusFilter" class="filter"><option value="">كل الحالات</option><option value="new">جديد</option><option value="contacted">تم التواصل</option><option value="in_progress">قيد المتابعة</option><option value="completed">مكتمل</option><option value="cancelled">ملغى</option></select>
+<select id="serviceFilter" class="filter"><option value="">كل الخدمات</option></select>
+<select id="dateFilter" class="filter"><option value="">كل التواريخ</option><option value="today">اليوم</option><option value="7">آخر 7 أيام</option><option value="30">آخر 30 يومًا</option></select>
+<button id="refresh" class="secondary">تحديث</button>
+</div></div></div>
+<div class="dashboard-note"><span id="filterSummary">عرض جميع الطلبات</span><span>آخر تحديث: <b id="lastUpdated">—</b></span></div>
+<div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الاسم</th><th>الهاتف</th><th>البريد</th><th>الشركة</th><th>الخدمة</th><th>الحالة</th><th>الإجراء</th></tr></thead><tbody id="tbody"></tbody></table></div>
+</section>
+</section>
+</main>
+
+<div id="modal" class="modal hidden">
+<div class="backdrop" id="backdrop"></div>
+<section class="modal-card" role="dialog" aria-modal="true">
+<button id="close" class="close">×</button><h2>تفاصيل الطلب</h2>
+<div id="details" class="details"></div>
+<div class="assignment-section">
+<h3>إدارة إسناد المتابعة</h3>
+<p class="small">هذه منطقة إدارية لإسناد المهمة ومراجعة ما أنجزه القائم بالمتابعة. المدير لا يدخل بيانات التنفيذ من هنا.</p>
+<div class="assignment-grid">
+<div><label for="assignedTo" class="label">القائم بالمتابعة</label><select id="assignedTo"><option value="">جاري تحميل الموظفين...</option></select></div>
+<div class="assignment-action"><button id="assignFollowup" class="add-followup" type="button">إسناد المتابعة</button><button id="editAssignment" class="secondary assignment-edit" type="button" disabled>تعديل الإسناد</button></div>
+</div>
+<p id="assignmentMsg" class="followup-msg"></p>
+</div>
+<div class="followup-preview">
+<h3>معاينة المتابعة وحالة الاستشارة</h3>
+<div id="followupPreview"><div class="no-followup">جاري تحميل آخر متابعة...</div></div>
+</div>
+</section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(() => {
+"use strict";
+const SUPABASE_URL="https://wacvbnebicbutyzpnkez.supabase.co";
+const SUPABASE_ANON_KEY="sb_publishable_HoLI_0uX8-OuQtTBUjjO4Q_WlaUHKD2";
+const TABLE="consultation_requests";
+const FOLLOWUPS_TABLE="client_followups";
+const ASSIGNMENTS_TABLE="followup_assignments";
+const STAFF_TABLE="staff_profiles";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const $=id=>document.getElementById(id);
+let rows=[],currentRequest=null,currentSession=null,staffMembers=[],assignmentEditMode=false;
+let currentStaffProfile=null;
+
+const SERVICE_NAMES={corporate:'استشارات وخدمات الشركات',litigation:'قضايا وتقاضي',contracts:'العقود والاتفاقيات',labor:'قضايا العمل والعمال',family:'الأحوال الشخصية والأسرة',real_estate:'العقارات',criminal:'القضايا الجنائية',commercial:'القضايا التجارية',other:'أخرى'};
+const STATUS_NAMES={new:'جديد',contacted:'تم التواصل',in_progress:'قيد المتابعة',completed:'مكتمل',cancelled:'ملغى'};
+const STATUS_CLASS={new:'status-new',contacted:'status-contacted',in_progress:'status-progress',completed:'status-completed',cancelled:'status-cancelled'};
+const CONTACT_NAMES={phone:'هاتف',whatsapp:'واتساب',email:'بريد إلكتروني',meeting:'مقابلة',other:'أخرى'};
+const FOLLOWUP_STATUS_NAMES={contacted:'تم التواصل',no_answer:'لم يتم الرد',interested:'مهتم',waiting:'بانتظار العميل',completed:'تمت المتابعة',cancelled:'ملغاة'};
+
+const login=$('login'),dashboard=$('dashboard'),form=$('loginForm'),btn=$('loginBtn'),msg=$('loginMsg');
+
+async function init(){
+form.addEventListener('submit',loginUser);
+$('logout').addEventListener('click',logout);$('refresh').addEventListener('click',async()=>{await loadStaff();await load()});
+$('search').addEventListener('input',applyFilters);$('statusFilter').addEventListener('change',applyFilters);$('serviceFilter').addEventListener('change',applyFilters);$('dateFilter').addEventListener('change',applyFilters);
+$('close').addEventListener('click',closeModal);$('backdrop').addEventListener('click',closeModal);
+$('assignFollowup').addEventListener('click',assignFollowup);$('editAssignment').addEventListener('click',editAssignment);$('assignedTo').addEventListener('change',()=>{ const sel=$('assignedTo'); if(sel.disabled)return; if(sel.dataset.currentAssigned){ $('editAssignment').disabled=false; } });
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+
+const {data,error}=await db.auth.getSession();
+if(error){showLogin('تعذر التحقق من جلسة المدير.');return}
+if(data.session){
+  currentSession=data.session;
+  const guard=await verifyManagerRole(data.session.user.id);
+  if(!guard.ok){await db.auth.signOut();showLogin(guard.message);return;}
+  showDash(data.session.user);await loadStaff();await load();
+}else showLogin('');
+db.auth.onAuthStateChange(async (event,session)=>{
+currentSession=session||null;
+if(event==='SIGNED_OUT'||!session){showLogin('');return;}
+const guard=await verifyManagerRole(session.user.id);
+if(!guard.ok){await db.auth.signOut();showLogin(guard.message);return;}
+showDash(session.user);
+});
+}
+
+async function loginUser(e){
+e.preventDefault();
+const email=$('email').value.trim(),password=$('password').value;
+if(!email||!password)return;
+btn.disabled=true;btn.textContent='جاري تسجيل الدخول...';msg.textContent='';
+const {data,error}=await db.auth.signInWithPassword({email,password});
+btn.disabled=false;btn.textContent='تسجيل الدخول';
+if(error){console.error(error);msg.textContent='بيانات الدخول غير صحيحة أو تعذر الاتصال.';return}
+currentSession=data.session||null;
+const guard=await verifyManagerRole(data.user.id);
+if(!guard.ok){await db.auth.signOut();msg.textContent=guard.message;return;}
+showDash(data.user);await loadStaff();await load();
+}
+
+async function logout(){await db.auth.signOut();rows=[];currentSession=null}
+function showLogin(text){login.classList.remove('hidden');dashboard.classList.add('hidden');msg.textContent=text||''}
+function showDash(user){login.classList.add('hidden');dashboard.classList.remove('hidden');$('adminEmail').textContent=user?.email?`الحساب: ${user.email}`:''}
+
+async function verifyManagerRole(userId){
+  const {data,error}=await db.from(STAFF_TABLE).select('id,full_name,role,is_active').eq('id',userId).eq('is_active',true).maybeSingle();
+  if(error){console.error('verifyManagerRole error:',error);return {ok:false,message:'تعذر التحقق من صلاحيات الحساب.'};}
+  if(!data || data.role!=='manager') return {ok:false,message:'هذا الحساب ليس حساب مدير ولا يملك صلاحية دخول لوحة المدير.'};
+  currentStaffProfile=data; return {ok:true,profile:data};
+}
+
+async function loadStaff(){
+  const {data,error}=await db.from(STAFF_TABLE).select('id,full_name,role,is_active').eq('is_active',true).neq('role','manager').order('full_name');
+  if(error){console.error('loadStaff error:',error);staffMembers=[];populateStaffSelect();return}
+  staffMembers=data||[];
+  populateStaffSelect();
+}
+function populateStaffSelect(){
+  const sel=$('assignedTo');
+  if(!sel)return;
+  const current=sel.value;
+  sel.innerHTML='<option value="">اختر القائم بالمتابعة</option>'+staffMembers.map(s=>`<option value="${esc(s.id)}">${esc(s.full_name)}${s.role==='manager'?' (مدير)':''}</option>`).join('');
+  if(staffMembers.some(s=>s.id===current))sel.value=current;
+}
+function staffName(id){const s=staffMembers.find(x=>x.id===id);return s?.full_name||'-'}
+
+async function load(){
+$('status').textContent='جاري تحميل الطلبات...';
+const {data,error}=await db.from(TABLE).select('*').order('created_at',{ascending:false});
+if(error){console.error(error);rows=[];render([]);$('status').textContent=error.code==='42501'?'لا توجد صلاحية لقراءة الطلبات. تحقق من RLS.':'تعذر تحميل الطلبات.';return}
+rows=data||[];populateServiceFilter();stats();applyFilters();
+$('lastUpdated').textContent=new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium',timeStyle:'short'}).format(new Date());
+$('status').textContent=`تم تحميل ${rows.length} طلب.`;
+}
+function stats(){
+const now=new Date(),today=new Date(now);today.setHours(0,0,0,0);
+const week=new Date(today);week.setDate(week.getDate()-((week.getDay()+1)%7));
+$('total').textContent=rows.length;$('today').textContent=rows.filter(r=>new Date(r.created_at)>=today).length;$('week').textContent=rows.filter(r=>new Date(r.created_at)>=week).length;
+}
+function serviceName(v){return SERVICE_NAMES[String(v||'').toLowerCase()]||v||'-'}
+function statusName(v){return STATUS_NAMES[String(v||'new')]||v||'جديد'}
+
+function render(list){
+const body=$('tbody');body.innerHTML='';
+if(!list.length){body.innerHTML='<tr><td colspan="8" class="empty">لا توجد طلبات مطابقة.</td></tr>';return}
+list.forEach(r=>{
+const tr=document.createElement('tr'),currentStatus=r.status||'new';
+tr.innerHTML=`<td>${esc(date(r.created_at))}</td><td>${esc(r.full_name||'-')}</td><td>${esc(r.phone||'-')}</td><td>${esc(r.email||'-')}</td><td>${esc(r.company||'-')}</td><td>${esc(serviceName(r.service))}</td><td><select class="status-select ${STATUS_CLASS[currentStatus]||''}">${Object.entries(STATUS_NAMES).map(([k,v])=>`<option value="${esc(k)}" ${k===currentStatus?'selected':''}>${esc(v)}</option>`).join('')}</select><span class="save-msg"></span></td><td><button class="view">عرض</button></td>`;
+tr.querySelector('.view').addEventListener('click',()=>details(r));
+tr.querySelector('.status-select').addEventListener('change',e=>updateStatus(r,e.target));body.appendChild(tr);
+});
+}
+function populateServiceFilter(){
+const sel=$('serviceFilter'),current=sel.value;
+const values=[...new Set(rows.map(r=>String(r.service||'').toLowerCase()).filter(Boolean))];
+sel.innerHTML='<option value="">كل الخدمات</option>'+values.map(v=>`<option value="${esc(v)}">${esc(serviceName(v))}</option>`).join('');
+if(values.includes(current))sel.value=current;
+}
+function applyFilters(){
+const q=$('search').value.trim().toLowerCase(),sf=$('statusFilter').value,svc=$('serviceFilter').value,df=$('dateFilter').value,now=new Date();
+const startDate=new Date(now);startDate.setHours(0,0,0,0);
+if(df==='7')startDate.setDate(startDate.getDate()-6);if(df==='30')startDate.setDate(startDate.getDate()-29);
+const list=rows.filter(r=>{
+const hay=[r.full_name,r.phone,r.email,r.company,r.service,r.message,r.status,serviceName(r.service),statusName(r.status)].map(v=>String(v||'').toLowerCase());
+const matchesQ=!q||hay.some(v=>v.includes(q));const matchesStatus=!sf||String(r.status||'new')===sf;const matchesService=!svc||String(r.service||'').toLowerCase()===svc;
+const created=new Date(r.created_at),matchesDate=!df||(!Number.isNaN(created.getTime())&&created>=startDate);
+return matchesQ&&matchesStatus&&matchesService&&matchesDate;
+});
+render(list);$('filterSummary').textContent=`عرض ${list.length} من أصل ${rows.length} طلب`;
+}
+async function updateStatus(row,select){
+const old=row.status||'new',next=select.value,note=select.parentElement.querySelector('.save-msg');select.disabled=true;note.textContent='جاري الحفظ...';
+const {error}=await db.from(TABLE).update({status:next}).eq('id',row.id);select.disabled=false;
+if(error){console.error(error);select.value=old;note.textContent=error.code==='42501'?'لا توجد صلاحية للتعديل.':'تعذر حفظ الحالة.';setTimeout(()=>note.textContent='',3000);return}
+row.status=next;select.className=`status-select ${STATUS_CLASS[next]||''}`;note.textContent='تم الحفظ ✓';setTimeout(()=>note.textContent='',1800);
+}
+
+async function details(r){
+currentRequest=r;
+const f=[['رقم الطلب',r.id],['اسم العميل',r.full_name],['رقم الهاتف',r.phone],['البريد الإلكتروني',r.email],['اسم الشركة / المؤسسة',r.company],['نوع الخدمة المطلوبة',serviceName(r.service)],['حالة الطلب',statusName(r.status)],['تاريخ الطلب',date(r.created_at)],['الموافقة على الخصوصية',r.privacy_accepted?'نعم':'لا'],['موضوع الاستشارة / الرسالة',r.message]];
+$('details').innerHTML=f.map((x,i)=>`<div class="detail ${i===9?'full':''}"><span class="label">${esc(x[0])}</span><div class="value">${esc(x[1]||'-')}</div></div>`).join('');
+$('assignmentMsg').textContent='';$('followupPreview').innerHTML='<div class="no-followup">جاري تحميل آخر متابعة...</div>';await loadAssignment(r.id);await loadFollowupPreview(r.id);$('modal').classList.remove('hidden');
+}
+
+async function loadAssignment(requestId){
+  const sel=$('assignedTo');
+  const msg=$('assignmentMsg');
+  const assignBtn=$('assignFollowup');
+  const editBtn=$('editAssignment');
+  msg.textContent='';
+  msg.className='followup-msg';
+  if(!staffMembers.length){await loadStaff();}
+  populateStaffSelect();
+  sel.disabled=true;
+  assignBtn.disabled=true;
+  editBtn.disabled=true;
+  const {data,error}=await db.from(ASSIGNMENTS_TABLE)
+    .select('id,assigned_to,assigned_by,assigned_at,status')
+    .eq('request_id',requestId)
+    .maybeSingle();
+  sel.disabled=false;
+  if(error){
+    console.error('loadAssignment error:',error);
+    msg.className='followup-msg followup-error';
+    msg.textContent='تعذر قراءة الإسناد الحالي. تحقق من صلاحية قراءة followup_assignments.';
+    return;
+  }
+  const assignment=data||null;
+  sel.value=assignment?.assigned_to||'';
+  sel.dataset.currentAssigned=assignment?.assigned_to||'';
+  if(assignment?.assigned_to){
+    msg.textContent=`القائم بالمتابعة الحالي: ${staffName(assignment.assigned_to)}`;
+    editBtn.disabled=false;
+    editBtn.textContent='تعديل الإسناد';
+    assignBtn.disabled=true;
+    sel.disabled=true;
+    assignmentEditMode=false;
+  }else{
+    msg.textContent='لم يتم تعيين قائم بالمتابعة لهذا الطلب.';
+    assignBtn.disabled=false;
+    editBtn.disabled=true;
+    editBtn.textContent='تعديل الإسناد';
+    sel.disabled=false;
+    assignmentEditMode=false;
+  }
+}
+
+async function loadFollowupPreview(requestId){
+  const box=$('followupPreview');
+  box.innerHTML='<div class="no-followup">جاري تحميل المتابعة...</div>';
+  const {data,error}=await db.from(FOLLOWUPS_TABLE)
+    .select('id,followup_date,contact_method,action,notes,next_followup,followup_status,created_by,created_at,assigned_to')
+    .eq('request_id',requestId)
+    .order('followup_date',{ascending:false});
+
+  if(error){
+    console.error('loadFollowupPreview error:',error);
+    box.innerHTML=`<div class="no-followup followup-error">تعذر قراءة بيانات المتابعة.<br><small>${esc(error.message||'خطأ غير معروف')}</small></div>`;
+    return;
+  }
+
+  if(!data?.length){
+    box.innerHTML='<div class="no-followup">لم يقم القائم بالمتابعة بأي إجراء حتى الآن.</div>';
+    return;
+  }
+
+  const latest=data[0];
+  const status=FOLLOWUP_STATUS_NAMES[latest.followup_status]||latest.followup_status||'-';
+  const contact=CONTACT_NAMES[latest.contact_method]||latest.contact_method||'-';
+  const assigned=staffName(latest.assigned_to);
+
+  const history=data.map(f=>`<article class="history-item">
+    <div class="history-head">
+      <span class="badge">${esc(CONTACT_NAMES[f.contact_method]||f.contact_method||'-')}</span>
+      <span class="badge">${esc(FOLLOWUP_STATUS_NAMES[f.followup_status]||f.followup_status||'-')}</span>
+      <span class="badge">${esc(date(f.followup_date))}</span>
+      ${f.assigned_to?`<span class="badge">القائم بالمتابعة: ${esc(staffName(f.assigned_to))}</span>`:''}
+    </div>
+    <p><b>ما تم:</b> ${esc(f.action||'-')}</p>
+    <p><b>ملاحظات:</b> ${esc(f.notes||'-')}</p>
+    ${f.next_followup?`<p><b>المتابعة القادمة:</b> ${esc(date(f.next_followup))}</p>`:''}
+  </article>`).join('');
+
+  box.innerHTML=`
+    <div class="latest-followup">
+      <div class="latest-grid">
+        <div class="latest-item"><span class="label">آخر حالة متابعة</span><div class="value">${esc(status)}</div></div>
+        <div class="latest-item"><span class="label">القائم بالمتابعة</span><div class="value">${esc(assigned)}</div></div>
+        <div class="latest-item"><span class="label">طريقة التواصل</span><div class="value">${esc(contact)}</div></div>
+        <div class="latest-item"><span class="label">تاريخ آخر متابعة</span><div class="value">${esc(date(latest.followup_date))}</div></div>
+        <div class="latest-item full"><span class="label">آخر إجراء تم مع العميل</span><div class="value">${esc(latest.action||'-')}</div></div>
+        <div class="latest-item full"><span class="label">آخر ملاحظات</span><div class="value">${esc(latest.notes||'-')}</div></div>
+        <div class="latest-item full"><span class="label">المتابعة القادمة</span><div class="value">${esc(latest.next_followup?date(latest.next_followup):'لا يوجد موعد محدد')}</div></div>
+      </div>
+    </div>
+    <h3 style="margin-top:18px">سجل المتابعات السابق</h3>
+    <div class="followup-history">${history}</div>`;
+}
+
+async function assignFollowup(){
+  const out=$('assignmentMsg');
+  const button=$('assignFollowup');
+  const editBtn=$('editAssignment');
+  out.className='followup-msg';out.textContent='';
+  if(!currentRequest?.id){out.classList.add('followup-error');out.textContent='لم يتم تحديد طلب العميل.';return;}
+  const assignedTo=$('assignedTo').value;
+  if(!assignedTo){out.classList.add('followup-error');out.textContent='اختر القائم بالمتابعة أولًا.';return;}
+  const {data:sessionData,error:sessionError}=await db.auth.getSession();
+  if(sessionError||!sessionData.session){out.classList.add('followup-error');out.textContent='جلسة المدير غير متاحة. سجّل الخروج ثم الدخول مرة أخرى.';return;}
+  currentSession=sessionData.session;
+  button.disabled=true;button.textContent='جاري الإسناد...';
+  const result=await db.from(ASSIGNMENTS_TABLE).insert({
+    request_id:currentRequest.id,
+    assigned_to:assignedTo,
+    assigned_by:currentSession.user.id,
+    status:'active'
+  });
+  button.disabled=false;button.textContent='إسناد المتابعة';
+  if(result.error){
+    console.error('assignFollowup error:',result.error);
+    out.classList.add('followup-error');
+    if(result.error.code==='23505'){
+      out.textContent='هذا الطلب مسند بالفعل. استخدم «تعديل الإسناد» بدلًا من إنشاء إسناد جديد.';
+    }else{
+      out.innerHTML=`تعذر حفظ الإسناد.<br><small>كود الخطأ: ${esc(result.error.code||'-')} | ${esc(result.error.message||'خطأ غير معروف')}</small>`;
+    }
+    await loadAssignment(currentRequest.id);
+    return;
+  }
+  out.classList.add('followup-success');
+  out.textContent=`تم إسناد الطلب إلى ${staffName(assignedTo)} بنجاح ✓`;
+  await loadAssignment(currentRequest.id);
+  await loadFollowupPreview(currentRequest.id);
+}
+
+async function editAssignment(){
+  const out=$('assignmentMsg');
+  const button=$('editAssignment');
+  const sel=$('assignedTo');
+  out.className='followup-msg';out.textContent='';
+  if(!currentRequest?.id){out.classList.add('followup-error');out.textContent='لم يتم تحديد طلب العميل.';return;}
+  if(!assignmentEditMode){
+    assignmentEditMode=true;
+    sel.disabled=false;
+    button.textContent='حفظ التعديل';
+    out.textContent='اختر القائم بالمتابعة الجديد ثم اضغط «حفظ التعديل». ';
+    return;
+  }
+  const newStaff=sel.value;
+  const oldStaff=sel.dataset.currentAssigned||'';
+  if(!newStaff){out.classList.add('followup-error');out.textContent='اختر القائم بالمتابعة الجديد أولًا.';return;}
+  const oldStaffName=staffName(oldStaff);
+  const newStaffName=staffName(newStaff);
+  if(oldStaff===newStaff){
+    out.textContent=`القائم بالمتابعة ما زال ${newStaffName}. لم يتم إجراء تغيير.`;
+    await loadAssignment(currentRequest.id);
+    return;
+  }
+  const confirmed=window.confirm(`سيتم تغيير القائم بالمتابعة من «${oldStaffName||'غير محدد'}» إلى «${newStaffName}».\n\nهل تريد متابعة التعديل؟`);
+  if(!confirmed)return;
+  const {data:sessionData,error:sessionError}=await db.auth.getSession();
+  if(sessionError||!sessionData.session){out.classList.add('followup-error');out.textContent='جلسة المدير غير متاحة. سجّل الخروج ثم الدخول مرة أخرى.';return;}
+  button.disabled=true;sel.disabled=true;button.textContent='جاري التعديل...';
+  const {error}=await db.from(ASSIGNMENTS_TABLE)
+    .update({assigned_to:newStaff,assigned_by:sessionData.session.user.id,assigned_at:new Date().toISOString(),status:'active',updated_at:new Date().toISOString()})
+    .eq('request_id',currentRequest.id);
+  if(error){
+    console.error('editAssignment error:',error);
+    out.className='followup-msg followup-error';
+    out.innerHTML=`تعذر تعديل الإسناد.<br><small>كود الخطأ: ${esc(error.code||'-')} | ${esc(error.message||'خطأ غير معروف')}</small>`;
+    button.disabled=false;sel.disabled=false;button.textContent='حفظ التعديل';
+    return;
+  }
+  out.className='followup-msg followup-success';
+  out.textContent=`تم تغيير القائم بالمتابعة إلى ${newStaffName} بنجاح ✓`;
+  await loadAssignment(currentRequest.id);
+  await loadFollowupPreview(currentRequest.id);
+}
+
+function closeModal(){currentRequest=null;$('modal').classList.add('hidden')}
+function date(v){if(!v)return'-';const d=new Date(v);return Number.isNaN(d.getTime())?String(v):new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium',timeStyle:'short'}).format(d)}
+function esc(v){return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'","&#039;")}
+init();
+})();
+</script>
+</body>
+</html>
