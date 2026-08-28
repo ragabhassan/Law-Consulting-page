@@ -842,6 +842,7 @@
             try {
                 const { error } = await supabase.from('consultation_requests').insert({
                     client_name: name,
+                    full_name: name,
                     phone: phone,
                     email: email || null,
                     company: company || null,
