@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* ====== التنسيقات الأساسية ====== */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f6f9; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+        h1 { color: #1a2a3a; border-bottom: 3px solid #2d7aff; padding-bottom: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .user-info { font-size: 16px; font-weight: normal; color: #555; }
+        .nav-bar { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; background: #eef2f7; padding: 15px; border-radius: 12px; }
+        .nav-btn { background: white; border: none; padding: 12px 28px; border-radius: 30px; font-size: 16px; font-weight: 600; color: #1a2a3a; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: 0.3s; border: 1px solid transparent; }
+        .nav-btn:hover { background: #2d7aff; color: white; box-shadow: 0 6px 14px rgba(45,122,255,0.3); transform: translateY(-2px); }
+        .nav-btn.logout { background: #ff4d4d; color: white; }
+        .nav-btn.logout:hover { background: #cc0000; }
+        .nav-btn.hidden { display: none; }
+
+        .section { display: none; animation: fadeIn 0.4s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .filters { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; background: #f8faff; padding: 15px; border-radius: 12px; align-items: center; }
+        .filters label { font-weight: 600; color: #1a2a3a; }
+        .filters input, .filters select { padding: 8px 14px; border: 1px solid #dce1e8; border-radius: 8px; font-size: 14px; }
+        .filters button { background: #2d7aff; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .filters button:hover { background: #1a5cc4; }
+        .filters button.reset { background: #6c757d; }
+
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        th { background: #2d7aff; color: white; padding: 12px 10px; text-align: center; font-weight: 600; white-space: nowrap; }
+        td { padding: 10px; border-bottom: 1px solid #e9edf4; text-align: center; vertical-align: middle; }
+        tr:hover td { background: #f8faff; }
+        .status-badge { padding: 4px 14px; border-radius: 30px; font-size: 12px; font-weight: 600; display: inline-block; }
+        .status-new { background: #ffc107; color: #000; }
+        .status-in_progress { background: #17a2b8; color: #fff; }
+        .status-contacted { background: #28a745; color: #fff; }
+        .status-resolved { background: #6c757d; color: #fff; }
+        .status-default { background: #e9ecef; color: #000; }
+
+        .btn-preview { background: #17a2b8; color: white; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-preview:hover { background: #138496; }
+        .btn-save-assign { background: #28a745; color: white; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-save-assign:hover { background: #218838; }
+        select.assigned-select { padding: 4px 8px; border-radius: 6px; border: 1px solid #dce1e8; font-size: 13px; width: 100%; max-width: 200px; }
+        
+        .btn-edit-cons { background: #ffc107; color: #000; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 4px; }
+        .btn-edit-cons:hover { background: #e0a800; }
+        .btn-delete-cons { background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 4px; }
+        .btn-delete-cons:hover { background: #c82333; }
+
+        .employee-card { background: #f8faff; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #2d7aff; flex-wrap: wrap; gap: 10px; }
+        .employee-card .info { display: flex; gap: 30px; flex-wrap: wrap; }
+        .employee-card .info strong { color: #1a2a3a; }
+        .employee-card .actions { display: flex; gap: 8px; }
+        .employee-card .actions button { padding: 4px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .btn-edit-emp { background: #ffc107; color: #000; }
+        .btn-edit-emp:hover { background: #e0a800; }
+        .btn-delete-emp { background: #dc3545; color: white; }
+        .btn-delete-emp:hover { background: #c82333; }
+
+        .status-badge { background: #28a745; color: white; padding: 4px 16px; border-radius: 30px; font-size: 13px; }
+        .status-badge.inactive { background: #dc3545; }
+
+        .message { padding: 16px; background: #fff3cd; border-radius: 10px; border-right: 6px solid #ffc107; margin: 20px 0; }
+        .message.error { background: #f8d7da; border-color: #dc3545; }
+        .loading { text-align: center; padding: 40px; color: #6c757d; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; animation: fadeInModal 0.3s ease; }
+        .modal-overlay.active { display: flex; }
+        @keyframes fadeInModal { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .modal-content { background: white; border-radius: 16px; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 25px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); position: relative; }
+        .modal-close { position: sticky; top: 0; float: left; background: #dc3545; color: white; border: none; border-radius: 50%; width: 34px; height: 34px; font-size: 20px; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; }
+        .modal-close:hover { background: #c82333; }
+        .modal-title { font-size: 24px; color: #1a2a3a; border-bottom: 2px solid #2d7aff; padding-bottom: 12px; margin-bottom: 20px; }
+        .modal-section { margin-bottom: 20px; }
+        .modal-section h3 { color: #2d7aff; margin-bottom: 10px; font-size: 18px; border-bottom: 1px solid #e9edf4; padding-bottom: 6px; }
+        .modal-detail-row { display: flex; padding: 6px 0; border-bottom: 1px dashed #f0f2f5; }
+        .modal-detail-row .label { font-weight: 600; width: 130px; color: #1a2a3a; }
+        .modal-detail-row .value { flex: 1; color: #333; }
+        .followup-item { background: #f8faff; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; border-right: 3px solid #2d7aff; }
+        .followup-item .date { font-size: 12px; color: #6c757d; }
+        .followup-item .note { margin-top: 4px; }
+        .add-followup-form { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+        .add-followup-form input, .add-followup-form textarea { flex: 1; min-width: 150px; padding: 8px 12px; border: 1px solid #dce1e8; border-radius: 6px; }
+        .add-followup-form button { background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; }
+
+        .add-employee-form { background: #f8faff; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e9edf4; }
+        .add-employee-form .form-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: end; }
+        .add-employee-form .form-group { flex: 1; min-width: 150px; }
+        .add-employee-form label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .add-employee-form input, .add-employee-form select { width: 100%; padding: 8px 12px; border: 1px solid #dce1e8; border-radius: 6px; }
+        .add-employee-form button { background: #28a745; color: white; border: none; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .add-employee-form button:hover { background: #218838; }
+
+        @media (max-width: 700px) { .nav-bar { flex-direction: column; } .nav-btn { width: 100%; text-align: center; } .filters { flex-direction: column; align-items: stretch; } .employee-card { flex-direction: column; align-items: flex-start; } .add-employee-form .form-row { flex-direction: column; } .modal-content { padding: 15px; } .modal-detail-row { flex-direction: column; } .modal-detail-row .label { width: 100%; } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 id="pageTitle">🏛️ لوحة التحكم <span class="user-info" id="userNameDisplay"></span></h1>
+    <div class="nav-bar">
+        <button class="nav-btn" id="btnShowConsultations">📋 عرض الطلبات</button>
+        <button class="nav-btn hidden" id="btnManualEntry">📝 إدخال طلب يدوي</button>
+        <button class="nav-btn hidden" id="btnShowEmployees">👥 إدارة الموظفين</button>
+        <button class="nav-btn logout" id="btnLogout">🚪 تسجيل الخروج</button>
+    </div>
+
+    <!-- قسم الاستشارات -->
+    <div id="sectionConsultations" class="section active">
+        <h2>📋 قائمة الطلبات</h2>
+        <div class="filters" id="filterContainer">
+            <label>📅 من:</label><input type="date" id="filterDateFrom">
+            <label>إلى:</label><input type="date" id="filterDateTo">
+            <label>📌 الحالة:</label>
+            <select id="filterStatus">
+                <option value="">الكل</option>
+                <option value="new">جديد</option>
+                <option value="in_progress">قيد المتابعة</option>
+                <option value="contacted">تم التواصل</option>
+                <option value="resolved">تم الحل</option>
+            </select>
+            <button id="btnApplyFilters">🔍 تطبيق</button>
+            <button id="btnResetFilters" class="reset">↺ إعادة تعيين</button>
+        </div>
+        <div id="consultationsContainer"><div class="loading">⏳ جاري التحميل...</div></div>
+    </div>
+
+    <!-- قسم إدخال الطلبات اليدوية -->
+    <div id="sectionManualEntry" class="section">
+        <h2>📝 إدخال طلب استشارة (يدوي)</h2>
+        <div class="add-employee-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>اسم العميل *</label>
+                    <input type="text" id="manualName" placeholder="الاسم الكامل">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف *</label>
+                    <input type="text" id="manualPhone" placeholder="01xxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="manualEmail" placeholder="example@domain.com">
+                </div>
+                <div class="form-group">
+                    <label>الشركة (اختياري)</label>
+                    <input type="text" id="manualCompany" placeholder="اسم الشركة">
+                </div>
+                <div class="form-group">
+                    <label>الخدمة المطلوبة</label>
+                    <select id="manualService">
+                        <option value="">اختر الخدمة</option>
+                        <option value="corporate">استشارات الشركات</option>
+                        <option value="contracts">صياغة العقود</option>
+                        <option value="litigation">قضايا وتقاضي</option>
+                        <option value="arbitration">تحكيم وتسوية نزاعات</option>
+                        <option value="ip">حماية الملكية الفكرية</option>
+                        <option value="other">استشارة عامة</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row" style="margin-top: 10px;">
+                <div class="form-group" style="flex: 2;">
+                    <label>تفاصيل الطلب</label>
+                    <textarea id="manualMessage" rows="4" style="width:100%; padding:8px; border:1px solid #dce1e8; border-radius:6px;" placeholder="اكتب ملخص الطلب هنا..."></textarea>
+                </div>
+            </div>
+            <div class="form-group">
+                <button id="btnAddManualConsultation" class="primary" style="margin-top: 10px;">➕ حفظ الطلب</button>
+                <span id="manualMsg" class="staff-msg"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- قسم إدارة الموظفين -->
+    <div id="sectionEmployees" class="section">
+        <h2>👥 إدارة الموظفين</h2>
+        <div class="add-employee-form" id="addEmployeeForm">
+            <h3 style="margin-bottom:10px;">➕ إضافة موظف جديد</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الاسم الكامل</label>
+                    <input type="text" id="empName" placeholder="اسم الموظف">
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="empEmail" placeholder="example@domain.com">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور المؤقتة</label>
+                    <input type="text" id="empPassword" placeholder="كلمة مرور مؤقتة">
+                </div>
+                <div class="form-group">
+                    <label>الدور</label>
+                    <select id="empRole">
+                        <option value="followup_staff">موظف متابعة</option>
+                        <option value="manager">مدير</option>
+                        <option value="secretary">سكرتير</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>الحالة</label>
+                    <select id="empStatus">
+                        <option value="true">نشط</option>
+                        <option value="false">غير نشط</option>
+                    </select>
+                </div>
+                <button id="btnAddEmployee">إضافة</button>
+            </div>
+        </div>
+        <div id="employeesContainer"><div class="loading">⏳ جاري التحميل...</div></div>
+    </div>
+</div>
+
+<!-- نافذة المعاينة -->
+<div class="modal-overlay" id="previewModal">
+    <div class="modal-content">
+        <button class="modal-close" id="modalClose">✕</button>
+        <div class="modal-title" id="modalTitle">تفاصيل الطلب</div>
+        <div id="modalBody"><div class="loading">⏳ جاري التحميل...</div></div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+
+        const SUPABASE_URL = 'https://wacvbnebicbutyzpnkez.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhY3ZibmViaWNidXR5enBua2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxODYzMjEsImV4cCI6MjEwMTc2MjMyMX0.NEjwCs4ZBcoJT9ZVxNnYaZRY1-DIUjk-aNqV3rs5A4w';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        let currentUser = null;
+        let allConsultations = [];
+        let allEmployees = [];
+
+        function renderConsultations(data, employees) {
+            const container = document.getElementById('consultationsContainer');
+            if (!container) return;
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="message">📭 لا توجد طلبات تطابق الفلتر.</div>`;
+                return;
+            }
+
+            let rows = '';
+            data.forEach((item, idx) => {
+                const statusClass = 'status-' + (item.status || 'new').replace('_', '');
+                const assignedName = employees ? employees.find(e => e.id === item.assigned_to)?.full_name || 'غير محدد' : 'غير محدد';
+
+                rows += `
+                    <tr data-id="${item.id}">
+                        <td>${idx + 1}</td>
+                        <td>${item.client_name || 'غير محدد'}</td>
+                        <td>${item.email || '—'}</td>
+                        <td>${item.phone || '—'}</td>
+                        <td><span class="status-badge ${statusClass}">${item.status || 'جديد'}</span></td>
+                        <td>${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-EG') : '—'}</td>
+                        ${currentUser?.role === 'manager' ? `
+                        <td>
+                            <select class="assigned-select" data-id="${item.id}">
+                                <option value="">غير محدد</option>
+                                ${employees ? employees.map(emp => `<option value="${emp.id}" ${emp.id === item.assigned_to ? 'selected' : ''}>${emp.full_name}</option>`).join('') : ''}
+                            </select>
+                            <button class="btn-save-assign" data-id="${item.id}">حفظ</button>
+                        </td>
+                        ` : `
+                        <td>${assignedName}</td>
+                        `}
+                        <td>
+                            <button class="btn-preview" data-id="${item.id}">📄 معاينة</button>
+                            <button class="btn-edit-cons" data-id="${item.id}">✏️ تعديل</button>
+                            <button class="btn-delete-cons" data-id="${item.id}">🗑️ حذف</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            let headerCols = `<th>#</th><th>اسم العميل</th><th>البريد</th><th>الهاتف</th><th>الحالة</th><th>التاريخ</th>`;
+            headerCols += `<th>المتابع</th>`;
+            headerCols += `<th>الإجراء</th>`;
+
+            container.innerHTML = `
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr>${headerCols}</tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+
+            if (currentUser?.role === 'manager') {
+                document.querySelectorAll('.btn-save-assign').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const consultationId = this.dataset.id;
+                        const select = document.querySelector(`.assigned-select[data-id="${consultationId}"]`);
+                        const assignedTo = select.value || null;
+                        if (!assignedTo && !confirm('هل أنت متأكد من إزالة التعيين؟')) return;
+                        const { error } = await supabase
+                            .from('consultation_requests')
+                            .update({ assigned_to: assignedTo })
+                            .eq('id', consultationId);
+                        if (error) {
+                            alert('❌ فشل حفظ التعيين: ' + error.message);
+                        } else {
+                            alert('✅ تم حفظ التعيين بنجاح!');
+                            applyFilters();
+                        }
+                    });
+                });
+            }
+
+            document.querySelectorAll('.btn-preview').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    openPreview(id);
+                });
+            });
+
+            document.querySelectorAll('.btn-edit-cons').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const item = allConsultations.find(c => c.id === id);
+                    if (item) openEditConsultationModal(item);
+                });
+            });
+
+            document.querySelectorAll('.btn-delete-cons').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
+                    const { error } = await supabase
+                        .from('consultation_requests')
+                        .delete()
+                        .eq('id', id);
+                    if (error) {
+                        alert('❌ فشل الحذف: ' + error.message);
+                    } else {
+                        alert('✅ تم حذف الطلب بنجاح');
+                        applyFilters();
+                    }
+                });
+            });
+
+            populateEmployeeFilter(employees);
+        }
+
+        function renderEmployees(data) {
+            const container = document.getElementById('employeesContainer');
+            if (!container) return;
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="message">👤 لا يوجد موظفون مسجلون.</div>`;
+                return;
+            }
+            let cards = '';
+            data.forEach(emp => {
+                const isActive = emp.is_active === true;
+                const statusClass = isActive ? '' : 'inactive';
+                const statusText = isActive ? 'نشط' : 'غير نشط';
+                cards += `
+                    <div class="employee-card" data-id="${emp.id}">
+                        <div class="info">
+                            <strong>${emp.full_name || 'بدون اسم'}</strong>
+                            <span>📧 ${emp.email}</span>
+                            <span>🔹 ${emp.role || 'موظف'}</span>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-edit-emp" data-id="${emp.id}">✏️ تعديل</button>
+                            <button class="btn-delete-emp" data-id="${emp.id}">🗑️ حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = cards;
+
+            document.querySelectorAll('.btn-edit-emp').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const emp = allEmployees.find(e => e.id === id);
+                    if (emp) openEditEmployeeModal(emp);
+                });
+            });
+            document.querySelectorAll('.btn-delete-emp').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    deleteEmployee(id);
+                });
+            });
+        }
+
+       async function openPreview(consultationId) {
+    const modal = document.getElementById('previewModal');
+    const body = document.getElementById('modalBody');
+    const title = document.getElementById('modalTitle');
+
+    modal.classList.add('active');
+    body.innerHTML = `<div class="loading">⏳ جاري تحميل التفاصيل...</div>`;
+
+    try {
+        // 1. جلب بيانات الاستشارة
+        const { data: consultation, error: conError } = await supabase
+            .from('consultation_requests')
+            .select('*')
+            .eq('id', consultationId)
+            .single();
+
+        if (conError || !consultation) {
+            body.innerHTML = `<div class="message error">❌ حدث خطأ في جلب البيانات: ${conError?.message}</div>`;
+            return;
+        }
+
+        // 2. جلب المقابلة الأولى مع المدير
+        const { data: initialConsultation, error: initError } = await supabase
+            .from('initial_consultations')
+            .select('*')
+            .eq('request_id', consultationId)
+            .limit(1)
+            .maybeSingle();
+
+        if (initError) console.warn('خطأ في جلب المقابلة الأولى:', initError);
+
+        // 3. جلب سجل المتابعات الكامل
+        const { data: followups, error: folError } = await supabase
+            .from('client_followups')
+            .select('*')
+            .eq('request_id', consultationId) // ✅ التصحيح المهم: request_id وليس consultation_id
+            .order('followup_date', { ascending: false });
+
+        if (folError) console.warn('خطأ في جلب المتابعات:', folError);
+
+        // جلب اسم الموظف المسند
+        let assignedName = 'غير محدد';
+        if (consultation.assigned_to) {
+            const { data: emp } = await supabase
+                .from('staff_profiles')
+                .select('full_name')
+                .eq('id', consultation.assigned_to)
+                .single();
+            if (emp) assignedName = emp.full_name;
+        }
+
+        let html = `
+            <div class="modal-section">
+                <h3>📌 معلومات العميل</h3>
+                <div class="modal-detail-row"><span class="label">الاسم</span><span class="value">${consultation.client_name || 'غير محدد'}</span></div>
+                <div class="modal-detail-row"><span class="label">البريد الإلكتروني</span><span class="value">${consultation.email || '—'}</span></div>
+                <div class="modal-detail-row"><span class="label">رقم الهاتف</span><span class="value">${consultation.phone || '—'}</span></div>
+                <div class="modal-detail-row"><span class="label">الحالة</span><span class="value">${consultation.status || 'جديد'}</span></div>
+                <div class="modal-detail-row"><span class="label">تاريخ الطلب</span><span class="value">${consultation.created_at ? new Date(consultation.created_at).toLocaleString('ar-EG') : '—'}</span></div>
+                <div class="modal-detail-row"><span class="label">الموظف المسند</span><span class="value">${assignedName}</span></div>
+                ${consultation.message ? `<div class="modal-detail-row"><span class="label">الرسالة</span><span class="value">${consultation.message}</span></div>` : ''}
+            </div>
+        `;
+
+        // عرض المقابلة الأولى إذا كانت موجودة
+        if (initialConsultation) {
+            html += `
+                <div class="modal-section">
+                    <h3>📝 المقابلة الأولى مع المدير</h3>
+                    <div class="modal-detail-row"><span class="label">تاريخ المقابلة</span><span class="value">${initialConsultation.consultation_date ? new Date(initialConsultation.consultation_date).toLocaleString('ar-EG') : '—'}</span></div>
+                    <div class="modal-detail-row"><span class="label">طريقة التواصل</span><span class="value">${initialConsultation.contact_method || '-'}</span></div>
+                    <div class="modal-detail-row"><span class="label">ملخص المقابلة</span><span class="value">${initialConsultation.summary || '-'}</span></div>
+                    <div class="modal-detail-row"><span class="label">نتيجة المقابلة</span><span class="value">${initialConsultation.result || '-'}</span></div>
+                    <div class="modal-detail-row"><span class="label">ملاحظات المدير</span><span class="value">${initialConsultation.manager_notes || '-'}</span></div>
+                    <div class="modal-detail-row"><span class="label">التوصيات / تعليمات للمتابعة</span><span class="value">${initialConsultation.instructions || '-'}</span></div>
+                </div>
+            `;
+        }
+
+        // عرض سجل المتابعات الكامل
+        html += `<div class="modal-section"><h3>📋 سجل المتابعات</h3>`;
+        if (followups && followups.length > 0) {
+            followups.forEach(f => {
+                const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
+                // تحديد هوية من قام بالمتابعة (إذا كانت متابعة المدير يكون assigned_to فارغاً)
+                let followerName = 'المدير';
+                if (f.assigned_to) {
+                    const emp = allEmployees.find(e => e.id === f.assigned_to);
+                    if (emp) followerName = emp.full_name;
+                }
+
+                html += `
+                    <div class="followup-item">
+                        <div class="date"><strong>القائم بالمتابعة:</strong> ${followerName} | <strong>التاريخ:</strong> ${date}</div>
+                        <div class="note"><strong>طريقة التواصل:</strong> ${f.contact_method || '-'}</div>
+                        <div class="note"><strong>الإجراء:</strong> ${f.action || '-'}</div>
+                        <div class="note"><strong>الملاحظات:</strong> ${f.notes || '-'}</div>
+                        <div class="note"><strong>حالة المتابعة:</strong> ${f.followup_status || '-'}</div>
+                        ${f.next_followup ? `<div class="note"><strong>المتابعة القادمة:</strong> ${new Date(f.next_followup).toLocaleString('ar-EG')}</div>` : ''}
+                    </div>
+                `;
+            });
+        } else {
+            html += `<div class="message">لا توجد متابعات مسجلة لهذا الطلب.</div>`;
+        }
+        html += `</div>`;
+
+        // نموذج إضافة متابعة
+        html += `
+            <div class="modal-section">
+                <h3>➕ إضافة متابعة جديدة</h3>
+                <div class="add-followup-form">
+                    <input type="text" id="newFollowupNote" placeholder="ملاحظة المتابعة" style="flex:2;">
+                    <input type="text" id="newFollowupStatus" placeholder="الحالة (اختياري)" style="flex:1;">
+                    <button id="btnAddFollowup" data-id="${consultationId}">إضافة</button>
+                </div>
+            </div>
+        `;
+
+        body.innerHTML = html;
+
+        // ربط زر إضافة المتابعة (مع تصحيح الأعمدة)
+        document.getElementById('btnAddFollowup')?.addEventListener('click', async function() {
+            const consId = this.dataset.id;
+            const note = document.getElementById('newFollowupNote').value.trim();
+            const status = document.getElementById('newFollowupStatus').value.trim() || null;
+
+            if (!note) {
+                alert('يرجى كتابة ملاحظة المتابعة');
+                return;
+            }
+
+            const { data: { user } } = await supabase.auth.getUser();
+
+            const { error } = await supabase
+                .from('client_followups')
+                .insert({
+                    request_id: consId,
+                    notes: note,
+                    followup_status: status,
+                    created_by: user?.id,
+                    contact_method: 'other',
+                    action: 'متابعة',
+                    followup_date: new Date().toISOString()
+                });
+
+            if (error) {
+                alert('❌ فشل إضافة المتابعة: ' + error.message);
+            } else {
+                alert('✅ تم إضافة المتابعة بنجاح!');
+                openPreview(consId);
+            }
+        });
+
+    } catch (err) {
+        body.innerHTML = `<div class="message error">❌ حدث خطأ غير متوقع: ${err.message}</div>`;
+    }
+}
+        async function addEmployee() {
+            const name = document.getElementById('empName').value.trim();
+            const email = document.getElementById('empEmail').value.trim();
+            const password = document.getElementById('empPassword').value.trim();
+            const role = document.getElementById('empRole').value;
+            const status = document.getElementById('empStatus').value === 'true';
+
+            if (!name || !email || !password) {
+                alert('يرجى ملء جميع الحقول (الاسم، البريد، كلمة المرور)');
+                return;
+            }
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                alert('يرجى تسجيل الدخول مرة أخرى');
+                return;
+            }
+
+            try {
+                const response = await fetch('https://wacvbnebicbutyzpnkez.supabase.co/functions/v1/add-employee', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        email: email,
+                        password: password,
+                        role: role,
+                        status: status
+                    })
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert('✅ تم إضافة الموظف بنجاح!');
+                    await fetchEmployees();
+                    document.getElementById('empName').value = '';
+                    document.getElementById('empEmail').value = '';
+                    document.getElementById('empPassword').value = '';
+                } else {
+                    alert('❌ فشلت الإضافة: ' + (result.error || 'خطأ غير معروف'));
+                    console.error('تفاصيل الخطأ:', result);
+                }
+            } catch (err) {
+                alert('❌ حدث خطأ في الاتصال: ' + err.message);
+                console.error(err);
+            }
+        }
+
+        async function deleteEmployee(id) {
+            if (!confirm('هل أنت متأكد من حذف هذا الموظف؟')) return;
+            const { error } = await supabase
+                .from('staff_profiles')
+                .delete()
+                .eq('id', id);
+            if (error) {
+                alert('❌ فشل الحذف: ' + error.message);
+            } else {
+                alert('✅ تم حذف الموظف بنجاح');
+                await fetchEmployees();
+            }
+        }
+
+        function openEditEmployeeModal(emp) {
+            const newName = prompt('تعديل اسم الموظف:', emp.full_name);
+            if (newName === null) return;
+            const newRole = prompt('تعديل الدور (manager / followup_staff / secretary):', emp.role);
+            if (newRole === null) return;
+            const newStatus = confirm('هل الموظف نشط؟ اضغط OK لنشط، Cancel لغير نشط') ? true : false;
+
+            (async () => {
+                const { error } = await supabase
+                    .from('staff_profiles')
+                    .update({ full_name: newName, role: newRole, is_active: newStatus })
+                    .eq('id', emp.id);
+                if (error) {
+                    alert('❌ فشل التعديل: ' + error.message);
+                } else {
+                    alert('✅ تم تعديل الموظف بنجاح');
+                    await fetchEmployees();
+                }
+            })();
+        }
+
+        async function openEditConsultationModal(item) {
+            const newName = prompt('تعديل اسم العميل:', item.client_name);
+            if (newName === null) return;
+
+            const newPhone = prompt('تعديل رقم الهاتف:', item.phone);
+            if (newPhone === null) return;
+
+            const newStatus = prompt('تعديل الحالة (new, contacted, in_progress, resolved):', item.status);
+            if (newStatus === null) return;
+
+            const { error } = await supabase
+                .from('consultation_requests')
+                .update({ client_name: newName, phone: newPhone, status: newStatus })
+                .eq('id', item.id);
+
+            if (error) {
+                alert('❌ فشل التعديل: ' + error.message);
+            } else {
+                alert('✅ تم تعديل الطلب بنجاح');
+                applyFilters();
+            }
+        }
+
+        async function fetchEmployees() {
+            try {
+                const { data, error } = await supabase
+                    .from('staff_profiles')
+                    .select('*')
+                    .order('full_name', { ascending: true });
+                if (error) throw error;
+                allEmployees = data || [];
+                renderEmployees(allEmployees);
+                populateEmployeeFilter(allEmployees);
+            } catch (err) {
+                console.error(err);
+                document.getElementById('employeesContainer').innerHTML = `<div class="message error">❌ ${err.message}</div>`;
+            }
+        }
+
+        async function fetchConsultations() {
+            try {
+                let query = supabase
+                    .from('consultation_requests')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (currentUser?.role === 'followup_staff') {
+                    query = query.eq('assigned_to', currentUser.id);
+                }
+
+                const { data, error } = await query;
+                if (error) throw error;
+                allConsultations = data || [];
+                applyFilters();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('consultationsContainer').innerHTML = `<div class="message error">❌ ${err.message}</div>`;
+            }
+        }
+
+        function populateEmployeeFilter(employees) {
+            const filterSelect = document.getElementById('filterEmployee');
+            if (!filterSelect) return;
+            const currentValue = filterSelect.value;
+            filterSelect.innerHTML = '<option value="">الكل</option>';
+            if (employees) {
+                employees.forEach(emp => {
+                    filterSelect.innerHTML += `<option value="${emp.id}">${emp.full_name}</option>`;
+                });
+            }
+            filterSelect.value = currentValue;
+        }
+
+        function applyFilters() {
+            const dateFrom = document.getElementById('filterDateFrom')?.value || '';
+            const dateTo = document.getElementById('filterDateTo')?.value || '';
+            const status = document.getElementById('filterStatus')?.value || '';
+
+            let filtered = [...allConsultations];
+
+            if (dateFrom) {
+                const from = new Date(dateFrom); from.setHours(0,0,0,0);
+                filtered = filtered.filter(item => item.created_at && new Date(item.created_at) >= from);
+            }
+            if (dateTo) {
+                const to = new Date(dateTo); to.setHours(23,59,59,999);
+                filtered = filtered.filter(item => item.created_at && new Date(item.created_at) <= to);
+            }
+            if (status) filtered = filtered.filter(item => item.status === status);
+
+            renderConsultations(filtered, allEmployees);
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById(sectionId);
+            if (target) target.classList.add('active');
+            if (sectionId === 'sectionConsultations') {
+                if (allConsultations.length === 0) fetchConsultations();
+                else applyFilters();
+            } else if (sectionId === 'sectionEmployees') {
+                if (allEmployees.length === 0) fetchEmployees();
+                else renderEmployees(allEmployees);
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                const { error } = await supabase.auth.signOut();
+                if (error) alert('❌ ' + error.message);
+                else window.location.href = 'login.html';
+            } catch (e) {
+                alert('❌ حدث خطأ أثناء تسجيل الخروج');
+                console.error(e);
+            }
+        }
+
+        async function initPage() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error || !session) {
+                alert('يرجى تسجيل الدخول أولاً.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const { data: profile, error: profileError } = await supabase
+                .from('staff_profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profileError || !profile) {
+                alert('لا توجد صلاحيات لهذا المستخدم. يرجى التواصل مع المدير.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            currentUser = {
+                id: profile.id,
+                role: profile.role,
+                full_name: profile.full_name
+            };
+
+            document.getElementById('userNameDisplay').textContent = `👤 ${currentUser.full_name}`;
+            if (currentUser.role === 'manager' || currentUser.role === 'secretary') {
+                document.getElementById('pageTitle').innerHTML = `🏛️ لوحة تحكم المدير <span class="user-info">👤 ${currentUser.full_name}</span>`;
+                document.getElementById('btnManualEntry').classList.remove('hidden');
+            }
+            
+            if (currentUser.role === 'manager') {
+                document.getElementById('btnShowEmployees').classList.remove('hidden');
+            } else {
+                document.getElementById('btnShowEmployees').classList.add('hidden');
+            }
+
+            document.getElementById('btnShowConsultations').addEventListener('click', () => showSection('sectionConsultations'));
+            document.getElementById('btnManualEntry').addEventListener('click', () => showSection('sectionManualEntry'));
+            document.getElementById('btnShowEmployees').addEventListener('click', () => showSection('sectionEmployees'));
+            document.getElementById('btnLogout').addEventListener('click', handleLogout);
+
+            document.getElementById('btnApplyFilters').addEventListener('click', applyFilters);
+            document.getElementById('btnResetFilters').addEventListener('click', function() {
+                document.getElementById('filterDateFrom').value = '';
+                document.getElementById('filterDateTo').value = '';
+                document.getElementById('filterStatus').value = '';
+                applyFilters();
+            });
+
+            document.getElementById('btnAddEmployee').addEventListener('click', addEmployee);
+            document.getElementById('btnAddManualConsultation').addEventListener('click', addManualConsultation);
+
+            await fetchEmployees();
+            await fetchConsultations();
+
+            showSection('sectionConsultations');
+        }
+
+        async function addManualConsultation() {
+            const name = document.getElementById('manualName').value.trim();
+            const phone = document.getElementById('manualPhone').value.trim();
+            const email = document.getElementById('manualEmail').value.trim();
+            const company = document.getElementById('manualCompany').value.trim();
+            const service = document.getElementById('manualService').value;
+            const message = document.getElementById('manualMessage').value.trim();
+            const out = document.getElementById('manualMsg');
+            const btn = document.getElementById('btnAddManualConsultation');
+
+            if (!name || !phone || !service) {
+                out.textContent = 'يرجى ملء الحقول الإلزامية (الاسم، الهاتف، الخدمة).';
+                return;
+            }
+
+            btn.disabled = true;
+            out.textContent = 'جاري الحفظ...';
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { 
+                alert('يرجى تسجيل الدخول مجدداً.'); 
+                return; 
+            }
+
+            try {
+                const { error } = await supabase.from('consultation_requests').insert({
+                    client_name: name,
+                    phone: phone,
+                    email: email || null,
+                    company: company || null,
+                    service: service || null,
+                    message: message || null,
+                    privacy_accepted: true,
+                    status: 'new'
+                });
+
+                if (error) throw error;
+
+                await fetch(`${SUPABASE_URL}/functions/v1/send-telegram`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}` 
+                    },
+                    body: JSON.stringify({ 
+                        client_name: name, 
+                        phone: phone, 
+                        email: email || null, 
+                        service: service || null, 
+                        message: message || null 
+                    })
+                }).catch(e => console.warn('تعذر إرسال التليجرام:', e));
+
+                out.textContent = '✅ تم حفظ الطلب بنجاح!';
+                document.getElementById('manualName').value = '';
+                document.getElementById('manualPhone').value = '';
+                document.getElementById('manualEmail').value = '';
+                document.getElementById('manualCompany').value = '';
+                document.getElementById('manualService').value = '';
+                document.getElementById('manualMessage').value = '';
+                
+                await fetchConsultations();
+            } catch (err) {
+                out.textContent = '❌ فشل الحفظ: ' + err.message;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        document.getElementById('modalClose').addEventListener('click', function() {
+            document.getElementById('previewModal').classList.remove('active');
+        });
+        document.getElementById('previewModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+
+        document.addEventListener('DOMContentLoaded', initPage);
+
+    })();
+</script>
+</body>
+</html>
