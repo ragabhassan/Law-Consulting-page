@@ -113,14 +113,15 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // تجهيز البيانات
             const consultationData = {
-                client_name: fullName,
-                phone: phone,
-                email: email || null,
-                company: company || null,
-                service: service || null,
-                message: message || null,
-                privacy_accepted: true
-            };
+    client_name: fullName,
+    full_name: fullName, // 🔴 أضف هذا السطر
+    phone: phone,
+    email: email || null,
+    company: company || null,
+    service: service || null,
+    message: message || null,
+    privacy_accepted: true
+};
 
             // حفظ البيانات في قاعدة البيانات
             const response = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
