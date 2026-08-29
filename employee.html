@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة الموظف</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f6f9; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+        h1 { color: #1a2a3a; border-bottom: 3px solid #2d7aff; padding-bottom: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        th { background: #2d7aff; color: white; padding: 12px 10px; text-align: center; font-weight: 600; }
+        td { padding: 10px; border-bottom: 1px solid #e9edf4; text-align: center; }
+        .btn-preview { background: #17a2b8; color: white; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-preview:hover { background: #138496; }
+        .logout { background: #ff4d4d; color: white; border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-weight: 600; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>📋 لوحة المتابعة <span id="userNameDisplay" style="font-size:16px; font-weight:normal;"></span></h1>
+    <button class="logout" onclick="logout()">🚪 تسجيل الخروج</button>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>اسم العميل</th>
+                    <th>الهاتف</th>
+                    <th>الحالة</th>
+                    <th>الإجراء</th>
+                </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+        const SUPABASE_URL = 'https://wacvbnebicbutyzpnkez.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhY3ZibmViaWNidXR5enBua2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxODYzMjEsImV4cCI6MjEwMTc2MjMyMX0.NEjwCs4ZBcoJT9ZVxNnYaZRY1-DIUjk-aNqV3rs5A4w';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function init() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error || !session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const { data: profile, error: profileError } = await supabase
+                .from('staff_profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .single();
+
+            if (profileError || !profile || profile.role !== 'followup_staff') {
+                window.location.href = 'dashboard-admin.html';
+                return;
+            }
+
+            document.getElementById('userNameDisplay').textContent = `👤 ${profile.full_name}`;
+
+            const { data: consultations, error: cError } = await supabase
+                .from('consultation_requests')
+                .select('*')
+                .eq('assigned_to', profile.id)
+                .order('created_at', { ascending: false });
+
+            if (cError) {
+                console.error(cError);
+                document.getElementById('tbody').innerHTML = `<tr><td colspan="5" style="color:red;">❌ ${cError.message}</td></tr>`;
+                return;
+            }
+
+            const tbody = document.getElementById('tbody');
+            if (!consultations || consultations.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5">لا توجد طلبات مخصصة لك.</td></tr>`;
+                return;
+            }
+
+            let rows = '';
+            consultations.forEach((item, idx) => {
+                rows += `
+                    <tr>
+                        <td>${idx + 1}</td>
+                        <td>${item.client_name || 'غير محدد'}</td>
+                        <td>${item.phone || '—'}</td>
+                        <td>${item.status || 'جديد'}</td>
+                        <td><button class="btn-preview" onclick="window.location.href='dashboard-admin.html?preview=${item.id}'">📄 معاينة</button></td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = rows;
+        }
+
+        window.logout = async function() {
+            await supabase.auth.signOut();
+            window.location.href = 'login.html';
+        };
+
+        init();
+    })();
+</script>
+</body>
+</html>
