@@ -22,8 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
         AOS.init({ duration: 800, once: true, offset: 100 });
     }
 
-    // ... (باقي الكود كما هو: القائمة، الأسئلة الشائعة، العدادات، إلخ) ...
-
     // =========================================================
     // نموذج الاستشارة القانونية
     // =========================================================
@@ -113,15 +111,15 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // تجهيز البيانات
             const consultationData = {
-    client_name: fullName,
-    full_name: fullName, // 🔴 أضف هذا السطر
-    phone: phone,
-    email: email || null,
-    company: company || null,
-    service: service || null,
-    message: message || null,
-    privacy_accepted: true
-};
+                client_name: fullName,
+                full_name: fullName,
+                phone: phone,
+                email: email || null,
+                company: company || null,
+                service: service || null,
+                message: message || null,
+                privacy_accepted: true
+            };
 
             // حفظ البيانات في قاعدة البيانات
             const response = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
@@ -148,8 +146,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 throw new Error(errorMessage);
             }
-
-            // (اختياري) إرسال إشعار التليجرام - سنتجاهله الآن لتجنب أي مشاكل CORS
 
             // نجاح الإرسال
             console.log('تم حفظ طلب الاستشارة بنجاح في Supabase.');
