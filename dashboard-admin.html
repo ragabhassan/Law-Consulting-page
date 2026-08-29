@@ -442,12 +442,11 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
 
                 if (initError) console.warn('خطأ في جلب المقابلة الأولى:', initError);
 
-                const { data: followups, error: folError } = await supabase
-                    .from('client_followups')
-                    .select('*')
-                    .eq('consultation_id', consultationId)
-                    .order('followup_date', { ascending: false });
-
+               const { data: followups, error: folError } = await supabase
+    .from('client_followups')
+    .select('*')
+    .eq('request_id', consultationId) // ✅ تغيير الاتجاه من consultation_id إلى request_id
+    .order('followup_date', { ascending: false });
                 if (folError) console.warn('خطأ في جلب المتابعات:', folError);
 
                 let assignedName = 'غير محدد';
