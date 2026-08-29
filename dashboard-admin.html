@@ -23,6 +23,7 @@
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+        /* ====== الفلاتر ====== */
         .filters { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; background: #f8faff; padding: 15px; border-radius: 12px; align-items: center; }
         .filters label { font-weight: 600; color: #1a2a3a; }
         .filters input, .filters select { padding: 8px 14px; border: 1px solid #dce1e8; border-radius: 8px; font-size: 14px; }
@@ -30,6 +31,7 @@
         .filters button:hover { background: #1a5cc4; }
         .filters button.reset { background: #6c757d; }
 
+        /* ====== الجداول ====== */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
         th { background: #2d7aff; color: white; padding: 12px 10px; text-align: center; font-weight: 600; white-space: nowrap; }
@@ -47,12 +49,14 @@
         .btn-save-assign { background: #28a745; color: white; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .btn-save-assign:hover { background: #218838; }
         select.assigned-select { padding: 4px 8px; border-radius: 6px; border: 1px solid #dce1e8; font-size: 13px; width: 100%; max-width: 200px; }
-        
+
+        /* ====== أزرار تعديل وحذف الطلبات ====== */
         .btn-edit-cons { background: #ffc107; color: #000; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 4px; }
         .btn-edit-cons:hover { background: #e0a800; }
         .btn-delete-cons { background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 4px; }
         .btn-delete-cons:hover { background: #c82333; }
 
+        /* ====== بطاقات الموظفين ====== */
         .employee-card { background: #f8faff; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #2d7aff; flex-wrap: wrap; gap: 10px; }
         .employee-card .info { display: flex; gap: 30px; flex-wrap: wrap; }
         .employee-card .info strong { color: #1a2a3a; }
@@ -70,6 +74,7 @@
         .message.error { background: #f8d7da; border-color: #dc3545; }
         .loading { text-align: center; padding: 40px; color: #6c757d; }
 
+        /* ====== نافذة المعاينة ====== */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; animation: fadeInModal 0.3s ease; }
         .modal-overlay.active { display: flex; }
         @keyframes fadeInModal { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -89,6 +94,7 @@
         .add-followup-form input, .add-followup-form textarea { flex: 1; min-width: 150px; padding: 8px 12px; border: 1px solid #dce1e8; border-radius: 6px; }
         .add-followup-form button { background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; }
 
+        /* ====== نموذج إضافة موظف ====== */
         .add-employee-form { background: #f8faff; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e9edf4; }
         .add-employee-form .form-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: end; }
         .add-employee-form .form-group { flex: 1; min-width: 150px; }
@@ -111,7 +117,7 @@
         <button class="nav-btn logout" id="btnLogout">🚪 تسجيل الخروج</button>
     </div>
 
-    <!-- قسم الاستشارات -->
+    <!-- ====== قسم الاستشارات ====== -->
     <div id="sectionConsultations" class="section active">
         <h2>📋 قائمة الطلبات</h2>
         <div class="filters" id="filterContainer">
@@ -131,7 +137,7 @@
         <div id="consultationsContainer"><div class="loading">⏳ جاري التحميل...</div></div>
     </div>
 
-    <!-- قسم إدخال الطلبات اليدوية -->
+    <!-- ====== قسم الإدخال اليدوي ====== -->
     <div id="sectionManualEntry" class="section">
         <h2>📝 إدخال طلب استشارة (يدوي)</h2>
         <div class="add-employee-form">
@@ -178,7 +184,7 @@
         </div>
     </div>
 
-    <!-- قسم إدارة الموظفين -->
+    <!-- ====== قسم إدارة الموظفين ====== -->
     <div id="sectionEmployees" class="section">
         <h2>👥 إدارة الموظفين</h2>
         <div class="add-employee-form" id="addEmployeeForm">
@@ -218,7 +224,7 @@
     </div>
 </div>
 
-<!-- نافذة المعاينة -->
+<!-- ====== نافذة المعاينة ====== -->
 <div class="modal-overlay" id="previewModal">
     <div class="modal-content">
         <button class="modal-close" id="modalClose">✕</button>
@@ -231,14 +237,24 @@
     (function() {
         'use strict';
 
+        // ============================================================
+        // 🔑 إعدادات Supabase
+        // ============================================================
         const SUPABASE_URL = 'https://wacvbnebicbutyzpnkez.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhY3ZibmViaWNidXR5enBua2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxODYzMjEsImV4cCI6MjEwMTc2MjMyMX0.NEjwCs4ZBcoJT9ZVxNnYaZRY1-DIUjk-aNqV3rs5A4w';
 
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        let currentUser = null;
-        let allConsultations = [];
-        let allEmployees = [];
+        // ============================================================
+        // متغيرات عامة
+        // ============================================================
+let currentUser = null;
+let allConsultations = [];
+let allEmployees = [];
+let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
+        // ============================================================
+        // دوال العرض
+        // ============================================================
 
         function renderConsultations(data, employees) {
             const container = document.getElementById('consultationsContainer');
@@ -394,164 +410,162 @@
             });
         }
 
-       async function openPreview(consultationId) {
-    const modal = document.getElementById('previewModal');
-    const body = document.getElementById('modalBody');
-    const title = document.getElementById('modalTitle');
+        // ============================================================
+        // نافذة المعاينة الكاملة
+        // ============================================================
+        async function openPreview(consultationId) {
+            const modal = document.getElementById('previewModal');
+            const body = document.getElementById('modalBody');
+            const title = document.getElementById('modalTitle');
 
-    modal.classList.add('active');
-    body.innerHTML = `<div class="loading">⏳ جاري تحميل التفاصيل...</div>`;
+            modal.classList.add('active');
+            body.innerHTML = `<div class="loading">⏳ جاري تحميل التفاصيل...</div>`;
 
-    try {
-        // 1. جلب بيانات الاستشارة
-        const { data: consultation, error: conError } = await supabase
-            .from('consultation_requests')
-            .select('*')
-            .eq('id', consultationId)
-            .single();
+            try {
+                const { data: consultation, error: conError } = await supabase
+                    .from('consultation_requests')
+                    .select('*')
+                    .eq('id', consultationId)
+                    .single();
 
-        if (conError || !consultation) {
-            body.innerHTML = `<div class="message error">❌ حدث خطأ في جلب البيانات: ${conError?.message}</div>`;
-            return;
-        }
-
-        // 2. جلب المقابلة الأولى مع المدير
-        const { data: initialConsultation, error: initError } = await supabase
-            .from('initial_consultations')
-            .select('*')
-            .eq('request_id', consultationId)
-            .limit(1)
-            .maybeSingle();
-
-        if (initError) console.warn('خطأ في جلب المقابلة الأولى:', initError);
-
-        // 3. جلب سجل المتابعات الكامل
-        const { data: followups, error: folError } = await supabase
-            .from('client_followups')
-            .select('*')
-            .eq('request_id', consultationId) // ✅ التصحيح المهم: request_id وليس consultation_id
-            .order('followup_date', { ascending: false });
-
-        if (folError) console.warn('خطأ في جلب المتابعات:', folError);
-
-        // جلب اسم الموظف المسند
-        let assignedName = 'غير محدد';
-        if (consultation.assigned_to) {
-            const { data: emp } = await supabase
-                .from('staff_profiles')
-                .select('full_name')
-                .eq('id', consultation.assigned_to)
-                .single();
-            if (emp) assignedName = emp.full_name;
-        }
-
-        let html = `
-            <div class="modal-section">
-                <h3>📌 معلومات العميل</h3>
-                <div class="modal-detail-row"><span class="label">الاسم</span><span class="value">${consultation.client_name || 'غير محدد'}</span></div>
-                <div class="modal-detail-row"><span class="label">البريد الإلكتروني</span><span class="value">${consultation.email || '—'}</span></div>
-                <div class="modal-detail-row"><span class="label">رقم الهاتف</span><span class="value">${consultation.phone || '—'}</span></div>
-                <div class="modal-detail-row"><span class="label">الحالة</span><span class="value">${consultation.status || 'جديد'}</span></div>
-                <div class="modal-detail-row"><span class="label">تاريخ الطلب</span><span class="value">${consultation.created_at ? new Date(consultation.created_at).toLocaleString('ar-EG') : '—'}</span></div>
-                <div class="modal-detail-row"><span class="label">الموظف المسند</span><span class="value">${assignedName}</span></div>
-                ${consultation.message ? `<div class="modal-detail-row"><span class="label">الرسالة</span><span class="value">${consultation.message}</span></div>` : ''}
-            </div>
-        `;
-
-        // عرض المقابلة الأولى إذا كانت موجودة
-        if (initialConsultation) {
-            html += `
-                <div class="modal-section">
-                    <h3>📝 المقابلة الأولى مع المدير</h3>
-                    <div class="modal-detail-row"><span class="label">تاريخ المقابلة</span><span class="value">${initialConsultation.consultation_date ? new Date(initialConsultation.consultation_date).toLocaleString('ar-EG') : '—'}</span></div>
-                    <div class="modal-detail-row"><span class="label">طريقة التواصل</span><span class="value">${initialConsultation.contact_method || '-'}</span></div>
-                    <div class="modal-detail-row"><span class="label">ملخص المقابلة</span><span class="value">${initialConsultation.summary || '-'}</span></div>
-                    <div class="modal-detail-row"><span class="label">نتيجة المقابلة</span><span class="value">${initialConsultation.result || '-'}</span></div>
-                    <div class="modal-detail-row"><span class="label">ملاحظات المدير</span><span class="value">${initialConsultation.manager_notes || '-'}</span></div>
-                    <div class="modal-detail-row"><span class="label">التوصيات / تعليمات للمتابعة</span><span class="value">${initialConsultation.instructions || '-'}</span></div>
-                </div>
-            `;
-        }
-
-        // عرض سجل المتابعات الكامل
-        html += `<div class="modal-section"><h3>📋 سجل المتابعات</h3>`;
-        if (followups && followups.length > 0) {
-            followups.forEach(f => {
-                const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
-                // تحديد هوية من قام بالمتابعة (إذا كانت متابعة المدير يكون assigned_to فارغاً)
-                let followerName = 'المدير';
-                if (f.assigned_to) {
-                    const emp = allEmployees.find(e => e.id === f.assigned_to);
-                    if (emp) followerName = emp.full_name;
+                if (conError || !consultation) {
+                    body.innerHTML = `<div class="message error">❌ حدث خطأ في جلب البيانات: ${conError?.message}</div>`;
+                    return;
                 }
 
-                html += `
-                    <div class="followup-item">
-                        <div class="date"><strong>القائم بالمتابعة:</strong> ${followerName} | <strong>التاريخ:</strong> ${date}</div>
-                        <div class="note"><strong>طريقة التواصل:</strong> ${f.contact_method || '-'}</div>
-                        <div class="note"><strong>الإجراء:</strong> ${f.action || '-'}</div>
-                        <div class="note"><strong>الملاحظات:</strong> ${f.notes || '-'}</div>
-                        <div class="note"><strong>حالة المتابعة:</strong> ${f.followup_status || '-'}</div>
-                        ${f.next_followup ? `<div class="note"><strong>المتابعة القادمة:</strong> ${new Date(f.next_followup).toLocaleString('ar-EG')}</div>` : ''}
+                const { data: initialConsultation, error: initError } = await supabase
+                    .from('initial_consultations')
+                    .select('*')
+                    .eq('request_id', consultationId)
+                    .limit(1)
+                    .maybeSingle();
+
+                if (initError) console.warn('خطأ في جلب المقابلة الأولى:', initError);
+
+                const { data: followups, error: folError } = await supabase
+                    .from('client_followups')
+                    .select('*')
+                    .eq('consultation_id', consultationId)
+                    .order('followup_date', { ascending: false });
+
+                if (folError) console.warn('خطأ في جلب المتابعات:', folError);
+
+                let assignedName = 'غير محدد';
+                if (consultation.assigned_to) {
+                    const { data: emp } = await supabase
+                        .from('staff_profiles')
+                        .select('full_name')
+                        .eq('id', consultation.assigned_to)
+                        .single();
+                    if (emp) assignedName = emp.full_name;
+                }
+
+                let html = `
+                    <div class="modal-section">
+                        <h3>📌 معلومات العميل</h3>
+                        <div class="modal-detail-row"><span class="label">الاسم</span><span class="value">${consultation.client_name || 'غير محدد'}</span></div>
+                        <div class="modal-detail-row"><span class="label">البريد الإلكتروني</span><span class="value">${consultation.email || '—'}</span></div>
+                        <div class="modal-detail-row"><span class="label">رقم الهاتف</span><span class="value">${consultation.phone || '—'}</span></div>
+                        <div class="modal-detail-row"><span class="label">الحالة</span><span class="value">${consultation.status || 'جديد'}</span></div>
+                        <div class="modal-detail-row"><span class="label">تاريخ الطلب</span><span class="value">${consultation.created_at ? new Date(consultation.created_at).toLocaleString('ar-EG') : '—'}</span></div>
+                        <div class="modal-detail-row"><span class="label">الموظف المسند</span><span class="value">${assignedName}</span></div>
+                        ${consultation.message ? `<div class="modal-detail-row"><span class="label">الرسالة</span><span class="value">${consultation.message}</span></div>` : ''}
                     </div>
                 `;
-            });
-        } else {
-            html += `<div class="message">لا توجد متابعات مسجلة لهذا الطلب.</div>`;
-        }
-        html += `</div>`;
 
-        // نموذج إضافة متابعة
-        html += `
-            <div class="modal-section">
-                <h3>➕ إضافة متابعة جديدة</h3>
-                <div class="add-followup-form">
-                    <input type="text" id="newFollowupNote" placeholder="ملاحظة المتابعة" style="flex:2;">
-                    <input type="text" id="newFollowupStatus" placeholder="الحالة (اختياري)" style="flex:1;">
-                    <button id="btnAddFollowup" data-id="${consultationId}">إضافة</button>
-                </div>
-            </div>
-        `;
+                if (initialConsultation) {
+                    html += `
+                        <div class="modal-section">
+                            <h3>📝 المقابلة الأولى مع المدير</h3>
+                            <div class="modal-detail-row"><span class="label">تاريخ المقابلة</span><span class="value">${initialConsultation.consultation_date ? new Date(initialConsultation.consultation_date).toLocaleString('ar-EG') : '—'}</span></div>
+                            <div class="modal-detail-row"><span class="label">طريقة التواصل</span><span class="value">${initialConsultation.contact_method || '-'}</span></div>
+                            <div class="modal-detail-row"><span class="label">ملخص المقابلة</span><span class="value">${initialConsultation.summary || '-'}</span></div>
+                            <div class="modal-detail-row"><span class="label">نتيجة المقابلة</span><span class="value">${initialConsultation.result || '-'}</span></div>
+                            <div class="modal-detail-row"><span class="label">ملاحظات المدير</span><span class="value">${initialConsultation.manager_notes || '-'}</span></div>
+                            <div class="modal-detail-row"><span class="label">التوصيات / تعليمات للمتابعة</span><span class="value">${initialConsultation.instructions || '-'}</span></div>
+                        </div>
+                    `;
+                }
 
-        body.innerHTML = html;
+                html += `<div class="modal-section"><h3>📋 سجل المتابعات</h3>`;
+                if (followups && followups.length > 0) {
+                    followups.forEach(f => {
+                        const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
+                        let followerName = 'المدير';
+                        if (f.assigned_to) {
+                            const emp = allEmployees.find(e => e.id === f.assigned_to);
+                            if (emp) followerName = emp.full_name;
+                        }
 
-        // ربط زر إضافة المتابعة (مع تصحيح الأعمدة)
-        document.getElementById('btnAddFollowup')?.addEventListener('click', async function() {
-            const consId = this.dataset.id;
-            const note = document.getElementById('newFollowupNote').value.trim();
-            const status = document.getElementById('newFollowupStatus').value.trim() || null;
+                        html += `
+                            <div class="followup-item">
+                                <div class="date"><strong>القائم بالمتابعة:</strong> ${followerName} | <strong>التاريخ:</strong> ${date}</div>
+                                <div class="note"><strong>طريقة التواصل:</strong> ${f.contact_method || '-'}</div>
+                                <div class="note"><strong>الإجراء:</strong> ${f.action || '-'}</div>
+                                <div class="note"><strong>الملاحظات:</strong> ${f.notes || '-'}</div>
+                                <div class="note"><strong>حالة المتابعة:</strong> ${f.followup_status || '-'}</div>
+                                ${f.next_followup ? `<div class="note"><strong>المتابعة القادمة:</strong> ${new Date(f.next_followup).toLocaleString('ar-EG')}</div>` : ''}
+                            </div>
+                        `;
+                    });
+                } else {
+                    html += `<div class="message">لا توجد متابعات مسجلة لهذا الطلب.</div>`;
+                }
+                html += `</div>`;
 
-            if (!note) {
-                alert('يرجى كتابة ملاحظة المتابعة');
-                return;
-            }
+                html += `
+                    <div class="modal-section">
+                        <h3>➕ إضافة متابعة جديدة</h3>
+                        <div class="add-followup-form">
+                            <input type="text" id="newFollowupNote" placeholder="ملاحظة المتابعة" style="flex:2;">
+                            <input type="text" id="newFollowupStatus" placeholder="الحالة (اختياري)" style="flex:1;">
+                            <button id="btnAddFollowup" data-id="${consultationId}">إضافة</button>
+                        </div>
+                    </div>
+                `;
 
-            const { data: { user } } = await supabase.auth.getUser();
+                body.innerHTML = html;
 
-            const { error } = await supabase
-                .from('client_followups')
-                .insert({
-                    request_id: consId,
-                    notes: note,
-                    followup_status: status,
-                    created_by: user?.id,
-                    contact_method: 'other',
-                    action: 'متابعة',
-                    followup_date: new Date().toISOString()
+                document.getElementById('btnAddFollowup')?.addEventListener('click', async function() {
+                    const consId = this.dataset.id;
+                    const note = document.getElementById('newFollowupNote').value.trim();
+                    const status = document.getElementById('newFollowupStatus').value.trim() || null;
+
+                    if (!note) {
+                        alert('يرجى كتابة ملاحظة المتابعة');
+                        return;
+                    }
+
+                    const { data: { user } } = await supabase.auth.getUser();
+
+                    const { error } = await supabase
+                        .from('client_followups')
+                        .insert({
+                            request_id: consId,
+                            notes: note,
+                            followup_status: status,
+                            created_by: user?.id,
+                            contact_method: 'other',
+                            action: 'متابعة',
+                            followup_date: new Date().toISOString()
+                        });
+
+                    if (error) {
+                        alert('❌ فشل إضافة المتابعة: ' + error.message);
+                    } else {
+                        alert('✅ تم إضافة المتابعة بنجاح!');
+                        openPreview(consId);
+                    }
                 });
 
-            if (error) {
-                alert('❌ فشل إضافة المتابعة: ' + error.message);
-            } else {
-                alert('✅ تم إضافة المتابعة بنجاح!');
-                openPreview(consId);
+            } catch (err) {
+                body.innerHTML = `<div class="message error">❌ حدث خطأ غير متوقع: ${err.message}</div>`;
             }
-        });
+        }
 
-    } catch (err) {
-        body.innerHTML = `<div class="message error">❌ حدث خطأ غير متوقع: ${err.message}</div>`;
-    }
-}
+        // ============================================================
+        // دوال إدارة الموظفين (للمدير فقط)
+        // ============================================================
         async function addEmployee() {
             const name = document.getElementById('empName').value.trim();
             const email = document.getElementById('empEmail').value.trim();
@@ -638,6 +652,9 @@
             })();
         }
 
+        // ============================================================
+        // دوال إدارة الطلبات
+        // ============================================================
         async function openEditConsultationModal(item) {
             const newName = prompt('تعديل اسم العميل:', item.client_name);
             if (newName === null) return;
@@ -661,6 +678,9 @@
             }
         }
 
+        // ============================================================
+        // دوال جلب البيانات
+        // ============================================================
         async function fetchEmployees() {
             try {
                 const { data, error } = await supabase
@@ -684,7 +704,9 @@
                     .select('*')
                     .order('created_at', { ascending: false });
 
-                if (currentUser?.role === 'followup_staff') {
+                if (currentUser?.role === 'secretary') {
+                    query = query.eq('created_by', currentUser.id);
+                } else if (currentUser?.role === 'followup_staff') {
                     query = query.eq('assigned_to', currentUser.id);
                 }
 
@@ -728,9 +750,13 @@
             }
             if (status) filtered = filtered.filter(item => item.status === status);
 
+            currentFilteredData = filtered;
             renderConsultations(filtered, allEmployees);
         }
 
+        // ============================================================
+        // دوال التنقل والخروج
+        // ============================================================
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             const target = document.getElementById(sectionId);
@@ -755,6 +781,9 @@
             }
         }
 
+        // ============================================================
+        // تهيئة الصفحة
+        // ============================================================
         async function initPage() {
             const { data: { session }, error } = await supabase.auth.getSession();
             if (error || !session) {
@@ -782,15 +811,22 @@
             };
 
             document.getElementById('userNameDisplay').textContent = `👤 ${currentUser.full_name}`;
-            if (currentUser.role === 'manager' || currentUser.role === 'secretary') {
-                document.getElementById('pageTitle').innerHTML = `🏛️ لوحة تحكم المدير <span class="user-info">👤 ${currentUser.full_name}</span>`;
-                document.getElementById('btnManualEntry').classList.remove('hidden');
-            }
-            
+
             if (currentUser.role === 'manager') {
+                document.getElementById('pageTitle').innerHTML = `🏛️ لوحة تحكم المدير <span class="user-info">👤 ${currentUser.full_name}</span>`;
                 document.getElementById('btnShowEmployees').classList.remove('hidden');
-            } else {
+                document.getElementById('btnManualEntry').classList.remove('hidden');
+                document.getElementById('btnShowConsultations').classList.remove('hidden');
+            } else if (currentUser.role === 'secretary') {
+                document.getElementById('pageTitle').innerHTML = `📝 لوحة السكرتير <span class="user-info">👤 ${currentUser.full_name}</span>`;
                 document.getElementById('btnShowEmployees').classList.add('hidden');
+                document.getElementById('btnManualEntry').classList.remove('hidden');
+                document.getElementById('btnShowConsultations').classList.remove('hidden');
+            } else {
+                document.getElementById('pageTitle').innerHTML = `📋 لوحة المتابعة <span class="user-info">👤 ${currentUser.full_name}</span>`;
+                document.getElementById('btnShowEmployees').classList.add('hidden');
+                document.getElementById('btnManualEntry').classList.add('hidden');
+                document.getElementById('btnShowConsultations').classList.remove('hidden');
             }
 
             document.getElementById('btnShowConsultations').addEventListener('click', () => showSection('sectionConsultations'));
@@ -815,6 +851,9 @@
             showSection('sectionConsultations');
         }
 
+        // ============================================================
+        // دوال الإدخال اليدوي
+        // ============================================================
         async function addManualConsultation() {
             const name = document.getElementById('manualName').value.trim();
             const phone = document.getElementById('manualPhone').value.trim();
@@ -849,25 +888,11 @@
                     service: service || null,
                     message: message || null,
                     privacy_accepted: true,
-                    status: 'new'
+                    status: 'new',
+                    created_by: session.user.id // معرف من قام بإنشاء الطلب
                 });
 
                 if (error) throw error;
-
-                await fetch(`${SUPABASE_URL}/functions/v1/send-telegram`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}` 
-                    },
-                    body: JSON.stringify({ 
-                        client_name: name, 
-                        phone: phone, 
-                        email: email || null, 
-                        service: service || null, 
-                        message: message || null 
-                    })
-                }).catch(e => console.warn('تعذر إرسال التليجرام:', e));
 
                 out.textContent = '✅ تم حفظ الطلب بنجاح!';
                 document.getElementById('manualName').value = '';
@@ -885,6 +910,9 @@
             }
         }
 
+        // ============================================================
+        // إغلاق النافذة المنبثقة
+        // ============================================================
         document.getElementById('modalClose').addEventListener('click', function() {
             document.getElementById('previewModal').classList.remove('active');
         });
@@ -892,6 +920,9 @@
             if (e.target === this) this.classList.remove('active');
         });
 
+        // ============================================================
+        // بدء التشغيل
+        // ============================================================
         document.addEventListener('DOMContentLoaded', initPage);
 
     })();
