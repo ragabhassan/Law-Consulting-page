@@ -6,7 +6,6 @@
     <title>لوحة التحكم</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        /* ====== التنسيقات الأساسية ====== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f6f9; padding: 20px; }
         .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
@@ -18,45 +17,29 @@
         .nav-btn.logout { background: #ff4d4d; color: white; }
         .nav-btn.logout:hover { background: #cc0000; }
         .nav-btn.hidden { display: none; }
-
         .section { display: none; animation: fadeIn 0.4s ease; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* ====== الفلاتر ====== */
         .filters { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; background: #f8faff; padding: 15px; border-radius: 12px; align-items: center; }
         .filters label { font-weight: 600; color: #1a2a3a; }
         .filters input, .filters select { padding: 8px 14px; border: 1px solid #dce1e8; border-radius: 8px; font-size: 14px; }
         .filters button { background: #2d7aff; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
         .filters button:hover { background: #1a5cc4; }
         .filters button.reset { background: #6c757d; }
-
-        /* ====== الجداول ====== */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
         th { background: #2d7aff; color: white; padding: 12px 10px; text-align: center; font-weight: 600; white-space: nowrap; }
         td { padding: 10px; border-bottom: 1px solid #e9edf4; text-align: center; vertical-align: middle; }
         tr:hover td { background: #f8faff; }
-        .status-badge { padding: 4px 14px; border-radius: 30px; font-size: 12px; font-weight: 600; display: inline-block; }
-        .status-new { background: #ffc107; color: #000; }
-        .status-in_progress { background: #17a2b8; color: #fff; }
-        .status-contacted { background: #28a745; color: #fff; }
-        .status-resolved { background: #6c757d; color: #fff; }
-        .status-default { background: #e9ecef; color: #000; }
-
         .btn-preview { background: #17a2b8; color: white; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .btn-preview:hover { background: #138496; }
         .btn-save-assign { background: #28a745; color: white; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .btn-save-assign:hover { background: #218838; }
         select.assigned-select { padding: 4px 8px; border-radius: 6px; border: 1px solid #dce1e8; font-size: 13px; width: 100%; max-width: 200px; }
-
-        /* ====== أزرار تعديل وحذف الطلبات ====== */
         .btn-edit-cons { background: #ffc107; color: #000; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 4px; }
         .btn-edit-cons:hover { background: #e0a800; }
         .btn-delete-cons { background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 4px; }
         .btn-delete-cons:hover { background: #c82333; }
-
-        /* ====== بطاقات الموظفين ====== */
         .employee-card { background: #f8faff; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #2d7aff; flex-wrap: wrap; gap: 10px; }
         .employee-card .info { display: flex; gap: 30px; flex-wrap: wrap; }
         .employee-card .info strong { color: #1a2a3a; }
@@ -66,15 +49,9 @@
         .btn-edit-emp:hover { background: #e0a800; }
         .btn-delete-emp { background: #dc3545; color: white; }
         .btn-delete-emp:hover { background: #c82333; }
-
-        .status-badge { background: #28a745; color: white; padding: 4px 16px; border-radius: 30px; font-size: 13px; }
-        .status-badge.inactive { background: #dc3545; }
-
         .message { padding: 16px; background: #fff3cd; border-radius: 10px; border-right: 6px solid #ffc107; margin: 20px 0; }
         .message.error { background: #f8d7da; border-color: #dc3545; }
         .loading { text-align: center; padding: 40px; color: #6c757d; }
-
-        /* ====== نافذة المعاينة ====== */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; animation: fadeInModal 0.3s ease; }
         .modal-overlay.active { display: flex; }
         @keyframes fadeInModal { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
@@ -93,8 +70,6 @@
         .add-followup-form { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
         .add-followup-form input, .add-followup-form textarea { flex: 1; min-width: 150px; padding: 8px 12px; border: 1px solid #dce1e8; border-radius: 6px; }
         .add-followup-form button { background: #28a745; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; }
-
-        /* ====== نموذج إضافة موظف ====== */
         .add-employee-form { background: #f8faff; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e9edf4; }
         .add-employee-form .form-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: end; }
         .add-employee-form .form-group { flex: 1; min-width: 150px; }
@@ -102,7 +77,6 @@
         .add-employee-form input, .add-employee-form select { width: 100%; padding: 8px 12px; border: 1px solid #dce1e8; border-radius: 6px; }
         .add-employee-form button { background: #28a745; color: white; border: none; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .add-employee-form button:hover { background: #218838; }
-
         @media (max-width: 700px) { .nav-bar { flex-direction: column; } .nav-btn { width: 100%; text-align: center; } .filters { flex-direction: column; align-items: stretch; } .employee-card { flex-direction: column; align-items: flex-start; } .add-employee-form .form-row { flex-direction: column; } .modal-content { padding: 15px; } .modal-detail-row { flex-direction: column; } .modal-detail-row .label { width: 100%; } }
     </style>
 </head>
@@ -117,19 +91,20 @@
         <button class="nav-btn logout" id="btnLogout">🚪 تسجيل الخروج</button>
     </div>
 
-    <!-- ====== قسم الاستشارات ====== -->
     <div id="sectionConsultations" class="section active">
         <h2>📋 قائمة الطلبات</h2>
         <div class="filters" id="filterContainer">
             <label>📅 من:</label><input type="date" id="filterDateFrom">
             <label>إلى:</label><input type="date" id="filterDateTo">
-            <label>📌 الحالة:</label>
-            <select id="filterStatus">
+            <label>📌 الخدمة:</label>
+            <select id="filterService">
                 <option value="">الكل</option>
-                <option value="new">جديد</option>
-                <option value="in_progress">قيد المتابعة</option>
-                <option value="contacted">تم التواصل</option>
-                <option value="resolved">تم الحل</option>
+                <option value="corporate">استشارات الشركات</option>
+                <option value="contracts">صياغة العقود</option>
+                <option value="litigation">قضايا وتقاضي</option>
+                <option value="arbitration">تحكيم وتسوية نزاعات</option>
+                <option value="ip">حماية الملكية الفكرية</option>
+                <option value="other">استشارة عامة</option>
             </select>
             <button id="btnApplyFilters">🔍 تطبيق</button>
             <button id="btnResetFilters" class="reset">↺ إعادة تعيين</button>
@@ -137,7 +112,6 @@
         <div id="consultationsContainer"><div class="loading">⏳ جاري التحميل...</div></div>
     </div>
 
-    <!-- ====== قسم الإدخال اليدوي ====== -->
     <div id="sectionManualEntry" class="section">
         <h2>📝 إدخال طلب استشارة (يدوي)</h2>
         <div class="add-employee-form">
@@ -184,7 +158,6 @@
         </div>
     </div>
 
-    <!-- ====== قسم إدارة الموظفين ====== -->
     <div id="sectionEmployees" class="section">
         <h2>👥 إدارة الموظفين</h2>
         <div class="add-employee-form" id="addEmployeeForm">
@@ -224,7 +197,6 @@
     </div>
 </div>
 
-<!-- ====== نافذة المعاينة ====== -->
 <div class="modal-overlay" id="previewModal">
     <div class="modal-content">
         <button class="modal-close" id="modalClose">✕</button>
@@ -237,24 +209,14 @@
     (function() {
         'use strict';
 
-        // ============================================================
-        // 🔑 إعدادات Supabase
-        // ============================================================
         const SUPABASE_URL = 'https://wacvbnebicbutyzpnkez.supabase.co';
         const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhY3ZibmViaWNidXR5enBua2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxODYzMjEsImV4cCI6MjEwMTc2MjMyMX0.NEjwCs4ZBcoJT9ZVxNnYaZRY1-DIUjk-aNqV3rs5A4w';
-
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // ============================================================
-        // متغيرات عامة
-        // ============================================================
-let currentUser = null;
-let allConsultations = [];
-let allEmployees = [];
-let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
-        // ============================================================
-        // دوال العرض
-        // ============================================================
+        let currentUser = null;
+        let allConsultations = [];
+        let allEmployees = [];
+        let currentFilteredData = [];
 
         function renderConsultations(data, employees) {
             const container = document.getElementById('consultationsContainer');
@@ -264,18 +226,16 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
                 return;
             }
 
-            let rows = '';
-            data.forEach((item, idx) => {
-                const statusClass = 'status-' + (item.status || 'new').replace('_', '');
-                const assignedName = employees ? employees.find(e => e.id === item.assigned_to)?.full_name || 'غير محدد' : 'غير محدد';
-
-                rows += `
+           let assignedName = ''; // 🔴 أضف هذا السطر هنا
+let rows = '';
+data.forEach((item, idx) => {              
+    rows += `
                     <tr data-id="${item.id}">
                         <td>${idx + 1}</td>
                         <td>${item.client_name || 'غير محدد'}</td>
                         <td>${item.email || '—'}</td>
                         <td>${item.phone || '—'}</td>
-                        <td><span class="status-badge ${statusClass}">${item.status || 'جديد'}</span></td>
+                        <td>${item.service || '—'}</td>
                         <td>${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-EG') : '—'}</td>
                         ${currentUser?.role === 'manager' ? `
                         <td>
@@ -297,7 +257,7 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
                 `;
             });
 
-            let headerCols = `<th>#</th><th>اسم العميل</th><th>البريد</th><th>الهاتف</th><th>الحالة</th><th>التاريخ</th>`;
+            let headerCols = `<th>#</th><th>اسم العميل</th><th>البريد</th><th>الهاتف</th><th>الخدمة</th><th>التاريخ</th>`;
             headerCols += `<th>المتابع</th>`;
             headerCols += `<th>الإجراء</th>`;
 
@@ -410,161 +370,232 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
             });
         }
 
-        // ============================================================
-        // نافذة المعاينة الكاملة
-        // ============================================================
         async function openPreview(consultationId) {
-            const modal = document.getElementById('previewModal');
-            const body = document.getElementById('modalBody');
-            const title = document.getElementById('modalTitle');
+    const modal = document.getElementById('previewModal');
+    const body = document.getElementById('modalBody');
 
-            modal.classList.add('active');
-            body.innerHTML = `<div class="loading">⏳ جاري تحميل التفاصيل...</div>`;
+    modal.classList.add('active');
+    body.innerHTML = `<div class="loading">⏳ جاري تحميل التفاصيل...</div>`;
 
-            try {
-                const { data: consultation, error: conError } = await supabase
-                    .from('consultation_requests')
-                    .select('*')
-                    .eq('id', consultationId)
-                    .single();
+    try {
+        // 🔴 استدعاء الـ View الجديد الذي يجمع بين الطلب والخدمة
+        const { data: consultation, error: conError } = await supabase
+            .from('consultation_with_service_req') // اسم الـ View
+            .select('*')
+            .eq('id', consultationId)
+            .single();
 
-                if (conError || !consultation) {
-                    body.innerHTML = `<div class="message error">❌ حدث خطأ في جلب البيانات: ${conError?.message}</div>`;
-                    return;
-                }
+        if (conError || !consultation) {
+            body.innerHTML = `<div class="message error">❌ حدث خطأ في جلب البيانات: ${conError?.message}</div>`;
+            return;
+        }
 
-                const { data: initialConsultation, error: initError } = await supabase
-                    .from('initial_consultations')
-                    .select('*')
-                    .eq('request_id', consultationId)
-                    .limit(1)
-                    .maybeSingle();
+        // 🔴 استرداد المهام والمستندات مباشرة من الـ View
+        const requiredActions = consultation.required_actions || [];
+        const requiredDocuments = consultation.required_documents || [];
 
-                if (initError) console.warn('خطأ في جلب المقابلة الأولى:', initError);
+        const { data: initialConsultation, error: initError } = await supabase
+            .from('initial_consultations')
+            .select('*')
+            .eq('request_id', consultationId)
+            .limit(1)
+            .maybeSingle();
 
-               const { data: followups, error: folError } = await supabase
-    .from('client_followups')
-    .select('*')
-    .eq('request_id', consultationId) // ✅ تغيير الاتجاه من consultation_id إلى request_id
-    .order('followup_date', { ascending: false });
-                if (folError) console.warn('خطأ في جلب المتابعات:', folError);
+        if (initError) console.warn('خطأ في جلب المقابلة الأولى:', initError);
 
-                let assignedName = 'غير محدد';
-                if (consultation.assigned_to) {
-                    const { data: emp } = await supabase
-                        .from('staff_profiles')
-                        .select('full_name')
-                        .eq('id', consultation.assigned_to)
-                        .single();
-                    if (emp) assignedName = emp.full_name;
-                }
+        const { data: followups, error: folError } = await supabase
+            .from('client_followups')
+            .select('*')
+            .eq('request_id', consultationId)
+            .order('followup_date', { ascending: false });
 
-                let html = `
-                    <div class="modal-section">
-                        <h3>📌 معلومات العميل</h3>
-                        <div class="modal-detail-row"><span class="label">الاسم</span><span class="value">${consultation.client_name || 'غير محدد'}</span></div>
-                        <div class="modal-detail-row"><span class="label">البريد الإلكتروني</span><span class="value">${consultation.email || '—'}</span></div>
-                        <div class="modal-detail-row"><span class="label">رقم الهاتف</span><span class="value">${consultation.phone || '—'}</span></div>
-                        <div class="modal-detail-row"><span class="label">الحالة</span><span class="value">${consultation.status || 'جديد'}</span></div>
-                        <div class="modal-detail-row"><span class="label">تاريخ الطلب</span><span class="value">${consultation.created_at ? new Date(consultation.created_at).toLocaleString('ar-EG') : '—'}</span></div>
-                        <div class="modal-detail-row"><span class="label">الموظف المسند</span><span class="value">${assignedName}</span></div>
-                        ${consultation.message ? `<div class="modal-detail-row"><span class="label">الرسالة</span><span class="value">${consultation.message}</span></div>` : ''}
-                    </div>
-                `;
+        if (folError) console.warn('خطأ في جلب المتابعات:', folError);
 
-                if (initialConsultation) {
-                    html += `
-                        <div class="modal-section">
-                            <h3>📝 المقابلة الأولى مع المدير</h3>
-                            <div class="modal-detail-row"><span class="label">تاريخ المقابلة</span><span class="value">${initialConsultation.consultation_date ? new Date(initialConsultation.consultation_date).toLocaleString('ar-EG') : '—'}</span></div>
-                            <div class="modal-detail-row"><span class="label">طريقة التواصل</span><span class="value">${initialConsultation.contact_method || '-'}</span></div>
-                            <div class="modal-detail-row"><span class="label">ملخص المقابلة</span><span class="value">${initialConsultation.summary || '-'}</span></div>
-                            <div class="modal-detail-row"><span class="label">نتيجة المقابلة</span><span class="value">${initialConsultation.result || '-'}</span></div>
-                            <div class="modal-detail-row"><span class="label">ملاحظات المدير</span><span class="value">${initialConsultation.manager_notes || '-'}</span></div>
-                            <div class="modal-detail-row"><span class="label">التوصيات / تعليمات للمتابعة</span><span class="value">${initialConsultation.instructions || '-'}</span></div>
+        let assignedName = 'غير محدد';
+        if (consultation.assigned_to) {
+            const { data: emp } = await supabase
+                .from('staff_profiles')
+                .select('full_name')
+                .eq('id', consultation.assigned_to)
+                .single();
+            if (emp) assignedName = emp.full_name;
+        }
+
+        let html = `
+            <div class="modal-section">
+                <h3>📌 معلومات العميل</h3>
+                <div class="modal-detail-row"><span class="label">الاسم</span><span class="value">${consultation.client_name || 'غير محدد'}</span></div>
+                <div class="modal-detail-row"><span class="label">البريد الإلكتروني</span><span class="value">${consultation.email || '—'}</span></div>
+                <div class="modal-detail-row"><span class="label">رقم الهاتف</span><span class="value">${consultation.phone || '—'}</span></div>
+                <div class="modal-detail-row"><span class="label">الخدمة</span><span class="value">${consultation.service || '—'}</span></div>
+                <div class="modal-detail-row"><span class="label">تاريخ الطلب</span><span class="value">${consultation.created_at ? new Date(consultation.created_at).toLocaleString('ar-EG') : '—'}</span></div>
+                <div class="modal-detail-row"><span class="label">الموظف المسند</span><span class="value">${assignedName}</span></div>
+                ${consultation.message ? `<div class="modal-detail-row"><span class="label">الرسالة</span><span class="value">${consultation.message}</span></div>` : ''}
+            </div>
+        `;
+
+        // عرض المهام والمستندات
+        if (requiredActions.length > 0 || requiredDocuments.length > 0) {
+            html += `
+                <div class="modal-section">
+                    <h3>📋 المهام والمستندات المطلوبة (بناءً على التخصص: ${consultation.service || '-'})</h3>
+                    <div class="tasks-container">
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #333;">الإجراءات المطلوبة:</strong>
+                            <ul style="list-style: none; padding: 0; margin-top: 5px;">
+                                ${requiredActions.map((action, index) => `
+                                    <li style="padding: 8px; border-bottom: 1px dashed #eee;">
+                                        <input type="checkbox" id="action_${index}" class="task-checkbox" data-task-type="action" data-index="${index}"> 
+                                        <label for="action_${index}">${action}</label>
+                                    </li>
+                                `).join('')}
+                            </ul>
                         </div>
-                    `;
-                }
+                        <div style="margin-bottom: 10px;">
+                            <strong style="color: #333;">المستندات المطلوبة:</strong>
+                            <ul style="list-style: none; padding: 0; margin-top: 5px;">
+                                ${requiredDocuments.map((doc, index) => `
+                                    <li style="padding: 8px; border-bottom: 1px dashed #eee;">
+                                        <input type="checkbox" id="doc_${index}" class="task-checkbox" data-task-type="document" data-index="${index}"> 
+                                        <label for="doc_${index}">${doc}</label>
+                                    </li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                        <button id="btnSaveTasks" class="primary" style="margin-top: 10px;">✅ حفظ حالة المهام</button>
+                    </div>
+                </div>
+            `;
+        }
 
-                html += `<div class="modal-section"><h3>📋 سجل المتابعات</h3>`;
-                if (followups && followups.length > 0) {
-                    followups.forEach(f => {
-                        const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
-                        let followerName = 'المدير';
-                        if (f.assigned_to) {
-                            const emp = allEmployees.find(e => e.id === f.assigned_to);
-                            if (emp) followerName = emp.full_name;
-                        }
+        if (initialConsultation) {
+            html += `
+                <div class="modal-section">
+                    <h3>📝 المقابلة الأولى مع المدير</h3>
+                    <div class="modal-detail-row"><span class="label">تاريخ المقابلة</span><span class="value">${initialConsultation.consultation_date ? new Date(initialConsultation.consultation_date).toLocaleString('ar-EG') : '—'}</span></div>
+                    <div class="modal-detail-row"><span class="label">طريقة التواصل</span><span class="value">${initialConsultation.contact_method || '-'}</span></div>
+                    <div class="modal-detail-row"><span class="label">ملخص المقابلة</span><span class="value">${initialConsultation.summary || '-'}</span></div>
+                    <div class="modal-detail-row"><span class="label">نتيجة المقابلة</span><span class="value">${initialConsultation.result || '-'}</span></div>
+                    <div class="modal-detail-row"><span class="label">ملاحظات المدير</span><span class="value">${initialConsultation.manager_notes || '-'}</span></div>
+                    <div class="modal-detail-row"><span class="label">التوصيات / تعليمات للمتابعة</span><span class="value">${initialConsultation.instructions || '-'}</span></div>
+                </div>
+            `;
+        }
 
-                        html += `
-                            <div class="followup-item">
-                                <div class="date"><strong>القائم بالمتابعة:</strong> ${followerName} | <strong>التاريخ:</strong> ${date}</div>
-                                <div class="note"><strong>طريقة التواصل:</strong> ${f.contact_method || '-'}</div>
-                                <div class="note"><strong>الإجراء:</strong> ${f.action || '-'}</div>
-                                <div class="note"><strong>الملاحظات:</strong> ${f.notes || '-'}</div>
-                                <div class="note"><strong>حالة المتابعة:</strong> ${f.followup_status || '-'}</div>
-                                ${f.next_followup ? `<div class="note"><strong>المتابعة القادمة:</strong> ${new Date(f.next_followup).toLocaleString('ar-EG')}</div>` : ''}
-                            </div>
-                        `;
-                    });
-                } else {
-                    html += `<div class="message">لا توجد متابعات مسجلة لهذا الطلب.</div>`;
+        html += `<div class="modal-section"><h3>📋 سجل المتابعات</h3>`;
+        if (followups && followups.length > 0) {
+            followups.forEach(f => {
+                const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
+                let followerName = 'المدير';
+                if (f.assigned_to) {
+                    const emp = allEmployees.find(e => e.id === f.assigned_to);
+                    if (emp) followerName = emp.full_name;
                 }
-                html += `</div>`;
 
                 html += `
-                    <div class="modal-section">
-                        <h3>➕ إضافة متابعة جديدة</h3>
-                        <div class="add-followup-form">
-                            <input type="text" id="newFollowupNote" placeholder="ملاحظة المتابعة" style="flex:2;">
-                            <input type="text" id="newFollowupStatus" placeholder="الحالة (اختياري)" style="flex:1;">
-                            <button id="btnAddFollowup" data-id="${consultationId}">إضافة</button>
-                        </div>
+                    <div class="followup-item">
+                        <div class="date"><strong>القائم بالمتابعة:</strong> ${followerName} | <strong>التاريخ:</strong> ${date}</div>
+                        <div class="note"><strong>طريقة التواصل:</strong> ${f.contact_method || '-'}</div>
+                        <div class="note"><strong>الإجراء:</strong> ${f.action || '-'}</div>
+                        <div class="note"><strong>الملاحظات:</strong> ${f.notes || '-'}</div>
+                        <div class="note"><strong>حالة المتابعة:</strong> ${f.followup_status || '-'}</div>
+                        ${f.next_followup ? `<div class="note"><strong>المتابعة القادمة:</strong> ${new Date(f.next_followup).toLocaleString('ar-EG')}</div>` : ''}
                     </div>
                 `;
+            });
+        } else {
+            html += `<div class="message">لا توجد متابعات مسجلة لهذا الطلب.</div>`;
+        }
+        html += `</div>`;
 
-                body.innerHTML = html;
+        html += `
+            <div class="modal-section">
+                <h3>➕ إضافة متابعة جديدة</h3>
+                <div class="add-followup-form">
+                    <input type="text" id="newFollowupNote" placeholder="ملاحظة المتابعة" style="flex:2;">
+                    <input type="text" id="newFollowupStatus" placeholder="الحالة (اختياري)" style="flex:1;">
+                    <button id="btnAddFollowup" data-id="${consultationId}">إضافة</button>
+                </div>
+            </div>
+        `;
 
-                document.getElementById('btnAddFollowup')?.addEventListener('click', async function() {
-                    const consId = this.dataset.id;
-                    const note = document.getElementById('newFollowupNote').value.trim();
-                    const status = document.getElementById('newFollowupStatus').value.trim() || null;
+        body.innerHTML = html;
 
-                    if (!note) {
-                        alert('يرجى كتابة ملاحظة المتابعة');
-                        return;
-                    }
+        const saveTasksBtn = document.getElementById('btnSaveTasks');
+        if (saveTasksBtn) {
+            saveTasksBtn.addEventListener('click', async function() {
+                const checkedActions = [];
+                const checkedDocuments = [];
 
-                    const { data: { user } } = await supabase.auth.getUser();
-
-                    const { error } = await supabase
-                        .from('client_followups')
-                        .insert({
-                            request_id: consId,
-                            notes: note,
-                            followup_status: status,
-                            created_by: user?.id,
-                            contact_method: 'other',
-                            action: 'متابعة',
-                            followup_date: new Date().toISOString()
-                        });
-
-                    if (error) {
-                        alert('❌ فشل إضافة المتابعة: ' + error.message);
-                    } else {
-                        alert('✅ تم إضافة المتابعة بنجاح!');
-                        openPreview(consId);
+                document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                    if (checkbox.checked) {
+                        if (checkbox.dataset.taskType === 'action') {
+                            checkedActions.push(requiredActions[checkbox.dataset.index]);
+                        } else if (checkbox.dataset.taskType === 'document') {
+                            checkedDocuments.push(requiredDocuments[checkbox.dataset.index]);
+                        }
                     }
                 });
 
-            } catch (err) {
-                body.innerHTML = `<div class="message error">❌ حدث خطأ غير متوقع: ${err.message}</div>`;
-            }
+                const { data: { user } } = await supabase.auth.getUser();
+
+                const { error } = await supabase
+                    .from('client_followups')
+                    .insert({
+                        request_id: consultationId,
+                        notes: `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocuments.join(', ') || 'لا شيء'}`,
+                        followup_status: 'completed',
+                        created_by: user?.id,
+                        contact_method: 'other',
+                        action: 'تحديث حالة المهام',
+                        followup_date: new Date().toISOString()
+                    });
+
+                if (error) {
+                    alert('❌ فشل حفظ المهام: ' + error.message);
+                } else {
+                    alert('✅ تم حفظ حالة المهام بنجاح، وسيظهر ذلك في سجل المتابعات!');
+                    openPreview(consultationId);
+                }
+            });
         }
 
-        // ============================================================
-        // دوال إدارة الموظفين (للمدير فقط)
-        // ============================================================
+        document.getElementById('btnAddFollowup')?.addEventListener('click', async function() {
+            const consId = this.dataset.id;
+            const note = document.getElementById('newFollowupNote').value.trim();
+            const status = document.getElementById('newFollowupStatus').value.trim() || null;
+
+            if (!note) {
+                alert('يرجى كتابة ملاحظة المتابعة');
+                return;
+            }
+
+            const { data: { user } } = await supabase.auth.getUser();
+
+            const { error } = await supabase
+                .from('client_followups')
+                .insert({
+                    request_id: consId,
+                    notes: note,
+                    followup_status: status,
+                    created_by: user?.id,
+                    contact_method: 'other',
+                    action: 'متابعة',
+                    followup_date: new Date().toISOString()
+                });
+
+            if (error) {
+                alert('❌ فشل إضافة المتابعة: ' + error.message);
+            } else {
+                alert('✅ تم إضافة المتابعة بنجاح!');
+                openPreview(consId);
+            }
+        });
+
+    } catch (err) {
+        body.innerHTML = `<div class="message error">❌ حدث خطأ غير متوقع: ${err.message}</div>`;
+    }
+}
         async function addEmployee() {
             const name = document.getElementById('empName').value.trim();
             const email = document.getElementById('empEmail').value.trim();
@@ -651,9 +682,6 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
             })();
         }
 
-        // ============================================================
-        // دوال إدارة الطلبات
-        // ============================================================
         async function openEditConsultationModal(item) {
             const newName = prompt('تعديل اسم العميل:', item.client_name);
             if (newName === null) return;
@@ -677,9 +705,6 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
             }
         }
 
-        // ============================================================
-        // دوال جلب البيانات
-        // ============================================================
         async function fetchEmployees() {
             try {
                 const { data, error } = await supabase
@@ -735,7 +760,7 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
         function applyFilters() {
             const dateFrom = document.getElementById('filterDateFrom')?.value || '';
             const dateTo = document.getElementById('filterDateTo')?.value || '';
-            const status = document.getElementById('filterStatus')?.value || '';
+            const service = document.getElementById('filterService')?.value || '';
 
             let filtered = [...allConsultations];
 
@@ -747,15 +772,12 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
                 const to = new Date(dateTo); to.setHours(23,59,59,999);
                 filtered = filtered.filter(item => item.created_at && new Date(item.created_at) <= to);
             }
-            if (status) filtered = filtered.filter(item => item.status === status);
+            if (service) filtered = filtered.filter(item => item.service === service);
 
             currentFilteredData = filtered;
             renderConsultations(filtered, allEmployees);
         }
 
-        // ============================================================
-        // دوال التنقل والخروج
-        // ============================================================
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             const target = document.getElementById(sectionId);
@@ -780,9 +802,6 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
             }
         }
 
-        // ============================================================
-        // تهيئة الصفحة
-        // ============================================================
         async function initPage() {
             const { data: { session }, error } = await supabase.auth.getSession();
             if (error || !session) {
@@ -837,7 +856,7 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
             document.getElementById('btnResetFilters').addEventListener('click', function() {
                 document.getElementById('filterDateFrom').value = '';
                 document.getElementById('filterDateTo').value = '';
-                document.getElementById('filterStatus').value = '';
+                document.getElementById('filterService').value = '';
                 applyFilters();
             });
 
@@ -850,9 +869,6 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
             showSection('sectionConsultations');
         }
 
-        // ============================================================
-        // دوال الإدخال اليدوي
-        // ============================================================
         async function addManualConsultation() {
             const name = document.getElementById('manualName').value.trim();
             const phone = document.getElementById('manualPhone').value.trim();
@@ -888,7 +904,7 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
                     message: message || null,
                     privacy_accepted: true,
                     status: 'new',
-                    created_by: session.user.id // معرف من قام بإنشاء الطلب
+                    created_by: session.user.id
                 });
 
                 if (error) throw error;
@@ -909,9 +925,6 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
             }
         }
 
-        // ============================================================
-        // إغلاق النافذة المنبثقة
-        // ============================================================
         document.getElementById('modalClose').addEventListener('click', function() {
             document.getElementById('previewModal').classList.remove('active');
         });
@@ -919,9 +932,6 @@ let currentFilteredData = []; // 🔴 هذا هو السطر الناقص
             if (e.target === this) this.classList.remove('active');
         });
 
-        // ============================================================
-        // بدء التشغيل
-        // ============================================================
         document.addEventListener('DOMContentLoaded', initPage);
 
     })();
