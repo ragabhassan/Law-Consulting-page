@@ -78,6 +78,52 @@
         .add-employee-form button { background: #28a745; color: white; border: none; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .add-employee-form button:hover { background: #218838; }
         @media (max-width: 700px) { .nav-bar { flex-direction: column; } .nav-btn { width: 100%; text-align: center; } .filters { flex-direction: column; align-items: stretch; } .employee-card { flex-direction: column; align-items: flex-start; } .add-employee-form .form-row { flex-direction: column; } .modal-content { padding: 15px; } .modal-detail-row { flex-direction: column; } .modal-detail-row .label { width: 100%; } }
+        /* ====== نافذة المعاينة (ملء الشاشة) ====== */
+        .modal-overlay { background: rgba(10, 16, 28, 0.75); }
+        .modal-content { width: 100%; height: 100vh; max-width: none; max-height: none; border-radius: 0; padding: 20px 30px; background: #f4f6f9; box-shadow: none; display: flex; flex-direction: column; }
+        .modal-close { position: absolute; left: 20px; top: 15px; background: #dc3545; color: white; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; z-index: 100; }
+        .modal-title { font-size: 28px; color: #1a2a3a; border-bottom: 3px solid #2d7aff; padding-bottom: 10px; margin-bottom: 15px; text-align: right; position: relative; }
+        /* ====== بنية النظام (Grid بالعرض) ====== */
+        .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; overflow-y: auto; padding: 10px; flex-grow: 1; }
+        /* ====== البطاقة (Card) ====== */
+        .dashboard-card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 20px; border: 1px solid #e9edf4; transition: all 0.3s ease; }
+        .dashboard-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+        /* ====== رأس البطاقة ====== */
+        .dashboard-card-header { display: flex; align-items: center; justify-content: flex-start; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .dashboard-card-header h3 { font-size: 17px; color: #1a2a3a; margin: 0; }
+        .dashboard-card-header .icon-circle { width: 35px; height: 35px; border-radius: 12px; background: linear-gradient(135deg, #2d7aff, #1a5cc4); display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; }
+        /* ====== عناصر البطاقة (العنوان بجوار البيان) ====== */
+        .dashboard-detail-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0f2f5; }
+        .dashboard-detail-row:last-child { border-bottom: none; }
+        .dashboard-detail-label { font-weight: 700; color: #333; font-size: 13px; width: 110px; margin: 0; }
+        .dashboard-detail-value { flex: 1; color: #555; font-size: 13px; }
+        /* ====== عناصر المهام ====== */
+        .dashboard-checkbox-item { padding: 6px; border-bottom: 1px dashed #eee; font-size: 13px; background: #f0f4ff; border-radius: 6px; margin-bottom: 6px; }
+        .dashboard-checkbox-item input[type="checkbox"] { margin-right: 8px; }
+        .dashboard-checkbox-item label { font-size: 13px; color: #333; }
+        /* ====== عناصر المتابعات ====== */
+        .dashboard-followup-item { padding: 10px; border-radius: 10px; background: #f8faff; margin-bottom: 8px; border-right: 4px solid #2d7aff; }
+        .dashboard-followup-item .date { font-size: 12px; color: #6c757d; margin-bottom: 4px; }
+        .dashboard-followup-item .note { font-size: 13px; color: #333; }
+        /* ====== عناصر المرفقات ====== */
+        .dashboard-attachment-item { padding: 8px; border-radius: 10px; background: #f0f4ff; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+        .dashboard-attachment-item a { color: #2d7aff; text-decoration: none; margin-right: 10px; }
+        .dashboard-attachment-item .btn-delete-attachment { background: #dc3545; color: white; border: none; border-radius: 6px; padding: 3px 8px; font-size: 10px; cursor: pointer; }
+        /* ====== عناصر نموذج المتابعة ====== */
+        .dashboard-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .dashboard-form-grid input, .dashboard-form-grid textarea { width: 100%; padding: 10px; border: 1px solid #dce1e8; border-radius: 8px; font-size: 13px; }
+        .dashboard-form-grid button { width: 100%; }
+        /* ====== أزرار البطاقة ====== */
+        .dashboard-btn { background: #2d7aff; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .dashboard-btn:hover { background: #1a5cc4; }
+        /* ====== خلفيات البطاقات (لمسات جمالية) ====== */
+        .dashboard-card:nth-child(1) .icon-circle { background: linear-gradient(135deg, #17a2b8, #138496); }
+        .dashboard-card:nth-child(2) .icon-circle { background: linear-gradient(135deg, #28a745, #218838); }
+        .dashboard-card:nth-child(3) .icon-circle { background: linear-gradient(135deg, #ffc107, #e0a800); }
+        .dashboard-card:nth-child(4) .icon-circle { background: linear-gradient(135deg, #6c757d, #5a6268); }
+        .dashboard-card:nth-child(5) .icon-circle { background: linear-gradient(135deg, #ff4d4d, #cc0000); }
+        .dashboard-card:nth-child(6) .icon-circle { background: linear-gradient(135deg, #2d7aff, #1a5cc4); }
+        @media (max-width: 900px) { .dashboard-container { grid-template-columns: 1fr; } .dashboard-detail-row { flex-direction: column; align-items: flex-start; gap: 2px; } .dashboard-detail-label { width: 100%; } }
     </style>
 </head>
 <body>
@@ -149,6 +195,10 @@
                 <div class="form-group" style="flex: 2;">
                     <label>تفاصيل الطلب</label>
                     <textarea id="manualMessage" rows="4" style="width:100%; padding:8px; border:1px solid #dce1e8; border-radius:6px;" placeholder="اكتب ملخص الطلب هنا..."></textarea>
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label>📎 إرفاق ملف (صورة أو PDF - اختياري)</label>
+                    <input type="file" id="manualAttachment" accept="image/*,.pdf" style="width: 100%; padding: 8px; border: 1px solid #dce1e8; border-radius: 6px;">
                 </div>
             </div>
             <div class="form-group">
@@ -226,17 +276,22 @@
                 return;
             }
 
-           let assignedName = ''; // 🔴 أضف هذا السطر هنا
-let rows = '';
-data.forEach((item, idx) => {              
-    rows += `
+            let assignedName = ''; 
+            let rows = '';
+            data.forEach((item, idx) => {
+                const assignedEmp = employees ? employees.find(e => e.id === item.assigned_to) : null;
+                assignedName = assignedEmp ? assignedEmp.full_name : 'غير محدد';
+
+                rows += `
                     <tr data-id="${item.id}">
                         <td>${idx + 1}</td>
                         <td>${item.client_name || 'غير محدد'}</td>
                         <td>${item.email || '—'}</td>
                         <td>${item.phone || '—'}</td>
                         <td>${item.service || '—'}</td>
+                        <td>${item.attachment_path ? `<a href="${item.attachment_path}" target="_blank" style="color: #2d7aff;">📎 ملف</a>` : '—'}</td>
                         <td>${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-EG') : '—'}</td>
+                        
                         ${currentUser?.role === 'manager' ? `
                         <td>
                             <select class="assigned-select" data-id="${item.id}">
@@ -248,6 +303,7 @@ data.forEach((item, idx) => {
                         ` : `
                         <td>${assignedName}</td>
                         `}
+                        
                         <td>
                             <button class="btn-preview" data-id="${item.id}">📄 معاينة</button>
                             <button class="btn-edit-cons" data-id="${item.id}">✏️ تعديل</button>
@@ -257,7 +313,7 @@ data.forEach((item, idx) => {
                 `;
             });
 
-            let headerCols = `<th>#</th><th>اسم العميل</th><th>البريد</th><th>الهاتف</th><th>الخدمة</th><th>التاريخ</th>`;
+            let headerCols = `<th>#</th><th>اسم العميل</th><th>البريد</th><th>الهاتف</th><th>الخدمة</th><th>المرفقات</th><th>التاريخ</th>`;
             headerCols += `<th>المتابع</th>`;
             headerCols += `<th>الإجراء</th>`;
 
@@ -371,231 +427,325 @@ data.forEach((item, idx) => {
         }
 
         async function openPreview(consultationId) {
-    const modal = document.getElementById('previewModal');
-    const body = document.getElementById('modalBody');
+            const modal = document.getElementById('previewModal');
+            const body = document.getElementById('modalBody');
 
-    modal.classList.add('active');
-    body.innerHTML = `<div class="loading">⏳ جاري تحميل التفاصيل...</div>`;
+            modal.classList.add('active');
+            body.innerHTML = `<div class="loading">⏳ جاري تحميل التفاصيل...</div>`;
 
-    try {
-        // 🔴 استدعاء الـ View الجديد الذي يجمع بين الطلب والخدمة
-        const { data: consultation, error: conError } = await supabase
-            .from('consultation_with_service_req') // اسم الـ View
-            .select('*')
-            .eq('id', consultationId)
-            .single();
+            try {
+                const { data: consultation, error: conError } = await supabase
+                    .from('consultation_requests')
+                    .select('*')
+                    .eq('id', consultationId)
+                    .single();
 
-        if (conError || !consultation) {
-            body.innerHTML = `<div class="message error">❌ حدث خطأ في جلب البيانات: ${conError?.message}</div>`;
-            return;
-        }
-
-        // 🔴 استرداد المهام والمستندات مباشرة من الـ View
-        const requiredActions = consultation.required_actions || [];
-        const requiredDocuments = consultation.required_documents || [];
-
-        const { data: initialConsultation, error: initError } = await supabase
-            .from('initial_consultations')
-            .select('*')
-            .eq('request_id', consultationId)
-            .limit(1)
-            .maybeSingle();
-
-        if (initError) console.warn('خطأ في جلب المقابلة الأولى:', initError);
-
-        const { data: followups, error: folError } = await supabase
-            .from('client_followups')
-            .select('*')
-            .eq('request_id', consultationId)
-            .order('followup_date', { ascending: false });
-
-        if (folError) console.warn('خطأ في جلب المتابعات:', folError);
-
-        let assignedName = 'غير محدد';
-        if (consultation.assigned_to) {
-            const { data: emp } = await supabase
-                .from('staff_profiles')
-                .select('full_name')
-                .eq('id', consultation.assigned_to)
-                .single();
-            if (emp) assignedName = emp.full_name;
-        }
-
-        let html = `
-            <div class="modal-section">
-                <h3>📌 معلومات العميل</h3>
-                <div class="modal-detail-row"><span class="label">الاسم</span><span class="value">${consultation.client_name || 'غير محدد'}</span></div>
-                <div class="modal-detail-row"><span class="label">البريد الإلكتروني</span><span class="value">${consultation.email || '—'}</span></div>
-                <div class="modal-detail-row"><span class="label">رقم الهاتف</span><span class="value">${consultation.phone || '—'}</span></div>
-                <div class="modal-detail-row"><span class="label">الخدمة</span><span class="value">${consultation.service || '—'}</span></div>
-                <div class="modal-detail-row"><span class="label">تاريخ الطلب</span><span class="value">${consultation.created_at ? new Date(consultation.created_at).toLocaleString('ar-EG') : '—'}</span></div>
-                <div class="modal-detail-row"><span class="label">الموظف المسند</span><span class="value">${assignedName}</span></div>
-                ${consultation.message ? `<div class="modal-detail-row"><span class="label">الرسالة</span><span class="value">${consultation.message}</span></div>` : ''}
-            </div>
-        `;
-
-        // عرض المهام والمستندات
-        if (requiredActions.length > 0 || requiredDocuments.length > 0) {
-            html += `
-                <div class="modal-section">
-                    <h3>📋 المهام والمستندات المطلوبة (بناءً على التخصص: ${consultation.service || '-'})</h3>
-                    <div class="tasks-container">
-                        <div style="margin-bottom: 10px;">
-                            <strong style="color: #333;">الإجراءات المطلوبة:</strong>
-                            <ul style="list-style: none; padding: 0; margin-top: 5px;">
-                                ${requiredActions.map((action, index) => `
-                                    <li style="padding: 8px; border-bottom: 1px dashed #eee;">
-                                        <input type="checkbox" id="action_${index}" class="task-checkbox" data-task-type="action" data-index="${index}"> 
-                                        <label for="action_${index}">${action}</label>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        </div>
-                        <div style="margin-bottom: 10px;">
-                            <strong style="color: #333;">المستندات المطلوبة:</strong>
-                            <ul style="list-style: none; padding: 0; margin-top: 5px;">
-                                ${requiredDocuments.map((doc, index) => `
-                                    <li style="padding: 8px; border-bottom: 1px dashed #eee;">
-                                        <input type="checkbox" id="doc_${index}" class="task-checkbox" data-task-type="document" data-index="${index}"> 
-                                        <label for="doc_${index}">${doc}</label>
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        </div>
-                        <button id="btnSaveTasks" class="primary" style="margin-top: 10px;">✅ حفظ حالة المهام</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        if (initialConsultation) {
-            html += `
-                <div class="modal-section">
-                    <h3>📝 المقابلة الأولى مع المدير</h3>
-                    <div class="modal-detail-row"><span class="label">تاريخ المقابلة</span><span class="value">${initialConsultation.consultation_date ? new Date(initialConsultation.consultation_date).toLocaleString('ar-EG') : '—'}</span></div>
-                    <div class="modal-detail-row"><span class="label">طريقة التواصل</span><span class="value">${initialConsultation.contact_method || '-'}</span></div>
-                    <div class="modal-detail-row"><span class="label">ملخص المقابلة</span><span class="value">${initialConsultation.summary || '-'}</span></div>
-                    <div class="modal-detail-row"><span class="label">نتيجة المقابلة</span><span class="value">${initialConsultation.result || '-'}</span></div>
-                    <div class="modal-detail-row"><span class="label">ملاحظات المدير</span><span class="value">${initialConsultation.manager_notes || '-'}</span></div>
-                    <div class="modal-detail-row"><span class="label">التوصيات / تعليمات للمتابعة</span><span class="value">${initialConsultation.instructions || '-'}</span></div>
-                </div>
-            `;
-        }
-
-        html += `<div class="modal-section"><h3>📋 سجل المتابعات</h3>`;
-        if (followups && followups.length > 0) {
-            followups.forEach(f => {
-                const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
-                let followerName = 'المدير';
-                if (f.assigned_to) {
-                    const emp = allEmployees.find(e => e.id === f.assigned_to);
-                    if (emp) followerName = emp.full_name;
+                if (conError || !consultation) {
+                    body.innerHTML = `<div class="message error">❌ حدث خطأ في جلب البيانات: ${conError?.message}</div>`;
+                    return;
                 }
 
-                html += `
-                    <div class="followup-item">
-                        <div class="date"><strong>القائم بالمتابعة:</strong> ${followerName} | <strong>التاريخ:</strong> ${date}</div>
-                        <div class="note"><strong>طريقة التواصل:</strong> ${f.contact_method || '-'}</div>
-                        <div class="note"><strong>الإجراء:</strong> ${f.action || '-'}</div>
-                        <div class="note"><strong>الملاحظات:</strong> ${f.notes || '-'}</div>
-                        <div class="note"><strong>حالة المتابعة:</strong> ${f.followup_status || '-'}</div>
-                        ${f.next_followup ? `<div class="note"><strong>المتابعة القادمة:</strong> ${new Date(f.next_followup).toLocaleString('ar-EG')}</div>` : ''}
+                const { data: serviceReq, error: serviceReqError } = await supabase
+                    .from('service_requirements')
+                    .select('required_actions, required_documents')
+                    .eq('service_type', consultation.service || 'other')
+                    .maybeSingle();
+
+                if (serviceReqError) console.warn('خطأ في جلب قائمة المتطلبات:', serviceReqError);
+                const requiredActions = serviceReq?.required_actions || [];
+                const requiredDocuments = serviceReq?.required_documents || [];
+
+                const { data: initialConsultation, error: initError } = await supabase
+                    .from('initial_consultations')
+                    .select('*')
+                    .eq('request_id', consultationId)
+                    .limit(1)
+                    .maybeSingle();
+
+                if (initError) console.warn('خطأ في جلب المقابلة الأولى:', initError);
+
+                const { data: followups, error: folError } = await supabase
+                    .from('client_followups')
+                    .select('*')
+                    .eq('request_id', consultationId)
+                    .order('followup_date', { ascending: false });
+
+                if (folError) console.warn('خطأ في جلب المتابعات:', folError);
+
+                const { data: attachmentsData, error: attachmentsError } = await supabase
+                    .from('client_followups')
+                    .select('id, attachment_path, followup_date')
+                    .eq('request_id', consultationId)
+                    .eq('is_attachment_only', true)
+                    .order('followup_date', { ascending: false });
+
+                if (attachmentsError) console.warn('خطأ في جلب المرفقات الإضافية:', attachmentsError);
+                let attachmentsHtml = '';
+                if (attachmentsData && attachmentsData.length > 0) {
+                    attachmentsData.forEach(att => {
+                        if (att.attachment_path) {
+                            const date = att.followup_date ? new Date(att.followup_date).toLocaleString('ar-EG') : '—';
+                            attachmentsHtml += `<div class="dashboard-attachment-item"><a href="${att.attachment_path}" target="_blank">📎 مرفق بتاريخ: ${date}</a><button id="btnDeleteAttachment_${att.id}" class="btn-delete-attachment" data-id="${att.id}">🗑️ حذف</button></div>`;
+                        }
+                    });
+                } else {
+                    attachmentsHtml = '<div class="message">لا توجد مرفقات إضافية.</div>';
+                }
+
+                let assignedName = 'غير محدد';
+                if (consultation.assigned_to) {
+                    const { data: emp } = await supabase
+                        .from('staff_profiles')
+                        .select('full_name')
+                        .eq('id', consultation.assigned_to)
+                        .single();
+                    if (emp) assignedName = emp.full_name;
+                }
+
+                let customerCard = `
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <h3><span class="icon-circle">👤</span> معلومات العميل</h3>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">الاسم</span><span class="dashboard-detail-value">${consultation.client_name || 'غير محدد'}</span></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">البريد الإلكتروني</span><span class="dashboard-detail-value">${consultation.email || '—'}</span></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">رقم الهاتف</span><span class="dashboard-detail-value">${consultation.phone || '—'}</span></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">الخدمة</span><span class="dashboard-detail-value">${consultation.service || '—'}</span></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">تاريخ الطلب</span><span class="dashboard-detail-value">${consultation.created_at ? new Date(consultation.created_at).toLocaleString('ar-EG') : '—'}</span></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">الموظف المسند</span><span class="dashboard-detail-value">${assignedName}</span></div>
+                            ${consultation.message ? `<div class="dashboard-detail-row"><span class="dashboard-detail-label">الرسالة</span><span class="dashboard-detail-value">${consultation.message}</span></div>` : ''}
+                            ${consultation.attachment_path ? `<div class="dashboard-detail-row"><span class="dashboard-detail-label">📎 الملف المرفق</span><span class="dashboard-detail-value"><a href="${consultation.attachment_path}" target="_blank" style="color: #2d7aff;">اضغط لتحميل الملف</a></span></div>` : ''}
+                        </div>
                     </div>
                 `;
-            });
-        } else {
-            html += `<div class="message">لا توجد متابعات مسجلة لهذا الطلب.</div>`;
-        }
-        html += `</div>`;
 
-        html += `
-            <div class="modal-section">
-                <h3>➕ إضافة متابعة جديدة</h3>
-                <div class="add-followup-form">
-                    <input type="text" id="newFollowupNote" placeholder="ملاحظة المتابعة" style="flex:2;">
-                    <input type="text" id="newFollowupStatus" placeholder="الحالة (اختياري)" style="flex:1;">
-                    <button id="btnAddFollowup" data-id="${consultationId}">إضافة</button>
-                </div>
-            </div>
-        `;
+                let tasksCard = '';
+                if (requiredActions.length > 0 || requiredDocuments.length > 0) {
+                    tasksCard = `
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <h3><span class="icon-circle">📋</span> المهام والمستندات المطلوبة</h3>
+                            </div>
+                            <div class="dashboard-card-body">
+                                <div style="margin-bottom: 10px;">
+                                    <strong style="color: #333;">الإجراءات المطلوبة:</strong>
+                                    <ul style="list-style: none; padding: 0; margin-top: 5px;">
+                                        ${requiredActions.map((action, index) => `
+                                            <li class="dashboard-checkbox-item">
+                                                <input type="checkbox" id="action_${index}" class="task-checkbox" data-task-type="action" data-index="${index}"> 
+                                                <label for="action_${index}">${action}</label>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                                <div style="margin-bottom: 10px;">
+                                    <strong style="color: #333;">المستندات المطلوبة:</strong>
+                                    <ul style="list-style: none; padding: 0; margin-top: 5px;">
+                                        ${requiredDocuments.map((doc, index) => `
+                                            <li class="dashboard-checkbox-item">
+                                                <input type="checkbox" id="doc_${index}" class="task-checkbox" data-task-type="document" data-index="${index}"> 
+                                                <label for="doc_${index}">${doc}</label>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                                <button id="btnSaveTasks" class="dashboard-btn">✅ حفظ حالة المهام</button>
+                            </div>
+                        </div>
+                    `;
+                }
 
-        body.innerHTML = html;
+                let initialCard = '';
+                if (initialConsultation) {
+                    initialCard = `
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <h3><span class="icon-circle">📝</span> المقابلة الأولى مع المدير</h3>
+                            </div>
+                            <div class="dashboard-card-body">
+                                <div class="dashboard-detail-row"><span class="dashboard-detail-label">تاريخ المقابلة</span><span class="dashboard-detail-value">${initialConsultation.consultation_date ? new Date(initialConsultation.consultation_date).toLocaleString('ar-EG') : '—'}</span></div>
+                                <div class="dashboard-detail-row"><span class="dashboard-detail-label">طريقة التواصل</span><span class="dashboard-detail-value">${initialConsultation.contact_method || '-'}</span></div>
+                                <div class="dashboard-detail-row"><span class="dashboard-detail-label">ملخص المقابلة</span><span class="dashboard-detail-value">${initialConsultation.summary || '-'}</span></div>
+                                <div class="dashboard-detail-row"><span class="dashboard-detail-label">نتيجة المقابلة</span><span class="dashboard-detail-value">${initialConsultation.result || '-'}</span></div>
+                                <div class="dashboard-detail-row"><span class="dashboard-detail-label">ملاحظات المدير</span><span class="dashboard-detail-value">${initialConsultation.manager_notes || '-'}</span></div>
+                                <div class="dashboard-detail-row"><span class="dashboard-detail-label">التوصيات</span><span class="dashboard-detail-value">${initialConsultation.instructions || '-'}</span></div>
+                            </div>
+                        </div>
+                    `;
+                }
 
-        const saveTasksBtn = document.getElementById('btnSaveTasks');
-        if (saveTasksBtn) {
-            saveTasksBtn.addEventListener('click', async function() {
-                const checkedActions = [];
-                const checkedDocuments = [];
+                let followupsCard = `
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <h3><span class="icon-circle">📊</span> سجل المتابعات</h3>
+                        </div>
+                        <div class="dashboard-card-body">
+                            ${followups && followups.length > 0 ? followups.map(f => {
+                                const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
+                                let followerName = 'المدير';
+                                if (f.assigned_to) {
+                                    const emp = allEmployees.find(e => e.id === f.assigned_to);
+                                    if (emp) followerName = emp.full_name;
+                                }
+                                return `<div class="dashboard-followup-item">
+                                    <div class="date"><strong>القائم بالمتابعة:</strong> ${followerName} | <strong>التاريخ:</strong> ${date}</div>
+                                    <div class="note"><strong>طريقة التواصل:</strong> ${f.contact_method || '-'}</div>
+                                    <div class="note"><strong>الإجراء:</strong> ${f.action || '-'}</div>
+                                    <div class="note"><strong>الملاحظات:</strong> ${f.notes || '-'}</div>
+                                    <div class="note"><strong>حالة المتابعة:</strong> ${f.followup_status || '-'}</div>
+                                    ${f.next_followup ? `<div class="note"><strong>المتابعة القادمة:</strong> ${new Date(f.next_followup).toLocaleString('ar-EG')}</div>` : ''}
+                                </div>`;
+                            }).join('') : '<div class="message">لا توجد متابعات مسجلة لهذا الطلب.</div>'}
+                        </div>
+                    </div>
+                `;
 
-                document.querySelectorAll('.task-checkbox').forEach(checkbox => {
-                    if (checkbox.checked) {
-                        if (checkbox.dataset.taskType === 'action') {
-                            checkedActions.push(requiredActions[checkbox.dataset.index]);
-                        } else if (checkbox.dataset.taskType === 'document') {
-                            checkedDocuments.push(requiredDocuments[checkbox.dataset.index]);
+                let attachmentsCard = `
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <h3><span class="icon-circle">📎</span> المرفقات الإضافية</h3>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div id="attachmentsList">${attachmentsHtml}</div>
+                            <div class="dashboard-form-grid" style="margin-top: 10px;">
+                                <input type="file" id="newFollowupAttachment" accept="image/*,.pdf">
+                                <button id="btnAddFollowupAttachment" data-id="${consultationId}" class="dashboard-btn">إضافة مرفق</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                let addFollowupCard = `
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <h3><span class="icon-circle">➕</span> إضافة متابعة جديدة</h3>
+                        </div>
+                        <div class="dashboard-card-body">
+                            <div class="dashboard-form-grid">
+                                <input type="text" id="newFollowupNote" placeholder="ملاحظة المتابعة">
+                                <input type="text" id="newFollowupStatus" placeholder="الحالة (اختياري)">
+                                <button id="btnAddFollowup" data-id="${consultationId}" class="dashboard-btn">إضافة</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                body.innerHTML = `<div class="dashboard-container">${customerCard}${tasksCard}${initialCard}${followupsCard}${attachmentsCard}${addFollowupCard}</div>`;
+
+                const saveTasksBtn = document.getElementById('btnSaveTasks');
+                if (saveTasksBtn) {
+                    saveTasksBtn.addEventListener('click', async function() {
+                        const checkedActions = [];
+                        const checkedDocuments = [];
+                        document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                            if (checkbox.checked) {
+                                if (checkbox.dataset.taskType === 'action') {
+                                    checkedActions.push(requiredActions[checkbox.dataset.index]);
+                                } else if (checkbox.dataset.taskType === 'document') {
+                                    checkedDocuments.push(requiredDocuments[checkbox.dataset.index]);
+                                }
+                            }
+                        });
+                        const { data: { user } } = await supabase.auth.getUser();
+                        const { error } = await supabase.from('client_followups').insert({
+                            request_id: consultationId,
+                            notes: `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocuments.join(', ') || 'لا شيء'}`,
+                            followup_status: 'completed',
+                            created_by: user?.id,
+                            contact_method: 'other',
+                            action: 'تحديث حالة المهام',
+                            followup_date: new Date().toISOString()
+                        });
+                        if (error) {
+                            alert('❌ فشل حفظ المهام: ' + error.message);
+                        } else {
+                            alert('✅ تم حفظ حالة المهام بنجاح!');
+                            openPreview(consultationId);
                         }
+                    });
+                }
+
+                document.getElementById('btnAddFollowupAttachment')?.addEventListener('click', async function() {
+                    const consId = this.dataset.id;
+                    const file = document.getElementById('newFollowupAttachment').files[0];
+                    if (!file) {
+                        alert('يرجى اختيار ملف أولاً');
+                        return;
+                    }
+                    const filePath = `${Date.now()}_${file.name}`;
+                    const { error: uploadError } = await supabase.storage.from('consultation-files').upload(filePath, file);
+                    if (uploadError) {
+                        alert('❌ فشل رفع المرفق: ' + uploadError.message);
+                        return;
+                    }
+                    const { data: urlData } = supabase.storage.from('consultation-files').getPublicUrl(filePath);
+                    const attachmentUrl = urlData.publicUrl;
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const { error } = await supabase.from('client_followups').insert({
+                        request_id: consId,
+                        notes: '',
+                        followup_status: 'new',
+                        created_by: user?.id,
+                        contact_method: 'other',
+                        action: '',
+                        followup_date: new Date().toISOString(),
+                        attachment_path: attachmentUrl,
+                        is_attachment_only: true
+                    });
+                    if (error) {
+                        alert('❌ فشل إضافة المرفق: ' + error.message);
+                    } else {
+                        alert('✅ تم إضافة المرفق بنجاح!');
+                        openPreview(consId);
                     }
                 });
 
-                const { data: { user } } = await supabase.auth.getUser();
-
-                const { error } = await supabase
-                    .from('client_followups')
-                    .insert({
-                        request_id: consultationId,
-                        notes: `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocuments.join(', ') || 'لا شيء'}`,
-                        followup_status: 'completed',
+                document.getElementById('btnAddFollowup')?.addEventListener('click', async function() {
+                    const consId = this.dataset.id;
+                    const note = document.getElementById('newFollowupNote').value.trim();
+                    const status = document.getElementById('newFollowupStatus').value.trim() || null;
+                    if (!note) {
+                        alert('يرجى كتابة ملاحظة المتابعة');
+                        return;
+                    }
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const { error } = await supabase.from('client_followups').insert({
+                        request_id: consId,
+                        notes: note,
+                        followup_status: status,
                         created_by: user?.id,
                         contact_method: 'other',
-                        action: 'تحديث حالة المهام',
+                        action: 'متابعة',
                         followup_date: new Date().toISOString()
                     });
-
-                if (error) {
-                    alert('❌ فشل حفظ المهام: ' + error.message);
-                } else {
-                    alert('✅ تم حفظ حالة المهام بنجاح، وسيظهر ذلك في سجل المتابعات!');
-                    openPreview(consultationId);
-                }
-            });
-        }
-
-        document.getElementById('btnAddFollowup')?.addEventListener('click', async function() {
-            const consId = this.dataset.id;
-            const note = document.getElementById('newFollowupNote').value.trim();
-            const status = document.getElementById('newFollowupStatus').value.trim() || null;
-
-            if (!note) {
-                alert('يرجى كتابة ملاحظة المتابعة');
-                return;
-            }
-
-            const { data: { user } } = await supabase.auth.getUser();
-
-            const { error } = await supabase
-                .from('client_followups')
-                .insert({
-                    request_id: consId,
-                    notes: note,
-                    followup_status: status,
-                    created_by: user?.id,
-                    contact_method: 'other',
-                    action: 'متابعة',
-                    followup_date: new Date().toISOString()
+                    if (error) {
+                        alert('❌ فشل إضافة المتابعة: ' + error.message);
+                    } else {
+                        alert('✅ تم إضافة المتابعة بنجاح!');
+                        openPreview(consId);
+                    }
                 });
 
-            if (error) {
-                alert('❌ فشل إضافة المتابعة: ' + error.message);
-            } else {
-                alert('✅ تم إضافة المتابعة بنجاح!');
-                openPreview(consId);
-            }
-        });
+                document.querySelectorAll('.btn-delete-attachment').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const attachmentId = this.dataset.id;
+                        if (!confirm('هل أنت متأكد من حذف هذا المرفق؟')) return;
+                        const { error } = await supabase.from('client_followups').delete().eq('id', attachmentId);
+                        if (error) {
+                            alert('❌ فشل حذف المرفق: ' + error.message);
+                        } else {
+                            alert('✅ تم حذف المرفق بنجاح!');
+                            openPreview(consultationId);
+                        }
+                    });
+                });
 
-    } catch (err) {
-        body.innerHTML = `<div class="message error">❌ حدث خطأ غير متوقع: ${err.message}</div>`;
-    }
-}
+            } catch (err) {
+                body.innerHTML = `<div class="message error">❌ حدث خطأ غير متوقع: ${err.message}</div>`;
+            }
+        }
+
         async function addEmployee() {
             const name = document.getElementById('empName').value.trim();
             const email = document.getElementById('empEmail').value.trim();
@@ -879,6 +1029,10 @@ data.forEach((item, idx) => {
             const out = document.getElementById('manualMsg');
             const btn = document.getElementById('btnAddManualConsultation');
 
+            const attachmentInput = document.getElementById('manualAttachment');
+            const file = attachmentInput ? attachmentInput.files[0] : null;
+            let attachmentPath = null;
+
             if (!name || !phone || !service) {
                 out.textContent = 'يرجى ملء الحقول الإلزامية (الاسم، الهاتف، الخدمة).';
                 return;
@@ -893,6 +1047,25 @@ data.forEach((item, idx) => {
                 return; 
             }
 
+            if (file) {
+                const filePath = `${Date.now()}_${file.name}`;
+                const { error: uploadError } = await supabase.storage
+                    .from('consultation-files')
+                    .upload(filePath, file);
+
+                if (uploadError) {
+                    alert('❌ حدث خطأ أثناء رفع الملف المرفق: ' + uploadError.message);
+                    if (btn) { btn.disabled = false; }
+                    return;
+                }
+
+                const { data: urlData } = supabase.storage
+                    .from('consultation-files')
+                    .getPublicUrl(filePath);
+                
+                attachmentPath = urlData.publicUrl;
+            }
+
             try {
                 const { error } = await supabase.from('consultation_requests').insert({
                     client_name: name,
@@ -904,7 +1077,8 @@ data.forEach((item, idx) => {
                     message: message || null,
                     privacy_accepted: true,
                     status: 'new',
-                    created_by: session.user.id
+                    created_by: session.user.id,
+                    attachment_path: attachmentPath
                 });
 
                 if (error) throw error;
@@ -916,6 +1090,7 @@ data.forEach((item, idx) => {
                 document.getElementById('manualCompany').value = '';
                 document.getElementById('manualService').value = '';
                 document.getElementById('manualMessage').value = '';
+                document.getElementById('manualAttachment').value = '';
                 
                 await fetchConsultations();
             } catch (err) {
