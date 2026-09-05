@@ -6,8 +6,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const SUPABASE_URL = 'https://wacvbnebicbutyzpnkez.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhY3ZibmViaWNidXR5enBua2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYxODYzMjEsImV4cCI6MjEwMTc2MjMyMX0.NEjwCs4ZBcoJT9ZVxNnYaZRY1-DIUjk-aNqV3rs5A4w';
     const SUPABASE_TABLE = 'consultation_requests';
-    
-    // 🔴 إنشاء عميل Supabase داخل الدالة
+    const BUCKET_NAME = 'consultation-files'; // 🔴 اسم الحاوية للمرفقات
+
+    // 🔴 إنشاء عميل Supabase
     let supabase;
     try {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -21,6 +22,94 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typeof AOS !== 'undefined') {
         AOS.init({ duration: 800, once: true, offset: 100 });
     }
+
+    // =========================================================
+    // قائمة الهاتف المحمول
+    // =========================================================
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navLinks = document.querySelector('.nav-links');
+    if (menuToggle && navLinks) {
+        menuToggle.addEventListener('click', () => {
+            if (navLinks.style.display === 'flex') {
+                navLinks.style.display = 'none';
+            } else {
+                navLinks.style.display = 'flex';
+                navLinks.style.flexDirection = 'column';
+                navLinks.style.position = 'absolute';
+                navLinks.style.top = '80px';
+                navLinks.style.right = '0';
+                navLinks.style.width = '100%';
+                navLinks.style.background = '#fff';
+                navLinks.style.padding = '20px';
+                navLinks.style.boxShadow = '0 5px 10px rgba(0,0,0,0.1)';
+            }
+        });
+    }
+
+    // =========================================================
+    // الأسئلة الشائعة
+    // =========================================================
+    const accordionHeaders = document.querySelectorAll('.accordion-header');
+    accordionHeaders.forEach(header => {
+        header.addEventListener('click', () => {
+            const content = header.nextElementSibling;
+            const icon = header.querySelector('i');
+            document.querySelectorAll('.accordion-content').forEach(item => {
+                if (item !== content) {
+                    item.style.display = 'none';
+                    const itemIcon = item.previousElementSibling?.querySelector('i');
+                    if (itemIcon) itemIcon.className = 'fas fa-chevron-down';
+                }
+            });
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+                if (icon) icon.className = 'fas fa-chevron-down';
+            } else {
+                content.style.display = 'block';
+                if (icon) icon.className = 'fas fa-chevron-up';
+            }
+        });
+    });
+
+    // =========================================================
+    // العدادات (لتفعيلها في الإحصائيات)
+    // =========================================================
+    const counters = document.querySelectorAll('.counter');
+    let countersAnimated = false;
+
+    function startCounters() {
+        counters.forEach(counter => {
+            const target = Number(counter.getAttribute('data-target'));
+            const duration = 2000;
+            const startTime = performance.now();
+
+            function updateCounter(currentTime) {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const currentValue = Math.floor(progress * target);
+                counter.innerText = currentValue;
+
+                if (progress < 1) {
+                    requestAnimationFrame(updateCounter);
+                } else {
+                    counter.innerText = target;
+                }
+            }
+
+            requestAnimationFrame(updateCounter);
+        });
+    }
+
+    window.addEventListener('scroll', () => {
+        const statsSection = document.querySelector('.stats');
+        if (statsSection && !countersAnimated) {
+            const sectionPosition = statsSection.getBoundingClientRect().top;
+            if (sectionPosition < window.innerHeight) {
+                startCounters();
+                countersAnimated = true;
+            }
+        }
+    });
 
     // =========================================================
     // نموذج الاستشارة القانونية
@@ -44,6 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const serviceInput = document.getElementById('service-type');
         const messageInput = document.getElementById('message');
         const privacyInput = document.getElementById('privacy');
+        const attachmentInput = document.getElementById('attachment'); // 🔴 إضافة المرفق
 
         const fullName = nameInput ? nameInput.value.trim() : '';
         const phone = phoneInput ? phoneInput.value.trim() : '';
@@ -64,6 +154,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const originalButtonText = submitButton ? submitButton.innerText : 'إرسال طلب الاستشارة';
         if (submitButton) { submitButton.disabled = true; submitButton.innerText = 'جاري إرسال الطلب...'; }
         showFormMessage('جاري إرسال طلب الاستشارة...', 'loading');
+
+        // 🔴 رفع الملف المرفق (إذا وُجد)
+        const file = attachmentInput ? attachmentInput.files[0] : null;
+        let attachmentPath = null;
+
+        if (file) {
+            const filePath = `${Date.now()}_${file.name}`;
+            const { error: uploadError } = await supabase.storage
+                .from(BUCKET_NAME)
+                .upload(filePath, file);
+
+            if (uploadError) {
+                alert('❌ حدث خطأ أثناء رفع الملف المرفق: ' + uploadError.message);
+                if (submitButton) { submitButton.disabled = false; submitButton.innerText = originalButtonText; }
+                return;
+            }
+
+            // الحصول على الرابط العام للملف
+            const { data: urlData } = supabase.storage
+                .from(BUCKET_NAME)
+                .getPublicUrl(filePath);
+            
+            attachmentPath = urlData.publicUrl;
+        }
 
         // 🔴 فحص التكرار
         try {
@@ -118,7 +232,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 company: company || null,
                 service: service || null,
                 message: message || null,
-                privacy_accepted: true
+                privacy_accepted: true,
+                attachment_path: attachmentPath // 🔴 أضف هذا السطر
             };
 
             // حفظ البيانات في قاعدة البيانات
@@ -165,7 +280,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    // =========================================================
     // دالة عرض رسائل النموذج
+    // =========================================================
     function showFormMessage(message, type) {
         if (!formResponse) return;
         formResponse.innerText = message;
