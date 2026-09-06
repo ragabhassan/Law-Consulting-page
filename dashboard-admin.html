@@ -952,7 +952,16 @@
             }
         }
 
-        async function initPage() {
+async function initPage() {
+    // منع تكرار الرسالة وإعادة التوجيه المباشر
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // ... (باقي الكود)
+}
             const { data: { session }, error } = await supabase.auth.getSession();
             if (error || !session) {
                 alert('يرجى تسجيل الدخول أولاً.');
