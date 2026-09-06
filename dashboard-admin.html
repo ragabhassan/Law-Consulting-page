@@ -953,16 +953,18 @@
         }
 
 async function initPage() {
-    // منع تكرار الرسالة وإعادة التوجيه المباشر
+    // التحقق من تسجيل الدخول
     const { data: { session }, error } = await supabase.auth.getSession();
-    if (!session) {
+    
+    if (error || !session) {
+        // إعادة توجيه فورية بدون رسالة تنبيه حتى لا تتكرر
         window.location.href = 'login.html';
-        return;
+        return; // إيقاف الدالة هنا
     }
     
-    // ... (باقي الكود)
-}
-            const { data: { session }, error } = await supabase.auth.getSession();
+    // ... (باقي الكود الذي يلي هذا السطر)
+}         
+        const { data: { session }, error } = await supabase.auth.getSession();
             if (error || !session) {
                 alert('يرجى تسجيل الدخول أولاً.');
                 window.location.href = 'login.html';
