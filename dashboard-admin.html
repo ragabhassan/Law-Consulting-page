@@ -957,79 +957,69 @@ async function initPage() {
     const { data: { session }, error } = await supabase.auth.getSession();
     
     if (error || !session) {
-        // إعادة توجيه فورية بدون رسالة تنبيه حتى لا تتكرر
         window.location.href = 'login.html';
-        return; // إيقاف الدالة هنا
+        return;
     }
     
-    // ... (باقي الكود الذي يلي هذا السطر)
-}         
-        const { data: { session }, error } = await supabase.auth.getSession();
-            if (error || !session) {
-                alert('يرجى تسجيل الدخول أولاً.');
-                window.location.href = 'login.html';
-                return;
-            }
+    // جلب بيانات المستخدم من جدول staff_profiles
+    const { data: profile, error: profileError } = await supabase
+        .from('staff_profiles')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
 
-            const { data: profile, error: profileError } = await supabase
-                .from('staff_profiles')
-                .select('*')
-                .eq('id', session.user.id)
-                .single();
+    if (profileError || !profile) {
+        alert('لا توجد صلاحيات لهذا المستخدم. يرجى التواصل مع المدير.');
+        window.location.href = 'login.html';
+        return;
+    }
 
-            if (profileError || !profile) {
-                alert('لا توجد صلاحيات لهذا المستخدم. يرجى التواصل مع المدير.');
-                window.location.href = 'login.html';
-                return;
-            }
+    currentUser = {
+        id: profile.id,
+        role: profile.role,
+        full_name: profile.full_name
+    };
 
-            currentUser = {
-                id: profile.id,
-                role: profile.role,
-                full_name: profile.full_name
-            };
+    document.getElementById('userNameDisplay').textContent = `👤 ${currentUser.full_name}`;
 
-            document.getElementById('userNameDisplay').textContent = `👤 ${currentUser.full_name}`;
+    if (currentUser.role === 'manager') {
+        document.getElementById('pageTitle').innerHTML = `🏛️ لوحة تحكم المدير <span class="user-info">👤 ${currentUser.full_name}</span>`;
+        document.getElementById('btnShowEmployees').classList.remove('hidden');
+        document.getElementById('btnManualEntry').classList.remove('hidden');
+        document.getElementById('btnShowConsultations').classList.remove('hidden');
+    } else if (currentUser.role === 'secretary') {
+        document.getElementById('pageTitle').innerHTML = `📝 لوحة السكرتير <span class="user-info">👤 ${currentUser.full_name}</span>`;
+        document.getElementById('btnShowEmployees').classList.add('hidden');
+        document.getElementById('btnManualEntry').classList.remove('hidden');
+        document.getElementById('btnShowConsultations').classList.remove('hidden');
+    } else {
+        document.getElementById('pageTitle').innerHTML = `📋 لوحة المتابعة <span class="user-info">👤 ${currentUser.full_name}</span>`;
+        document.getElementById('btnShowEmployees').classList.add('hidden');
+        document.getElementById('btnManualEntry').classList.add('hidden');
+        document.getElementById('btnShowConsultations').classList.remove('hidden');
+    }
 
-            if (currentUser.role === 'manager') {
-                document.getElementById('pageTitle').innerHTML = `🏛️ لوحة تحكم المدير <span class="user-info">👤 ${currentUser.full_name}</span>`;
-                document.getElementById('btnShowEmployees').classList.remove('hidden');
-                document.getElementById('btnManualEntry').classList.remove('hidden');
-                document.getElementById('btnShowConsultations').classList.remove('hidden');
-            } else if (currentUser.role === 'secretary') {
-                document.getElementById('pageTitle').innerHTML = `📝 لوحة السكرتير <span class="user-info">👤 ${currentUser.full_name}</span>`;
-                document.getElementById('btnShowEmployees').classList.add('hidden');
-                document.getElementById('btnManualEntry').classList.remove('hidden');
-                document.getElementById('btnShowConsultations').classList.remove('hidden');
-            } else {
-                document.getElementById('pageTitle').innerHTML = `📋 لوحة المتابعة <span class="user-info">👤 ${currentUser.full_name}</span>`;
-                document.getElementById('btnShowEmployees').classList.add('hidden');
-                document.getElementById('btnManualEntry').classList.add('hidden');
-                document.getElementById('btnShowConsultations').classList.remove('hidden');
-            }
+    document.getElementById('btnShowConsultations').addEventListener('click', () => showSection('sectionConsultations'));
+    document.getElementById('btnManualEntry').addEventListener('click', () => showSection('sectionManualEntry'));
+    document.getElementById('btnShowEmployees').addEventListener('click', () => showSection('sectionEmployees'));
+    document.getElementById('btnLogout').addEventListener('click', handleLogout);
 
-            document.getElementById('btnShowConsultations').addEventListener('click', () => showSection('sectionConsultations'));
-            document.getElementById('btnManualEntry').addEventListener('click', () => showSection('sectionManualEntry'));
-            document.getElementById('btnShowEmployees').addEventListener('click', () => showSection('sectionEmployees'));
-            document.getElementById('btnLogout').addEventListener('click', handleLogout);
+    document.getElementById('btnApplyFilters').addEventListener('click', applyFilters);
+    document.getElementById('btnResetFilters').addEventListener('click', function() {
+        document.getElementById('filterDateFrom').value = '';
+        document.getElementById('filterDateTo').value = '';
+        document.getElementById('filterService').value = '';
+        applyFilters();
+    });
 
-            document.getElementById('btnApplyFilters').addEventListener('click', applyFilters);
-            document.getElementById('btnResetFilters').addEventListener('click', function() {
-                document.getElementById('filterDateFrom').value = '';
-                document.getElementById('filterDateTo').value = '';
-                document.getElementById('filterService').value = '';
-                applyFilters();
-            });
+    document.getElementById('btnAddEmployee').addEventListener('click', addEmployee);
+    document.getElementById('btnAddManualConsultation').addEventListener('click', addManualConsultation);
 
-            document.getElementById('btnAddEmployee').addEventListener('click', addEmployee);
-            document.getElementById('btnAddManualConsultation').addEventListener('click', addManualConsultation);
+    await fetchEmployees();
+    await fetchConsultations();
 
-            await fetchEmployees();
-            await fetchConsultations();
-
-            showSection('sectionConsultations');
-        }
-
+    showSection('sectionConsultations');
+}
         async function addManualConsultation() {
             const name = document.getElementById('manualName').value.trim();
             const phone = document.getElementById('manualPhone').value.trim();
