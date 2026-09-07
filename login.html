@@ -38,21 +38,36 @@
     </form>
 </div>
 
-<!-- نافذة تغيير كلمة المرور (تظهر فقط للموظف الجديد) -->
-<div class="container hidden" id="change-password-section">
-    <h1>🔒 تغيير كلمة المرور</h1>
-    <div id="changeError" class="error-message hidden"></div>
-    <div class="form-group">
-        <label for="new-password">كلمة المرور الجديدة</label>
-        <input type="password" id="new-password" placeholder="6 خانات على الأقل">
-    </div>
-    <div class="form-group">
-        <label for="confirm-password">تأكيد كلمة المرور</label>
-        <input type="password" id="confirm-password" placeholder="أعد كتابة كلمة المرور">
-    </div>
-    <button onclick="updatePassword()">حفظ وتغيير كلمة المرور</button>
-</div>
-
+async function handleUpdatePassword() {
+    const newPassword = document.getElementById('newPassword').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    
+    if (newPassword.length < 6) {
+        alert('يرجى كتابة كلمة مرور (6 أحرف على الأقل).');
+        return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+        alert('كلمتا المرور غير متطابقتين.');
+        return;
+    }
+    
+    // تحديث كلمة المرور الحقيقية في Supabase Auth
+    const { data, error } = await supabase.auth.updateUser({
+        password: newPassword
+    });
+    
+    if (error) {
+        alert('❌ فشل تحديث كلمة المرور: ' + error.message);
+        return;
+    }
+    
+    alert('✅ تم تحديث كلمة المرور بنجاح!');
+    
+    // تسجيل الخروج ثم إعادة الدخول
+    await supabase.auth.signOut();
+    window.location.href = 'login.html';
+}
 <script>
     (function() {
         'use strict';
