@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .login-box { background: white; border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); text-align: center; }
+        .login-box h2 { color: #1a2a3a; margin-bottom: 30px; }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #dce1e8; border-radius: 8px; font-size: 14px; }
+        .login-box button { width: 100%; padding: 12px; background: #2d7aff; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600; cursor: pointer; }
+        .login-box button:hover { background: #1a5cc4; }
+        .login-box .error-msg { color: #dc3545; margin-bottom: 15px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="login-box">
+    <h2>🔐 تسجيل الدخول</h2>
+    <div id="message" class="error-msg"></div>
+    <input type="email" id="email" placeholder="البريد الإلكتروني" required>
+    <input type="password" id="password" placeholder="كلمة المرور" required>
+    <button id="btnLogin">دخول</button>
+</div>
+
+<script>
+    const SUPABASE_URL = 'https://ycwtrymlqepftuvgqxui.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_mO2nXgZyuQy3Fh1ry_20eg_CMszH3mS';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // تسجيل الدخول
+    document.getElementById('btnLogin').addEventListener('click', async () => {
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const msg = document.getElementById('message');
+
+        if (!email || !password) {
+            msg.textContent = 'يرجى ملء الحقول.';
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
+
+            if (error) {
+                msg.textContent = '❌ فشل تسجيل الدخول: ' + error.message;
+                return;
+            }
+
+            // التحقق من وجود المستخدم في جدول staff_profiles
+            const { data: profile, error: profileError } = await supabase
+                .from('staff_profiles')
+                .select('*')
+                .eq('email', data.user.email)
+                .single();
+
+            // إذا لم يوجد السجل في الجدول، قم بتسجيل الخروج
+            if (profileError || !profile) {
+                await supabase.auth.signOut();
+                msg.textContent = '❌ هذا الحساب غير مسجل في نظام الموظفين.';
+                return;
+            }
+
+            // إذا كان موجوداً، انتقل إلى لوحة التحكم
+            window.location.href = 'dashboard-admin.html';
+        } catch (e) {
+            msg.textContent = '❌ حدث خطأ في الاتصال: ' + e.message;
+        }
+    });
+</script>
+</body>
+</html>
