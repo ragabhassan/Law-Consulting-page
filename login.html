@@ -100,7 +100,21 @@
                     return;
                 }
 
-                // نجاح الدخول - انتقل إلى لوحة التحكم
+                // التحقق من وجود المستخدم في جدول staff_profiles (بالبرید الإلكتروني)
+                const { data: profile, error: profileError } = await supabase
+                    .from('staff_profiles')
+                    .select('*')
+                    .eq('email', data.user.email)
+                    .single();
+
+                // إذا لم يوجد السجل في الجدول، قم بتسجيل الخروج وإرجاع رسالة
+                if (profileError || !profile) {
+                    await supabase.auth.signOut();
+                    msg.textContent = '❌ هذا الحساب غير مسجل في نظام الموظفين.';
+                    return;
+                }
+
+                // إذا كان موجوداً، انتقل إلى لوحة التحكم
                 window.location.href = 'dashboard-admin.html';
             } catch (e) {
                 msg.textContent = '❌ حدث خطأ في الاتصال: ' + e.message;
