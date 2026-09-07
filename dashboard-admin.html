@@ -942,48 +942,31 @@
             }
         }
 
-        async function initPage() {
+     async function initPage() {
+            // 1. التحقق من الجلسة الحالية
             const { data: { session }, error } = await supabase.auth.getSession();
             if (error || !session) {
                 window.location.href = 'login.html';
                 return;
             }
 
-            // البحث عن الموظف بالبريد الإلكتروني (الأسهل والأضمن)
+            // 2. التأكد من أن السجل موجود في جدول staff_profiles
             const { data: profile, error: profileError } = await supabase
                 .from('staff_profiles')
                 .select('*')
-                .eq('email', session.user.email)
+                .eq('email', session.user.email) // ** استخدام البريد الإلكتروني بدلاً من ID **
                 .single();
 
-            // إذا لم يوجد السجل في الجدول، قم بإنشائه تلقائياً (وظيفة المدير)
+            // 3. إذا لم يوجد السجل، قم بإنشائه تلقائياً (أو قم بتسجيل الخروج لتجنب الحلقة)
             if (profileError || !profile) {
-                const { error: insertError } = await supabase
-                    .from('staff_profiles')
-                    .insert({
-                        id: session.user.id,
-                        full_name: session.user.email.split('@')[0],
-                        email: session.user.email,
-                        role: 'manager', // صلاحية المدير تلقائياً
-                        is_active: true
-                    });
-
-                if (insertError) {
-                    alert('❌ فشل إنشاء السجل: ' + insertError.message);
-                    window.location.href = 'login.html';
-                    return;
-                }
-
-                // بعد الإنشاء، أعد جلب البيانات (بالبرید الإلكتروني)
-                const { data: newProfile } = await supabase
-                    .from('staff_profiles')
-                    .select('*')
-                    .eq('email', session.user.email)
-                    .single();
-
-                profile = newProfile;
+                // ** إذا لم يكن موجوداً، اتصل بالمدير أو سجل الخروج فوراً **
+                await supabase.auth.signOut();
+                alert('يرجى تسجيل الدخول أولاً. (إذا كانت هذه أول مرة، الرجاء إنشاء حساب في Supabase Auth)');
+                window.location.href = 'login.html';
+                return;
             }
 
+            // 4. الحصول على بيانات المستخدم
             currentUser = {
                 id: profile.id,
                 role: profile.role,
@@ -1031,6 +1014,7 @@
             showSection('sectionConsultations');
         }
 
+       
         async function addManualConsultation() {
             const name = document.getElementById('manualName').value.trim();
             const phone = document.getElementById('manualPhone').value.trim();
