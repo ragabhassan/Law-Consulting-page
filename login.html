@@ -57,9 +57,10 @@
     (function() {
         'use strict';
 
-       const SUPABASE_URL = 'https://ycwtrymlqepftuvgqxui.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_mO2nXgZyuQy3Fh1ry_20eg_CMszH3mS';
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // 🔴 إعدادات Supabase (الرابط الصحيح)
+        const SUPABASE_URL = 'https://ycwtrymlqepftuvgqxui.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_mO2nXgZyuQy3Fh1ry_20eg_CMszH3mS';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const loginForm = document.getElementById('loginForm');
         const emailInput = document.getElementById('email');
@@ -79,47 +80,36 @@
             element.classList.add('hidden');
         }
 
-        // فحص الجلسة عند فتح الصفحة
-       // فحص الجلسة عند فتح الصفحة
-async function checkSession() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) {
-        // 🔴 التحقق من وجود المستخدم في جدول الموظفين
-        const { data: profile, error } = await supabase
-            .from('staff_profiles')
-            .select('id')
-            .eq('id', session.user.id)
-            .single();
+        // 🔴 فحص الجلسة عند فتح الصفحة (تم تعديلها لتعمل بالبريد الإلكتروني)
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                // البحث عن المستخدم في جدول الموظفين بالبريد الإلكتروني
+                const { data: profile, error } = await supabase
+                    .from('staff_profiles')
+                    .select('*')
+                    .eq('email', session.user.email)
+                    .single();
 
-        // إذا كان المستخدم غير موجود في الجدول أو حدث خطأ، قم بتسجيل الخروج وإظهار شاشة الدخول
-        if (error || !profile) {
-            await supabase.auth.signOut();
-            loginSection.classList.remove('hidden');
-            changePasswordSection.classList.add('hidden');
-            showError(errorDiv, 'هذا الحساب لم يعد متاحاً. يرجى التواصل مع الإدارة أو تسجيل الدخول بحساب آخر.');
-            return;
+                // إذا كان المستخدم غير موجود في الجدول أو حدث خطأ، قم بتسجيل الخروج
+                if (error || !profile) {
+                    await supabase.auth.signOut();
+                    loginSection.classList.remove('hidden');
+                    changePasswordSection.classList.add('hidden');
+                    showError(errorDiv, 'هذا الحساب لم يعد متاحاً. يرجى التواصل مع الإدارة أو تسجيل الدخول بحساب آخر.');
+                    return;
+                }
+
+                // إذا كان المستخدم موجوداً، توجيهه حسب دوره
+                handleRedirect(profile);
+            } else {
+                // لا توجد جلسة، اعرض شاشة الدخول
+                loginSection.classList.remove('hidden');
+            }
         }
 
-        // إذا كان المستخدم موجوداً، توجيهه حسب دوره
-        handleRedirect(session.user);
-    } else {
-        // لا توجد جلسة، اعرض شاشة الدخول
-        loginSection.classList.remove('hidden');
-    }
-}
-        async function handleRedirect(user) {
-            const { data: profile, error: profileError } = await supabase
-                .from('staff_profiles')
-                .select('role, must_change_password')
-                .eq('id', user.id)
-                .single();
-
-            if (profileError) {
-                console.error("خطأ في جلب بيانات الموظف:", profileError);
-                window.location.href = 'dashboard-admin.html';
-                return;
-            }
-
+        // 🔴 دالة التوجيه (تم تعديلها لتعمل بالبريد الإلكتروني)
+        async function handleRedirect(profile) {
             if (profile.must_change_password === true) {
                 loginSection.classList.add('hidden');
                 changePasswordSection.classList.remove('hidden');
@@ -163,7 +153,22 @@ async function checkSession() {
                 }
 
                 if (data.session) {
-                    handleRedirect(data.session.user);
+                    // 🔴 التحقق من وجود المستخدم في جدول الموظفين بالبريد الإلكتروني
+                    const { data: profile, error: profileError } = await supabase
+                        .from('staff_profiles')
+                        .select('*')
+                        .eq('email', data.user.email)
+                        .single();
+
+                    if (profileError || !profile) {
+                        await supabase.auth.signOut();
+                        showError(errorDiv, 'هذا الحساب غير مسجل في نظام الموظفين.');
+                        loginBtn.textContent = 'دخول';
+                        loginBtn.disabled = false;
+                        return;
+                    }
+
+                    handleRedirect(profile);
                 } else {
                     showError(errorDiv, 'حدث خطأ غير متوقع');
                     loginBtn.textContent = 'دخول';
@@ -191,7 +196,7 @@ async function checkSession() {
                     await supabase
                         .from('staff_profiles')
                         .update({ must_change_password: false })
-                        .eq('id', user.id);
+                        .eq('email', user.email);
                 }
 
                 alert('تم تغيير كلمة المرور بنجاح!');
