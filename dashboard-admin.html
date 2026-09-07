@@ -967,18 +967,19 @@ async function initPage() {
         .single();
 
     // إذا لم يوجد السجل في الجدول، قم بإنشائه فوراً
-    if (profileError || !profile) {
-        // إنشاء السجل الجديد في جدول الموظفين
-        const { error: insertError } = await supabase
-            .from('staff_profiles')
-            .insert({
-                id: session.user.id,
-                full_name: session.user.email.split('@')[0], // استخدم أول جزء من البريد كاسم
-                email: session.user.email,
-                role: 'manager', // صلاحية المدير تلقائياً
-                is_active: true
-            });
-            
+if (profileError || !profile) {
+    // إنشاء السجل الجديد في جدول الموظفين
+    const { error: insertError } = await supabase
+        .from('staff_profiles')
+        .insert({
+            id: session.user.id,
+            full_name: session.user.email.split('@')[0], // استخدم أول جزء من البريد كاسم
+            email: session.user.email,
+            role: 'manager', // صلاحية المدير تلقائياً
+            is_active: true
+        });
+        ...
+}            
         if (insertError) {
             alert('❌ فشل إنشاء السجل: ' + insertError.message);
             window.location.href = 'login.html';
