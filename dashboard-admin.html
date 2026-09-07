@@ -935,7 +935,7 @@
             try {
                 const { error } = await supabase.auth.signOut();
                 if (error) alert('❌ ' + error.message);
-                else window.location.href = 'login.html';
+                else window.location.href = 'login-clean.html';
             } catch (e) {
                 alert('❌ حدث خطأ أثناء تسجيل الخروج');
                 console.error(e);
