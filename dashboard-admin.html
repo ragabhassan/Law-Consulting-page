@@ -953,25 +953,46 @@
         }
 
 async function initPage() {
-    // التحقق من تسجيل الدخول
     const { data: { session }, error } = await supabase.auth.getSession();
-    
     if (error || !session) {
         window.location.href = 'login.html';
         return;
     }
-    
-    // جلب بيانات المستخدم من جدول staff_profiles
+
+    // هذا السطر سيجعل البحث بالـ id المطابق لـ Auth (نتيجة المزامنة)
     const { data: profile, error: profileError } = await supabase
         .from('staff_profiles')
         .select('*')
         .eq('id', session.user.id)
         .single();
 
+    // إذا لم يوجد السجل في الجدول، قم بإنشائه فوراً
     if (profileError || !profile) {
-        alert('لا توجد صلاحيات لهذا المستخدم. يرجى التواصل مع المدير.');
-        window.location.href = 'login.html';
-        return;
+        // إنشاء السجل الجديد في جدول الموظفين
+        const { error: insertError } = await supabase
+            .from('staff_profiles')
+            .insert({
+                id: session.user.id,
+                full_name: session.user.email.split('@')[0], // استخدم أول جزء من البريد كاسم
+                email: session.user.email,
+                role: 'manager', // صلاحية المدير تلقائياً
+                is_active: true
+            });
+            
+        if (insertError) {
+            alert('❌ فشل إنشاء السجل: ' + insertError.message);
+            window.location.href = 'login.html';
+            return;
+        }
+        
+        // بعد الإنشاء، أعد جلب البيانات
+        const { data: newProfile } = await supabase
+            .from('staff_profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+            
+        profile = newProfile;
     }
 
     currentUser = {
