@@ -1080,7 +1080,10 @@
             }
             filterSelect.value = currentValue;
         }
-
+// إضافة مستمع حدث لإغلاق النافذة
+document.getElementById('modalClose').addEventListener('click', function() {
+    document.getElementById('previewModal').classList.remove('active');
+});
         document.addEventListener('DOMContentLoaded', initPage);
 
     })();
