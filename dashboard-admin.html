@@ -248,7 +248,6 @@
     (function() {
         'use strict';
 
-        // 🔴 الرابط الجديد الصحيح (ycwtrymlqepftuvgqxui)
         const SUPABASE_URL = 'https://ycwtrymlqepftuvgqxui.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_mO2nXgZyuQy3Fh1ry_20eg_CMszH3mS';
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -265,7 +264,6 @@
                 return;
             }
 
-            // التحقق من وجود المستخدم في جدول staff_profiles بالبريد الإلكتروني
             const { data: profile, error: profileError } = await supabase
                 .from('staff_profiles')
                 .select('*')
@@ -337,20 +335,22 @@
                 return;
             }
 
-const { data: authUser, error: authError } = await supabase.auth.signUp({
-    email: email,
-    password: password,
-    options: {
-        emailRedirectTo: 'https://law-consulting-page.vercel.app/login.html',
-        data: {
-            confirmed: true
-        }
-    }
-});
-            // إنشاء الحساب في Supabase Auth (بدون استخدام أي دالة خادم)
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                alert('يرجى تسجيل الدخول مرة أخرى');
+                return;
+            }
+
+            // 🔴 إنشاء الحساب مع تأكيد البريد تلقائياً
             const { data: authUser, error: authError } = await supabase.auth.signUp({
                 email: email,
-                password: password
+                password: password,
+                options: {
+                    emailRedirectTo: 'https://law-consulting-page.vercel.app/login.html',
+                    data: {
+                        confirmed: true
+                    }
+                }
             });
 
             if (authError) {
@@ -358,7 +358,7 @@ const { data: authUser, error: authError } = await supabase.auth.signUp({
                 return;
             }
 
-            // إنشاء السجل في جدول الموظفين
+            // 🔴 إدخال السجل في جدول staff_profiles بنفس الـ ID
             const { error: insertError } = await supabase
                 .from('staff_profiles')
                 .insert({
@@ -366,7 +366,8 @@ const { data: authUser, error: authError } = await supabase.auth.signUp({
                     full_name: name,
                     email: email,
                     role: role,
-                    is_active: status
+                    is_active: status,
+                    must_change_password: false
                 });
 
             if (insertError) {
@@ -801,6 +802,11 @@ const { data: authUser, error: authError } = await supabase.auth.signUp({
 
                 body.innerHTML = `<div class="dashboard-container">${customerCard}${tasksCard}${initialCard}${followupsCard}${attachmentsCard}${addFollowupCard}</div>`;
 
+                // 🔴 هذا السطر المفقود (لإغلاق النافذة)
+                document.getElementById('modalClose').addEventListener('click', function() {
+                    document.getElementById('previewModal').classList.remove('active');
+                });
+
                 const saveTasksBtn = document.getElementById('btnSaveTasks');
                 if (saveTasksBtn) {
                     saveTasksBtn.addEventListener('click', async function() {
@@ -1072,22 +1078,30 @@ const { data: authUser, error: authError } = await supabase.auth.signUp({
             populateEmployeeFilter(employees);
         }
 
-        function populateEmployeeFilter(employees) {
-            const filterSelect = document.getElementById('filterEmployee');
-            if (!filterSelect) return;
-            const currentValue = filterSelect.value;
-            filterSelect.innerHTML = '<option value="">الكل</option>';
-            if (employees) {
-                employees.forEach(emp => {
-                    filterSelect.innerHTML += `<option value="${emp.id}">${emp.full_name}</option>`;
-                });
+        // 🔴 الدالة المفقودة (كانت تسبب الخطأ)
+        async function openEditConsultationModal(item) {
+            const newName = prompt('تعديل اسم العميل:', item.client_name);
+            if (newName === null) return;
+
+            const newPhone = prompt('تعديل رقم الهاتف:', item.phone);
+            if (newPhone === null) return;
+
+            const newStatus = prompt('تعديل الحالة (new, contacted, in_progress, resolved):', item.status);
+            if (newStatus === null) return;
+
+            const { error } = await supabase
+                .from('consultation_requests')
+                .update({ client_name: newName, phone: newPhone, status: newStatus })
+                .eq('id', item.id);
+
+            if (error) {
+                alert('❌ فشل التعديل: ' + error.message);
+            } else {
+                alert('✅ تم تعديل الطلب بنجاح');
+                applyFilters();
             }
-            filterSelect.value = currentValue;
         }
-// إضافة مستمع حدث لإغلاق النافذة
-document.getElementById('modalClose').addEventListener('click', function() {
-    document.getElementById('previewModal').classList.remove('active');
-});
+
         document.addEventListener('DOMContentLoaded', initPage);
 
     })();
