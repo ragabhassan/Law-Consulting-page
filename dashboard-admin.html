@@ -337,12 +337,16 @@
                 return;
             }
 
-            const { data: { session } } = await supabase.auth.getSession();
-            if (!session) {
-                alert('يرجى تسجيل الدخول مرة أخرى');
-                return;
-            }
-
+const { data: authUser, error: authError } = await supabase.auth.signUp({
+    email: email,
+    password: password,
+    options: {
+        emailRedirectTo: 'https://law-consulting-page.vercel.app/login.html',
+        data: {
+            confirmed: true
+        }
+    }
+});
             // إنشاء الحساب في Supabase Auth (بدون استخدام أي دالة خادم)
             const { data: authUser, error: authError } = await supabase.auth.signUp({
                 email: email,
