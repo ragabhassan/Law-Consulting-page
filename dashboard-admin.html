@@ -482,12 +482,16 @@
                 if (attachmentsError) console.warn('خطأ في جلب المرفقات الإضافية:', attachmentsError);
                 let attachmentsHtml = '';
                 if (attachmentsData && attachmentsData.length > 0) {
-                    attachmentsData.forEach(att => {
+                    for (const att of attachmentsData) {
                         if (att.attachment_path) {
+                            const { data: signed } = await supabase.storage
+                                .from('consultation-files')
+                                .createSignedUrl(att.attachment_path, 300);
                             const date = att.followup_date ? new Date(att.followup_date).toLocaleString('ar-EG') : '—';
-                            attachmentsHtml += `<div class="dashboard-attachment-item"><a href="${att.attachment_path}" target="_blank">📎 مرفق بتاريخ: ${date}</a><button id="btnDeleteAttachment_${att.id}" class="btn-delete-attachment" data-id="${att.id}">🗑️ حذف</button></div>`;
+                            const href = signed?.signedUrl || '#';
+                            attachmentsHtml += `<div class="dashboard-attachment-item"><a href="${href}" target="_blank" rel="noopener">📎 مرفق بتاريخ: ${date}</a><button id="btnDeleteAttachment_${att.id}" class="btn-delete-attachment" data-id="${att.id}">🗑️ حذف</button></div>`;
                         }
-                    });
+                    }
                 } else {
                     attachmentsHtml = '<div class="message">لا توجد مرفقات إضافية.</div>';
                 }
@@ -515,10 +519,17 @@
                             <div class="dashboard-detail-row"><span class="dashboard-detail-label">تاريخ الطلب</span><span class="dashboard-detail-value">${consultation.created_at ? new Date(consultation.created_at).toLocaleString('ar-EG') : '—'}</span></div>
                             <div class="dashboard-detail-row"><span class="dashboard-detail-label">الموظف المسند</span><span class="dashboard-detail-value">${assignedName}</span></div>
                             ${consultation.message ? `<div class="dashboard-detail-row"><span class="dashboard-detail-label">الرسالة</span><span class="dashboard-detail-value">${consultation.message}</span></div>` : ''}
-                            ${consultation.attachment_path ? `<div class="dashboard-detail-row"><span class="dashboard-detail-label">📎 الملف المرفق</span><span class="dashboard-detail-value"><a href="${consultation.attachment_path}" target="_blank" style="color: #2d7aff;">اضغط لتحميل الملف</a></span></div>` : ''}
+                            ${consultation.attachment_path ? `<div class="dashboard-detail-row"><span class="dashboard-detail-label">📎 الملف المرفق</span><span class="dashboard-detail-value"><a id="mainAttachmentLink" href="#" target="_blank" rel="noopener" style="color: #2d7aff;">جاري تجهيز رابط آمن...</a></span></div>` : ''}
                         </div>
                     </div>
                 `;
+
+                if (consultation.attachment_path) {
+                    const { data: signedMain } = await supabase.storage
+                        .from('consultation-files')
+                        .createSignedUrl(consultation.attachment_path, 300);
+                    consultation._signedAttachmentUrl = signedMain?.signedUrl || null;
+                }
 
                 let tasksCard = '';
                 if (requiredActions.length > 0 || requiredDocuments.length > 0) {
@@ -632,6 +643,13 @@
                 `;
 
                 body.innerHTML = `<div class="dashboard-container">${customerCard}${tasksCard}${initialCard}${followupsCard}${attachmentsCard}${addFollowupCard}</div>`;
+                if (consultation._signedAttachmentUrl) {
+                    const mainAttachmentLink = document.getElementById('mainAttachmentLink');
+                    if (mainAttachmentLink) {
+                        mainAttachmentLink.href = consultation._signedAttachmentUrl;
+                        mainAttachmentLink.textContent = 'اضغط لتحميل الملف';
+                    }
+                }
 
                 const saveTasksBtn = document.getElementById('btnSaveTasks');
                 if (saveTasksBtn) {
@@ -679,8 +697,7 @@
                         alert('❌ فشل رفع المرفق: ' + uploadError.message);
                         return;
                     }
-                    const { data: urlData } = supabase.storage.from('consultation-files').getPublicUrl(filePath);
-                    const attachmentUrl = urlData.publicUrl;
+                    const attachmentUrl = filePath;
                     const { data: { user } } = await supabase.auth.getUser();
                     const { error } = await supabase.from('client_followups').insert({
                         request_id: consId,
