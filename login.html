@@ -57,9 +57,9 @@
     (function() {
         'use strict';
 
-        // 🔴 إعدادات Supabase (الرابط الصحيح)
         const SUPABASE_URL = 'https://ycwtrymlqepftuvgqxui.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_mO2nXgZyuQy3Fh1ry_20eg_CMszH3mS';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inljd3RyeW1scWVwZnR1dmdxeHVpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg2MzExOTYsImV4cCI6MjEwNDIwNzE5Nn0.8zeXSesiSxshCwGO5sbin7Q3Sbv-VJ-8tXhfhaLwFWg';
+
         const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         const loginForm = document.getElementById('loginForm');
@@ -80,36 +80,47 @@
             element.classList.add('hidden');
         }
 
-        // 🔴 فحص الجلسة عند فتح الصفحة (تم تعديلها لتعمل بالبريد الإلكتروني)
-        async function checkSession() {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                // البحث عن المستخدم في جدول الموظفين بالبريد الإلكتروني
-                const { data: profile, error } = await supabase
-                    .from('staff_profiles')
-                    .select('*')
-                    .eq('email', session.user.email)
-                    .single();
+        // فحص الجلسة عند فتح الصفحة
+       // فحص الجلسة عند فتح الصفحة
+async function checkSession() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) {
+        // 🔴 التحقق من وجود المستخدم في جدول الموظفين
+        const { data: profile, error } = await supabase
+            .from('staff_profiles')
+            .select('id')
+            .eq('id', session.user.id)
+            .single();
 
-                // إذا كان المستخدم غير موجود في الجدول أو حدث خطأ، قم بتسجيل الخروج
-                if (error || !profile) {
-                    await supabase.auth.signOut();
-                    loginSection.classList.remove('hidden');
-                    changePasswordSection.classList.add('hidden');
-                    showError(errorDiv, 'هذا الحساب لم يعد متاحاً. يرجى التواصل مع الإدارة أو تسجيل الدخول بحساب آخر.');
-                    return;
-                }
-
-                // إذا كان المستخدم موجوداً، توجيهه حسب دوره
-                handleRedirect(profile);
-            } else {
-                // لا توجد جلسة، اعرض شاشة الدخول
-                loginSection.classList.remove('hidden');
-            }
+        // إذا كان المستخدم غير موجود في الجدول أو حدث خطأ، قم بتسجيل الخروج وإظهار شاشة الدخول
+        if (error || !profile) {
+            await supabase.auth.signOut();
+            loginSection.classList.remove('hidden');
+            changePasswordSection.classList.add('hidden');
+            showError(errorDiv, 'هذا الحساب لم يعد متاحاً. يرجى التواصل مع الإدارة أو تسجيل الدخول بحساب آخر.');
+            return;
         }
 
-        // 🔴 دالة التوجيه (تم تعديلها لتعمل بالبريد الإلكتروني)
-        async function handleRedirect(profile) {
+        // إذا كان المستخدم موجوداً، توجيهه حسب دوره
+        handleRedirect(session.user);
+    } else {
+        // لا توجد جلسة، اعرض شاشة الدخول
+        loginSection.classList.remove('hidden');
+    }
+}
+        async function handleRedirect(user) {
+            const { data: profile, error: profileError } = await supabase
+                .from('staff_profiles')
+                .select('role, must_change_password')
+                .eq('id', user.id)
+                .single();
+
+            if (profileError) {
+                console.error("خطأ في جلب بيانات الموظف:", profileError);
+                window.location.href = 'dashboard-admin.html';
+                return;
+            }
+
             if (profile.must_change_password === true) {
                 loginSection.classList.add('hidden');
                 changePasswordSection.classList.remove('hidden');
@@ -153,22 +164,7 @@
                 }
 
                 if (data.session) {
-                    // 🔴 التحقق من وجود المستخدم في جدول الموظفين بالبريد الإلكتروني
-                    const { data: profile, error: profileError } = await supabase
-                        .from('staff_profiles')
-                        .select('*')
-                        .eq('email', data.user.email)
-                        .single();
-
-                    if (profileError || !profile) {
-                        await supabase.auth.signOut();
-                        showError(errorDiv, 'هذا الحساب غير مسجل في نظام الموظفين.');
-                        loginBtn.textContent = 'دخول';
-                        loginBtn.disabled = false;
-                        return;
-                    }
-
-                    handleRedirect(profile);
+                    handleRedirect(data.session.user);
                 } else {
                     showError(errorDiv, 'حدث خطأ غير متوقع');
                     loginBtn.textContent = 'دخول';
@@ -182,32 +178,30 @@
             }
         });
 
-       window.updatePassword = async function() {
-    const newPass = document.getElementById('new-password').value;
-    const confirmPass = document.getElementById('confirm-password').value;
-    const changeError = document.getElementById('changeError');
-    
-    try {
-        // 1. تحديث كلمة المرور في Supabase Auth
-        const { error } = await supabase.auth.updateUser({ password: newPass });
-        if (error) { showError(changeError, 'فشل تغيير كلمة المرور: ' + error.message); return; }
+        window.updatePassword = async function() {
+            const newPass = document.getElementById('new-password').value;
+            const confirmPass = document.getElementById('confirm-password').value;
+            const changeError = document.getElementById('changeError');
+            
+            try {
+                const { error } = await supabase.auth.updateUser({ password: newPass });
+                if (error) { showError(changeError, 'فشل تغيير كلمة المرور: ' + error.message); return; }
 
-        // 2. تحديث العمود must_change_password في جدول staff_profiles (من true إلى false)
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-            await supabase
-                .from('staff_profiles')
-                .update({ must_change_password: false })
-                .eq('email', user.email);
-        }
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    await supabase
+                        .from('staff_profiles')
+                        .update({ must_change_password: false })
+                        .eq('id', user.id);
+                }
 
-        // 3. تسجيل الخروج وإعادة توجيه المستخدم للدخول العادي
-        await supabase.auth.signOut();
-        window.location.href = 'login.html';
-    } catch (err) {
-        showError(changeError, 'خطأ في الاتصال: ' + err.message);
-    }
-};
+                alert('تم تغيير كلمة المرور بنجاح!');
+                window.location.reload();
+            } catch (err) {
+                showError(changeError, 'خطأ في الاتصال: ' + err.message);
+            }
+        };
+
         checkSession();
     })();
 </script>
