@@ -1,0 +1,1672 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f4f6f9; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; background: white; border-radius: 16px; padding: 25px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+        h1 { color: #1a2a3a; border-bottom: 3px solid #2d7aff; padding-bottom: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+        .user-info { font-size: 16px; font-weight: normal; color: #555; }
+        .nav-bar { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; background: #eef2f7; padding: 15px; border-radius: 12px; }
+        .nav-btn { background: white; border: none; padding: 12px 28px; border-radius: 30px; font-size: 16px; font-weight: 600; color: #1a2a3a; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: 0.3s; border: 1px solid transparent; }
+        .nav-btn:hover { background: #2d7aff; color: white; box-shadow: 0 6px 14px rgba(45,122,255,0.3); transform: translateY(-2px); }
+        .nav-btn.logout { background: #ff4d4d; color: white; }
+        .nav-btn.logout:hover { background: #cc0000; }
+        .nav-btn.hidden { display: none; }
+        .section { display: none; animation: fadeIn 0.4s ease; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .filters { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; background: #f8faff; padding: 15px; border-radius: 12px; align-items: center; }
+        .filters label { font-weight: 600; color: #1a2a3a; }
+        .filters input, .filters select { padding: 8px 14px; border: 1px solid #dce1e8; border-radius: 8px; font-size: 14px; }
+        .filters button { background: #2d7aff; color: white; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+        .filters button:hover { background: #1a5cc4; }
+        .filters button.reset { background: #6c757d; }
+        .table-responsive { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        th { background: #2d7aff; color: white; padding: 12px 10px; text-align: center; font-weight: 600; white-space: nowrap; }
+        td { padding: 10px; border-bottom: 1px solid #e9edf4; text-align: center; vertical-align: middle; }
+        tr:hover td { background: #f8faff; }
+        .btn-preview { background: #17a2b8; color: white; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+        .btn-preview:hover { background: #138496; }
+        .btn-edit-cons { background: #ffc107; color: #000; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 4px; }
+        .btn-edit-cons:hover { background: #e0a800; }
+        .btn-delete-cons { background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 4px; }
+        .btn-delete-cons:hover { background: #c82333; }
+        .employee-card { background: #f8faff; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #2d7aff; flex-wrap: wrap; gap: 10px; }
+        .employee-card .info { display: flex; gap: 30px; flex-wrap: wrap; }
+        .employee-card .info strong { color: #1a2a3a; }
+        .employee-card .actions { display: flex; gap: 8px; }
+        .employee-card .actions button { padding: 4px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; }
+        .btn-edit-emp { background: #ffc107; color: #000; }
+        .btn-edit-emp:hover { background: #e0a800; }
+        .btn-delete-emp { background: #dc3545; color: white; }
+        .btn-delete-emp:hover { background: #c82333; }
+        .status-badge { padding: 3px 10px; border-radius: 12px; font-size: 12px; background: #d4edda; color: #155724; }
+        .status-badge.inactive { background: #f8d7da; color: #721c24; }
+        .message { padding: 16px; background: #fff3cd; border-radius: 10px; border-right: 6px solid #ffc107; margin: 20px 0; }
+        .message.error { background: #f8d7da; border-color: #dc3545; }
+        .message.success { background: #d4edda; border-color: #28a745; }
+        .loading { text-align: center; padding: 40px; color: #6c757d; }
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10,16,28,0.75); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; border-radius: 16px; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 25px; position: relative; }
+        .modal-close { position: absolute; left: 20px; top: 15px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; font-size: 20px; cursor: pointer; z-index: 100; }
+        .modal-close:hover { background: #c82333; }
+        .modal-title { font-size: 28px; color: #1a2a3a; border-bottom: 3px solid #2d7aff; padding-bottom: 10px; margin-bottom: 15px; text-align: right; }
+        /* Preview modal (fullscreen) */
+        #previewModal .modal-content { width: 100%; height: 100vh; max-width: none; max-height: none; border-radius: 0; padding: 20px 30px; background: #f4f6f9; display: flex; flex-direction: column; }
+        /* Dashboard Grid */
+        .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; overflow-y: auto; padding: 10px; flex-grow: 1; }
+        .dashboard-card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 20px; border: 1px solid #e9edf4; transition: all 0.3s ease; }
+        .dashboard-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
+        .dashboard-card-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+        .dashboard-card-header h3 { font-size: 17px; color: #1a2a3a; margin: 0; }
+        .dashboard-card-header .icon-circle { width: 35px; height: 35px; border-radius: 12px; background: linear-gradient(135deg, #2d7aff, #1a5cc4); display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; }
+        .dashboard-detail-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0f2f5; }
+        .dashboard-detail-row:last-child { border-bottom: none; }
+        .dashboard-detail-label { font-weight: 700; color: #333; font-size: 13px; width: 110px; }
+        .dashboard-detail-value { flex: 1; color: #555; font-size: 13px; }
+        .dashboard-checkbox-item { padding: 6px; border-bottom: 1px dashed #eee; font-size: 13px; background: #f0f4ff; border-radius: 6px; margin-bottom: 6px; }
+        .dashboard-followup-item { padding: 10px; border-radius: 10px; background: #f8faff; margin-bottom: 8px; border-right: 4px solid #2d7aff; }
+        .dashboard-attachment-item { padding: 8px; border-radius: 10px; background: #f0f4ff; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+        .dashboard-attachment-item a { color: #2d7aff; text-decoration: none; }
+        .dashboard-attachment-item .btn-delete-attachment { background: #dc3545; color: white; border: none; border-radius: 6px; padding: 3px 8px; font-size: 10px; cursor: pointer; }
+        .dashboard-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+        .dashboard-form-grid input, .dashboard-form-grid textarea { width: 100%; padding: 10px; border: 1px solid #dce1e8; border-radius: 8px; font-size: 13px; }
+        .dashboard-btn { background: #2d7aff; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+        .dashboard-btn:hover { background: #1a5cc4; }
+        .add-employee-form { background: #f8faff; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e9edf4; }
+        .add-employee-form .form-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: end; }
+        .add-employee-form .form-group { flex: 1; min-width: 150px; }
+        .add-employee-form label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 4px; }
+        .add-employee-form input, .add-employee-form select { width: 100%; padding: 8px 12px; border: 1px solid #dce1e8; border-radius: 6px; }
+        .add-employee-form button { background: #28a745; color: white; border: none; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .add-employee-form button:hover { background: #218838; }
+        .add-employee-form button:disabled { background: #8ab0e8; cursor: not-allowed; }
+        /* Smart alerts */
+        .smart-alert { background: white; border-radius: 8px; padding: 10px 15px; font-size: 13px; color: #333; display: flex; align-items: center; gap: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); min-width: 200px; cursor: pointer; transition: all 0.3s; }
+        .smart-alert:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        @media (max-width: 700px) {
+            .nav-bar { flex-direction: column; } .nav-btn { width: 100%; text-align: center; }
+            .filters { flex-direction: column; align-items: stretch; }
+            .employee-card { flex-direction: column; align-items: flex-start; }
+            .add-employee-form .form-row { flex-direction: column; }
+            .modal-content { padding: 15px; }
+            .dashboard-detail-row { flex-direction: column; align-items: flex-start; gap: 2px; }
+            .dashboard-detail-label { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 id="pageTitle">🏛️ لوحة التحكم <span class="user-info" id="userNameDisplay"></span></h1>
+    <div class="nav-bar">
+        <button class="nav-btn" id="btnShowConsultations">📋 عرض الطلبات</button>
+        <button class="nav-btn hidden" id="btnManualEntry">📝 إدخال طلب يدوي</button>
+        <button class="nav-btn hidden" id="btnShowEmployees">👥 إدارة الموظفين</button>
+        <button class="nav-btn logout" id="btnLogout">🚪 تسجيل الخروج</button>
+    </div>
+
+    <div id="sectionConsultations" class="section active">
+        <!-- 🔴 الشاشة الذكية - التنبيهات -->
+        <div id="smartAlerts" style="background: linear-gradient(135deg, #f0f4ff, #e7f3ff); border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; border-right: 5px solid #2d7aff;">
+            <h3 style="color: #1a2a3a; margin: 0 0 12px 0; display: flex; align-items: center; gap: 10px;">
+                <span style="background: linear-gradient(135deg, #2d7aff, #1a5cc4); color: white; width: 35px; height: 35px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px;">🔔</span>
+                التنبيهات الذكية
+            </h3>
+            <div id="alertsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;">
+                <div style="color: #718096; font-size: 13px;">⏳ جاري تحميل التنبيهات...</div>
+            </div>
+        </div>
+
+        <h2>📋 قائمة الطلبات</h2>
+        <div class="filters" id="filterContainer">
+            <label>📅 من:</label><input type="date" id="filterDateFrom">
+            <label>إلى:</label><input type="date" id="filterDateTo">
+            <label>📌 الخدمة:</label>
+            <select id="filterService">
+                <option value="">الكل</option>
+                <option value="corporate">استشارات الشركات</option>
+                <option value="contracts">صياغة العقود</option>
+                <option value="litigation">قضايا وتقاضي</option>
+                <option value="arbitration">تحكيم وتسوية نزاعات</option>
+                <option value="ip">حماية الملكية الفكرية</option>
+                <option value="other">استشارة عامة</option>
+            </select>
+            <button id="btnApplyFilters">🔍 تطبيق</button>
+            <button id="btnResetFilters" class="reset">↺ إعادة تعيين</button>
+        </div>
+        <div id="consultationsContainer"><div class="loading">⏳ جاري التحميل...</div></div>
+    </div>
+
+    <div id="sectionManualEntry" class="section">
+        <h2>📝 إدخال طلب استشارة (يدوي)</h2>
+        <div class="add-employee-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>اسم العميل *</label>
+                    <input type="text" id="manualName" placeholder="الاسم الكامل">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف *</label>
+                    <input type="text" id="manualPhone" placeholder="01xxxxxxxxx">
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="manualEmail" placeholder="example@domain.com">
+                </div>
+                <div class="form-group">
+                    <label>الشركة (اختياري)</label>
+                    <input type="text" id="manualCompany" placeholder="اسم الشركة">
+                </div>
+                <div class="form-group">
+                    <label>الخدمة المطلوبة</label>
+                    <select id="manualService">
+                        <option value="">اختر الخدمة</option>
+                        <option value="corporate">استشارات الشركات</option>
+                        <option value="contracts">صياغة العقود</option>
+                        <option value="litigation">قضايا وتقاضي</option>
+                        <option value="arbitration">تحكيم وتسوية نزاعات</option>
+                        <option value="ip">حماية الملكية الفكرية</option>
+                        <option value="other">استشارة عامة</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row" style="margin-top: 10px;">
+                <div class="form-group" style="flex: 2;">
+                    <label>تفاصيل الطلب</label>
+                    <textarea id="manualMessage" rows="4" style="width:100%; padding:8px; border:1px solid #dce1e8; border-radius:6px;" placeholder="اكتب ملخص الطلب هنا..."></textarea>
+                </div>
+                <div class="form-group" style="flex: 2;">
+                    <label>📎 إرفاق ملف (صورة أو PDF - اختياري)</label>
+                    <input type="file" id="manualAttachment" accept="image/*,.pdf" style="width: 100%; padding: 8px; border: 1px solid #dce1e8; border-radius: 6px;">
+                </div>
+            </div>
+            <div class="form-group">
+                <button id="btnAddManualConsultation" style="margin-top: 10px;">➕ حفظ الطلب</button>
+                <span id="manualMsg" style="margin-right: 10px; font-weight: 600;"></span>
+            </div>
+        </div>
+    </div>
+
+    <div id="sectionEmployees" class="section">
+        <h2>👥 إدارة الموظفين</h2>
+        <div class="add-employee-form" id="addEmployeeForm">
+            <h3 style="margin-bottom:10px;">➕ إضافة موظف جديد</h3>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>الاسم الكامل</label>
+                    <input type="text" id="empName" placeholder="اسم الموظف">
+                </div>
+                <div class="form-group">
+                    <label>البريد الإلكتروني</label>
+                    <input type="email" id="empEmail" placeholder="example@domain.com">
+                </div>
+                <div class="form-group">
+                    <label>كلمة المرور المؤقتة</label>
+                    <input type="text" id="empPassword" placeholder="كلمة مرور مؤقتة">
+                </div>
+                <div class="form-group">
+                    <label>الدور</label>
+                    <select id="empRole">
+                        <option value="followup_staff">موظف متابعة</option>
+                        <option value="manager">مدير</option>
+                        <option value="secretary">سكرتير</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>الحالة</label>
+                    <select id="empStatus">
+                        <option value="true">نشط</option>
+                        <option value="false">غير نشط</option>
+                    </select>
+                </div>
+                <button id="btnAddEmployee">إضافة</button>
+            </div>
+        </div>
+        <div id="employeesContainer"><div class="loading">⏳ جاري التحميل...</div></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="previewModal">
+    <div class="modal-content">
+        <button class="modal-close" id="modalClose">✕</button>
+        <div class="modal-title" id="modalTitle">تفاصيل الطلب</div>
+        <div id="modalBody"><div class="loading">⏳ جاري التحميل...</div></div>
+    </div>
+</div>
+<script>
+    (function() {
+        'use strict';
+
+        // ⚠️ تم الاحتفاظ بالعنوان والمفتاح الأصليين للملف الأول
+        const SUPABASE_URL = 'https://ycwtrymlqepftuvgqxui.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_mO2nXgZyuQy3Fh1ry_20eg_CMszH3mS';
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        const BUCKET_NAME = 'consultation-files';
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+        const ALLOWED_FILE_TYPES = [
+            'application/pdf', 'image/jpeg', 'image/png', 'image/webp',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+
+        let currentUser = null;
+        let allConsultations = [];
+        let allEmployees = [];
+        let currentFilteredData = [];
+
+        // =========================================================
+        // دوال مساعدة
+        // =========================================================
+        function escapeHtml(s) {
+            return String(s ?? '').replace(/[&<>"']/g, c => ({
+                '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+            }[c]));
+        }
+
+        function generateSafeFilePath(originalName) {
+            const ext = (originalName.split('.').pop() || 'bin').toLowerCase();
+            const uuid = (crypto && crypto.randomUUID)
+                ? crypto.randomUUID()
+                : `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+            return `${Date.now()}_${uuid}.${ext}`;
+        }
+
+        function validateFile(file) {
+            if (!file) return null;
+            if (file.size > MAX_FILE_SIZE) return 'حجم الملف يتجاوز 5 ميجابايت.';
+            if (!ALLOWED_FILE_TYPES.includes(file.type)) return 'نوع الملف غير مسموح.';
+            return null;
+        }
+
+        // استخراج مسار التخزين من رابط كامل أو مسار مباشر
+        function extractStoragePath(pathOrUrl) {
+            if (!pathOrUrl) return null;
+            if (!/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+            // من الرابط: .../storage/v1/object/public/consultation-files/<path>
+            const match = pathOrUrl.match(/consultation-files\/(.+)$/);
+            return match ? match[1] : null;
+        }
+
+        // إرجاع رابط موقّع (صالح ساعة) أو رابط عام
+        async function resolveAttachmentUrl(pathOrUrl) {
+            if (!pathOrUrl) return null;
+            if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+            const { data, error } = await supabase.storage
+                .from(BUCKET_NAME)
+                .createSignedUrl(pathOrUrl, 3600);
+            return error ? null : data.signedUrl;
+        }
+
+        // رفع ملف وإرجاع المسار
+        async function uploadFile(file) {
+            const err = validateFile(file);
+            if (err) throw new Error(err);
+
+            const filePath = generateSafeFilePath(file.name);
+            const { error: uploadError } = await supabase.storage
+                .from(BUCKET_NAME)
+                .upload(filePath, file, { upsert: false, cacheControl: '3600' });
+
+            if (uploadError) throw new Error('فشل رفع الملف: ' + uploadError.message);
+            return filePath;
+        }
+
+        async function deleteFileFromStorage(pathOrUrl) {
+            const path = extractStoragePath(pathOrUrl);
+            if (!path) return;
+            try {
+                await supabase.storage.from(BUCKET_NAME).remove([path]);
+            } catch (e) {
+                console.warn('تعذر حذف الملف من التخزين:', e);
+            }
+        }
+
+        // Modal بديل لـ prompt
+        function showPrompt(title, defaultValue = '', placeholder = '') {
+            return new Promise((resolve) => {
+                const html = `
+                    <div id="promptModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px;">
+                        <div style="background: white; border-radius: 12px; padding: 25px; width: 100%; max-width: 420px;">
+                            <h3 style="color: #1a2a3a; margin-bottom: 15px;">${escapeHtml(title)}</h3>
+                            <input id="promptInput" type="text" value="${escapeHtml(defaultValue)}" placeholder="${escapeHtml(placeholder)}"
+                                style="width: 100%; padding: 10px; border: 1px solid #dce1e8; border-radius: 8px; font-family: inherit;">
+                            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                                <button id="promptOk" style="flex: 1; background: #28a745; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">موافق</button>
+                                <button id="promptCancel" style="flex: 1; background: #6c757d; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">إلغاء</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', html);
+                const modal = document.getElementById('promptModal');
+                const input = document.getElementById('promptInput');
+                input.focus();
+                input.select();
+
+                const cleanup = (val) => { modal.remove(); resolve(val); };
+                document.getElementById('promptOk').addEventListener('click', () => cleanup(input.value));
+                document.getElementById('promptCancel').addEventListener('click', () => cleanup(null));
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') cleanup(input.value);
+                    if (e.key === 'Escape') cleanup(null);
+                });
+            });
+        }
+
+        // Modal بديل لـ confirm
+        function showConfirm(message, okText = 'موافق', cancelText = 'إلغاء', okColor = '#28a745') {
+            return new Promise((resolve) => {
+                const html = `
+                    <div id="confirmModal" style="position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px;">
+                        <div style="background: white; border-radius: 12px; padding: 25px; width: 100%; max-width: 440px;">
+                            <div style="color: #1a2a3a; margin-bottom: 15px; white-space: pre-wrap; font-size: 15px; line-height: 1.6;">${escapeHtml(message)}</div>
+                            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                                <button id="confirmOk" style="flex: 1; background: ${okColor}; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">${escapeHtml(okText)}</button>
+                                <button id="confirmCancel" style="flex: 1; background: #6c757d; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">${escapeHtml(cancelText)}</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                document.body.insertAdjacentHTML('beforeend', html);
+                const modal = document.getElementById('confirmModal');
+                const cleanup = (val) => { modal.remove(); resolve(val); };
+                document.getElementById('confirmOk').addEventListener('click', () => cleanup(true));
+                document.getElementById('confirmCancel').addEventListener('click', () => cleanup(false));
+            });
+        }
+
+        // إشعار سريع
+        function showToast(message, type = 'info') {
+            const colors = { info: '#2d7aff', success: '#28a745', error: '#dc3545', warn: '#ffc107' };
+            const toast = document.createElement('div');
+            toast.style.cssText = `position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: ${colors[type] || colors.info}; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; z-index: 99999; box-shadow: 0 6px 20px rgba(0,0,0,0.2); animation: fadeIn 0.3s ease;`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 2500);
+        }
+		        // =========================================================
+        // عرض الطلبات
+        // =========================================================
+        function renderConsultations(data, employees) {
+            const container = document.getElementById('consultationsContainer');
+            if (!container) return;
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="message">📭 لا توجد طلبات تطابق الفلتر.</div>`;
+                return;
+            }
+
+            const isManager = currentUser?.role === 'manager';
+            let rows = '';
+            data.forEach((item, idx) => {
+                const assignedEmp = employees ? employees.find(e => e.id === item.assigned_to) : null;
+                const assignedName = assignedEmp ? assignedEmp.full_name : 'غير محدد';
+                const attachmentCell = item.attachment_path
+                    ? `<a href="#" class="btn-open-attachment" data-path="${escapeHtml(item.attachment_path)}" style="color:#2d7aff;">📎 ملف</a>`
+                    : '—';
+
+                rows += `
+                    <tr data-id="${item.id}">
+                        <td>${idx + 1}</td>
+                        <td>${escapeHtml(item.client_name) || 'غير محدد'}</td>
+                        <td>${escapeHtml(item.email) || '—'}</td>
+                        <td>${escapeHtml(item.phone) || '—'}</td>
+                        <td>${escapeHtml(item.service) || '—'}</td>
+                        <td>${attachmentCell}</td>
+                        <td>${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-EG') : '—'}</td>
+                        <td>${escapeHtml(assignedName)}</td>
+                        <td>
+                            <button class="btn-preview" data-id="${item.id}">📄 معاينة</button>
+                            ${isManager ? `
+                                <button class="btn-edit-cons" data-id="${item.id}">✏️ تعديل</button>
+                                <button class="btn-delete-cons" data-id="${item.id}">🗑️ حذف</button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = `
+                <div class="table-responsive">
+                    <table>
+                        <thead><tr>
+                            <th>#</th><th>اسم العميل</th><th>البريد</th><th>الهاتف</th>
+                            <th>الخدمة</th><th>المرفقات</th><th>التاريخ</th>
+                            <th>المتابع</th><th>الإجراء</th>
+                        </tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            `;
+
+            document.querySelectorAll('.btn-preview').forEach(btn => {
+                btn.addEventListener('click', function() { openPreview(this.dataset.id); });
+            });
+            document.querySelectorAll('.btn-edit-cons').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const item = allConsultations.find(c => c.id === this.dataset.id);
+                    if (item) openEditConsultationModal(item);
+                });
+            });
+            document.querySelectorAll('.btn-delete-cons').forEach(btn => {
+                btn.addEventListener('click', async function() {
+                    const id = this.dataset.id;
+                    const ok = await showConfirm('هل أنت متأكد من حذف هذا الطلب؟', 'حذف', 'إلغاء', '#dc3545');
+                    if (!ok) return;
+                    const { error } = await supabase.from('consultation_requests').delete().eq('id', id);
+                    if (error) showToast('❌ فشل الحذف: ' + error.message, 'error');
+                    else { showToast('✅ تم حذف الطلب', 'success'); await fetchConsultations(); }
+                });
+            });
+            // روابط المرفقات
+            document.querySelectorAll('.btn-open-attachment').forEach(a => {
+                a.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    const url = await resolveAttachmentUrl(this.dataset.path);
+                    if (url) window.open(url, '_blank');
+                    else showToast('تعذر فتح المرفق', 'error');
+                });
+            });
+        }
+
+        // =========================================================
+        // عرض الموظفين
+        // =========================================================
+        function renderEmployees(data) {
+            const container = document.getElementById('employeesContainer');
+            if (!container) return;
+            if (!data || data.length === 0) {
+                container.innerHTML = `<div class="message">👤 لا يوجد موظفون مسجلون.</div>`;
+                return;
+            }
+            let cards = '';
+            data.forEach(emp => {
+                const isActive = emp.is_active === true;
+                const statusClass = isActive ? '' : 'inactive';
+                const statusText = isActive ? 'نشط' : 'غير نشط';
+                cards += `
+                    <div class="employee-card" data-id="${emp.id}">
+                        <div class="info">
+                            <strong>${escapeHtml(emp.full_name) || 'بدون اسم'}</strong>
+                            <span>📧 ${escapeHtml(emp.email)}</span>
+                            <span>🔹 ${escapeHtml(emp.role) || 'موظف'}</span>
+                            <span class="status-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="actions">
+                            <button class="btn-edit-emp" data-id="${emp.id}">✏️ تعديل</button>
+                            <button class="btn-delete-emp" data-id="${emp.id}">🗑️ حذف</button>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = cards;
+
+            document.querySelectorAll('.btn-edit-emp').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const emp = allEmployees.find(e => e.id === this.dataset.id);
+                    if (emp) openEditEmployeeModal(emp);
+                });
+            });
+            document.querySelectorAll('.btn-delete-emp').forEach(btn => {
+                btn.addEventListener('click', function() { deleteEmployee(this.dataset.id); });
+            });
+        }
+		        // =========================================================
+        // معاينة تفاصيل الطلب
+        // =========================================================
+        async function openPreview(consultationId) {
+            const modal = document.getElementById('previewModal');
+            const body = document.getElementById('modalBody');
+
+            modal.classList.add('active');
+            body.innerHTML = `<div class="loading">⏳ جاري تحميل التفاصيل...</div>`;
+
+            try {
+                const { data: consultation, error: conError } = await supabase
+                    .from('consultation_requests').select('*').eq('id', consultationId).single();
+
+                if (conError || !consultation) {
+                    body.innerHTML = `<div class="message error">❌ خطأ: ${escapeHtml(conError?.message)}</div>`;
+                    return;
+                }
+
+                const [serviceReqRes, initialRes, followupsRes, attachmentsRes] = await Promise.all([
+                    supabase.from('service_requirements')
+                        .select('required_actions, required_documents')
+                        .eq('service_type', consultation.service || 'other').maybeSingle(),
+                    supabase.from('initial_consultations')
+                        .select('*').eq('request_id', consultationId).limit(1).maybeSingle(),
+                    supabase.from('client_followups')
+                        .select('*').eq('request_id', consultationId)
+                        .order('followup_date', { ascending: false }),
+                    supabase.from('client_followups')
+                        .select('id, attachment_path, followup_date')
+                        .eq('request_id', consultationId).eq('is_attachment_only', true)
+                        .order('followup_date', { ascending: false })
+                ]);
+
+                const requiredActions = serviceReqRes.data?.required_actions || [];
+                const requiredDocuments = serviceReqRes.data?.required_documents || [];
+                const initialConsultation = initialRes.data;
+                const followups = followupsRes.data || [];
+                const attachmentsData = attachmentsRes.data || [];
+
+                // رابط المرفق الأساسي
+                const mainAttachmentUrl = consultation.attachment_path
+                    ? await resolveAttachmentUrl(consultation.attachment_path) : null;
+
+                // اسم الموظف المسند
+                let assignedName = 'غير محدد';
+                if (consultation.assigned_to) {
+                    const { data: emp } = await supabase.from('staff_profiles')
+                        .select('full_name').eq('id', consultation.assigned_to).single();
+                    if (emp) assignedName = emp.full_name;
+                }
+
+                // بطاقة العميل
+                const customerCard = `
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <h3><span class="icon-circle">👤</span> معلومات العميل</h3>
+                        </div>
+                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">الاسم</span><span class="dashboard-detail-value">${escapeHtml(consultation.client_name) || 'غير محدد'}</span></div>
+                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">البريد</span><span class="dashboard-detail-value">${escapeHtml(consultation.email) || '—'}</span></div>
+                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">الهاتف</span><span class="dashboard-detail-value">${escapeHtml(consultation.phone) || '—'}</span></div>
+                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">الخدمة</span><span class="dashboard-detail-value">${escapeHtml(consultation.service) || '—'}</span></div>
+                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">تاريخ الطلب</span><span class="dashboard-detail-value">${consultation.created_at ? new Date(consultation.created_at).toLocaleString('ar-EG') : '—'}</span></div>
+                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">الموظف المسند</span><span class="dashboard-detail-value">${escapeHtml(assignedName)}</span></div>
+                        ${consultation.message ? `<div class="dashboard-detail-row"><span class="dashboard-detail-label">الرسالة</span><span class="dashboard-detail-value">${escapeHtml(consultation.message)}</span></div>` : ''}
+                        ${mainAttachmentUrl ? `<div class="dashboard-detail-row"><span class="dashboard-detail-label">📎 المرفق</span><span class="dashboard-detail-value"><a href="${mainAttachmentUrl}" target="_blank" style="color:#2d7aff;">فتح الملف</a></span></div>` : ''}
+                    </div>
+                `;
+
+                // بطاقة المهام
+                let tasksCard = '';
+                if (requiredActions.length > 0 || requiredDocuments.length > 0) {
+                    tasksCard = `
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header">
+                                <h3><span class="icon-circle">📋</span> المهام والمستندات المطلوبة</h3>
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <strong>الإجراءات المطلوبة:</strong>
+                                <ul style="list-style:none; padding:0; margin-top:5px;">
+                                    ${requiredActions.map((action, i) => `
+                                        <li class="dashboard-checkbox-item">
+                                            <input type="checkbox" id="action_${i}" class="manager-task-action" data-task-type="action" data-index="${i}">
+                                            <label for="action_${i}">${escapeHtml(action)}</label>
+                                        </li>`).join('')}
+                                </ul>
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <strong>المستندات المطلوبة:</strong>
+                                <ul style="list-style:none; padding:0; margin-top:5px;">
+                                    ${requiredDocuments.map((doc, i) => `
+                                        <li class="dashboard-checkbox-item">
+                                            <input type="checkbox" id="doc_${i}" class="manager-task-doc" data-task-type="document" data-index="${i}">
+                                            <label for="doc_${i}">${escapeHtml(doc)}</label>
+                                        </li>`).join('')}
+                                </ul>
+                            </div>
+                            <button id="btnSaveTasks" class="dashboard-btn">✅ حفظ حالة المهام</button>
+                        </div>
+                    `;
+                }
+
+                // بطاقة المقابلة الأولى
+                let initialCard = '';
+                if (initialConsultation) {
+                    initialCard = `
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header"><h3><span class="icon-circle">📝</span> المقابلة الأولى</h3></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">التاريخ</span><span class="dashboard-detail-value">${initialConsultation.consultation_date ? new Date(initialConsultation.consultation_date).toLocaleString('ar-EG') : '—'}</span></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">طريقة التواصل</span><span class="dashboard-detail-value">${escapeHtml(initialConsultation.contact_method) || '-'}</span></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">الملخص</span><span class="dashboard-detail-value">${escapeHtml(initialConsultation.summary) || '-'}</span></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">النتيجة</span><span class="dashboard-detail-value">${escapeHtml(initialConsultation.result) || '-'}</span></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">ملاحظات المدير</span><span class="dashboard-detail-value">${escapeHtml(initialConsultation.manager_notes) || '-'}</span></div>
+                            <div class="dashboard-detail-row"><span class="dashboard-detail-label">التوصيات</span><span class="dashboard-detail-value">${escapeHtml(initialConsultation.instructions) || '-'}</span></div>
+                        </div>
+                    `;
+                }
+
+                // بطاقة سجل المتابعات
+                const statusLabels = {
+                    pending: { text: '⏳ بانتظار التنفيذ', color: '#ffc107' },
+                    in_progress: { text: '🔄 قيد التنفيذ', color: '#17a2b8' },
+                    completed: { text: '✅ تم التنفيذ', color: '#28a745' },
+                    failed: { text: '❌ تعذر التنفيذ', color: '#dc3545' }
+                };
+                let displayFollowups = followups || [];
+                if (currentUser?.role === 'manager') {
+                    displayFollowups = displayFollowups.filter(f => f.notes && f.notes.includes('تم إنجاز'));
+                }
+                let followupsHtml = '';
+                if (displayFollowups.length === 0) {
+                    followupsHtml = '<div class="message">لا توجد متابعات.</div>';
+                } else {
+                    followupsHtml = displayFollowups.map(f => {
+                        const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
+                        let followerName = 'المدير';
+                        if (f.assigned_to) {
+                            const emp = allEmployees.find(e => e.id === f.assigned_to);
+                            if (emp) followerName = emp.full_name;
+                        }
+                        const status = statusLabels[f.followup_status] || { text: f.followup_status || 'غير محدد', color: '#6c757d' };
+                        return `
+                            <div class="dashboard-followup-item" style="border-right-color:${status.color};">
+                                <div style="font-size:12px; color:#6c757d; margin-bottom:4px;">
+                                    <strong>الموظف:</strong> ${escapeHtml(followerName)} |
+                                    <strong>التاريخ:</strong> ${date} |
+                                    <span style="background:${status.color}; color:white; padding:2px 8px; border-radius:10px; font-size:10px;">${status.text}</span>
+                                </div>
+                                <div class="note"><strong>المطلوب:</strong> ${escapeHtml(f.action) || '-'}</div>
+                                ${f.notes && f.notes.includes('تم إنجاز')
+                                    ? `<div style="background:#e7f3ff; padding:6px; border-radius:4px; margin-top:5px;"><strong>✅ ما تم إنجازه:</strong> ${escapeHtml(f.notes.replace('تم إنجاز: ',''))}</div>`
+                                    : `<div><strong>تعليمات المدير:</strong> ${escapeHtml(f.notes) || '-'}</div>`}
+                            </div>
+                        `;
+                    }).join('');
+                }
+                const followupsCard = `
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header">
+                            <h3><span class="icon-circle">📊</span> ${currentUser?.role === 'manager' ? 'المهام المنجزة' : 'سجل المتابعات'}</h3>
+                        </div>
+                        ${followupsHtml}
+                    </div>
+                `;
+
+                // بطاقة المرفقات الإضافية
+                let attachmentsHtml = '';
+                if (attachmentsData.length > 0) {
+                    for (const att of attachmentsData) {
+                        if (!att.attachment_path) continue;
+                        const date = att.followup_date ? new Date(att.followup_date).toLocaleString('ar-EG') : '—';
+                        const url = await resolveAttachmentUrl(att.attachment_path);
+                        attachmentsHtml += `
+                            <div class="dashboard-attachment-item">
+                                <a href="${url || '#'}" ${url ? 'target="_blank"' : ''}>📎 مرفق بتاريخ: ${date}</a>
+                                ${currentUser?.role === 'manager' ? `<button class="btn-delete-attachment" data-id="${att.id}">🗑️ حذف</button>` : ''}
+                            </div>
+                        `;
+                    }
+                } else {
+                    attachmentsHtml = '<div class="message">لا توجد مرفقات إضافية.</div>';
+                }
+                const attachmentsCard = `
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header"><h3><span class="icon-circle">📎</span> المرفقات الإضافية</h3></div>
+                        <div id="attachmentsList">${attachmentsHtml}</div>
+                        <div class="dashboard-form-grid" style="margin-top:10px;">
+                            <input type="file" id="newFollowupAttachment" accept="image/*,.pdf">
+                            <button id="btnAddFollowupAttachment" data-id="${consultationId}" class="dashboard-btn">إضافة مرفق</button>
+                        </div>
+                    </div>
+                `;
+
+                // بطاقة تكليف الموظف (للمدير فقط)
+                let assignTaskCard = '';
+                if (currentUser?.role === 'manager') {
+                    const followupEmployees = allEmployees.filter(e => e.role === 'followup_staff');
+                    const secretaries = allEmployees.filter(e => e.role === 'secretary');
+                    assignTaskCard = `
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header"><h3><span class="icon-circle">📝</span> تكليف الموظف بمتابعة</h3></div>
+                            <div style="margin-bottom:12px;">
+                                <strong>الإجراءات المطلوبة:</strong>
+                                <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:5px;">
+                                    ${['تحديد طبيعة الاستشارة','الاتصال بالعميل','تحديد موعد','مراجعة المستندات'].map(a => `
+                                        <label style="display:flex; align-items:center; gap:5px;">
+                                            <input type="checkbox" class="task-action-checkbox" value="${escapeHtml(a)}"> ${escapeHtml(a)}
+                                        </label>`).join('')}
+                                </div>
+                            </div>
+                            <div style="margin-bottom:12px;">
+                                <strong>المستندات المطلوبة:</strong>
+                                <div style="display:flex; flex-wrap:wrap; gap:10px; margin-top:5px;">
+                                    ${['مستندات داعمة','بطاقة شخصية','توكيل','عقد'].map(d => `
+                                        <label style="display:flex; align-items:center; gap:5px;">
+                                            <input type="checkbox" class="task-doc-checkbox" value="${escapeHtml(d)}"> ${escapeHtml(d)}
+                                        </label>`).join('')}
+                                </div>
+                            </div>
+                            <div style="margin-bottom:10px;">
+                                <label style="font-weight:600; display:block; margin-bottom:5px;">موعد التنفيذ:</label>
+                                <input type="date" id="followupDueDate" style="width:100%; padding:8px; border:1px solid #dce1e8; border-radius:6px;">
+                            </div>
+                            <div style="margin-top:12px;">
+                                <label style="font-weight:600; display:block; margin-bottom:5px;">ملاحظات المدير:</label>
+                                <textarea id="managerNotes" rows="3" style="width:100%; padding:8px; border:1px solid #dce1e8; border-radius:6px;" placeholder="تعليمات للموظف..."></textarea>
+                            </div>
+                            <hr style="margin:15px 0; border:none; border-top:1px solid #e9edf4;">
+                            <div style="margin-bottom:10px;">
+                                <label style="font-weight:600; display:block; margin-bottom:5px;">🟢 تكليف موظف متابعة:</label>
+                                <select id="assigneeSelect" style="width:100%; padding:8px; border:1px solid #dce1e8; border-radius:6px;">
+                                    <option value="">اختر الموظف</option>
+                                    ${followupEmployees.map(emp => `<option value="${emp.id}">${escapeHtml(emp.full_name)}</option>`).join('')}
+                                </select>
+                                <button id="btnCreateTask" class="dashboard-btn" style="margin-top:8px; background:#28a745; width:100%;">🟢 تكليف الموظف</button>
+                            </div>
+                            <div style="margin-top:15px; padding-top:15px; border-top:1px dashed #dce1e8;">
+                                <label style="font-weight:600; display:block; margin-bottom:5px;">📋 إضافة إلى قائمة السكرتير:</label>
+                                <select id="secretarySelect" style="width:100%; padding:8px; border:1px solid #dce1e8; border-radius:6px;">
+                                    <option value="">اختر السكرتير</option>
+                                    ${secretaries.map(emp => `<option value="${emp.id}">${escapeHtml(emp.full_name)}</option>`).join('')}
+                                </select>
+                                <button id="btnAddToSecretary" class="dashboard-btn" style="margin-top:8px; background:#2d7aff; width:100%;">📋 إضافة إلى السكرتير</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // بطاقة المهام المكلف بها (للموظف)
+                let assignedTasksCard = '';
+                if (currentUser?.role === 'followup_staff') {
+                    const { data: myTasks } = await supabase
+                        .from('client_followups').select('*')
+                        .eq('request_id', consultationId)
+                        .eq('assigned_to', currentUser.id)
+                        .eq('is_attachment_only', false)
+                        .order('followup_date', { ascending: false });
+
+                    let tasksHtml = '';
+                    if (myTasks && myTasks.length > 0) {
+                        myTasks.forEach((task) => {
+                            const dueDate = task.next_followup ? new Date(task.next_followup).toLocaleDateString('ar-EG') : 'غير محدد';
+                            const status = statusLabels[task.followup_status] || { text: task.followup_status || 'غير محدد', color: '#6c757d' };
+                            const parts = (task.action || '').split('|');
+                            const actionsArray = parts[0] ? parts[0].replace('الإجراءات:','').split(',').map(i => i.trim()).filter(i => i) : [];
+                            const docsArray = parts[1] ? parts[1].replace('المستندات:','').split(',').map(i => i.trim()).filter(i => i) : [];
+
+                            tasksHtml += `
+                                <div style="border:1px solid #e9edf4; padding:12px; border-radius:8px; margin-bottom:15px; background:#f8faff; border-right:4px solid ${status.color};">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                        <strong>📋 مهمة #${task.id.slice(0,8)}</strong>
+                                        <span style="background:${status.color}; color:white; padding:3px 10px; border-radius:20px; font-size:11px;">${status.text}</span>
+                                    </div>
+                                    ${actionsArray.length > 0 ? `
+                                        <div style="margin-bottom:10px;">
+                                            <strong style="font-size:13px;">الإجراءات المطلوبة:</strong>
+                                            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:5px;">
+                                                ${actionsArray.map(a => `
+                                                    <label style="display:flex; align-items:center; gap:5px; background:white; padding:6px 10px; border-radius:6px; border:1px solid #dce1e8; font-size:12px;">
+                                                        <input type="checkbox" class="employee-task-action" data-task-id="${task.id}" value="${escapeHtml(a)}"> ${escapeHtml(a)}
+                                                    </label>`).join('')}
+                                            </div>
+                                        </div>` : ''}
+                                    ${docsArray.length > 0 ? `
+                                        <div style="margin-bottom:10px;">
+                                            <strong style="font-size:13px;">المستندات المطلوبة:</strong>
+                                            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:5px;">
+                                                ${docsArray.map(d => `
+                                                    <label style="display:flex; align-items:center; gap:5px; background:white; padding:6px 10px; border-radius:6px; border:1px solid #dce1e8; font-size:12px;">
+                                                        <input type="checkbox" class="employee-task-doc" data-task-id="${task.id}" value="${escapeHtml(d)}"> ${escapeHtml(d)}
+                                                    </label>`).join('')}
+                                            </div>
+                                        </div>` : ''}
+                                    ${task.notes ? `<div style="font-size:12px; background:#fff9e6; padding:8px; border-radius:6px; margin-bottom:8px; border-right:3px solid #ffc107;"><strong>📝 تعليمات المدير:</strong> ${escapeHtml(task.notes)}</div>` : ''}
+                                    <div style="font-size:12px; margin-bottom:10px;"><strong>📅 موعد التنفيذ:</strong> ${dueDate}</div>
+                                    ${task.followup_status !== 'completed' && task.followup_status !== 'failed' ? `
+                                        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                            <button class="btn-save-employee-tasks dashboard-btn" data-id="${task.id}">💾 حفظ حالة المهام</button>
+                                            <button class="btn-fail-task dashboard-btn" data-id="${task.id}" style="background:#dc3545;">🔴 تعذر التنفيذ</button>
+                                        </div>` : ''}
+                                </div>
+                            `;
+                        });
+                    } else {
+                        tasksHtml = '<div class="message">لا توجد مهام مكلف بها حالياً.</div>';
+                    }
+                    assignedTasksCard = `
+                        <div class="dashboard-card">
+                            <div class="dashboard-card-header"><h3><span class="icon-circle">🔔</span> المتابعات المكلف بها</h3></div>
+                            ${tasksHtml}
+                        </div>
+                    `;
+                }
+
+                // بطاقة إضافة متابعة
+                const addFollowupCard = `
+                    <div class="dashboard-card">
+                        <div class="dashboard-card-header"><h3><span class="icon-circle">➕</span> إضافة متابعة جديدة</h3></div>
+                        <div class="dashboard-form-grid">
+                            <input type="text" id="newFollowupNote" placeholder="ملاحظة المتابعة">
+                            <input type="text" id="newFollowupStatus" placeholder="الحالة (اختياري)">
+                            <button id="btnAddFollowup" data-id="${consultationId}" class="dashboard-btn">إضافة</button>
+                        </div>
+                    </div>
+                `;
+
+                body.innerHTML = `<div class="dashboard-container">
+                    ${customerCard}
+                    ${tasksCard}
+                    ${initialCard}
+                    ${assignedTasksCard}
+                    ${assignTaskCard}
+                    ${followupsCard}
+                    ${attachmentsCard}
+                    ${addFollowupCard}
+                </div>`;
+
+                // ====== ربط الأحداث ======
+
+                // حفظ حالة المهام (للمدير)
+                document.getElementById('btnSaveTasks')?.addEventListener('click', async () => {
+                    const checkedActions = [];
+                    const checkedDocuments = [];
+                    document.querySelectorAll('.manager-task-action, .manager-task-doc').forEach(cb => {
+                        if (!cb.checked) return;
+                        if (cb.dataset.taskType === 'action') checkedActions.push(requiredActions[cb.dataset.index]);
+                        else checkedDocuments.push(requiredDocuments[cb.dataset.index]);
+                    });
+                    const { data: { user } } = await supabase.auth.getUser();
+                    const { error } = await supabase.from('client_followups').insert({
+                        request_id: consultationId,
+                        notes: `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocuments.join(', ') || 'لا شيء'}`,
+                        followup_status: 'completed',
+                        created_by: user?.id,
+                        contact_method: 'other',
+                        action: 'تحديث حالة المهام',
+                        followup_date: new Date().toISOString()
+                    });
+                    if (error) showToast('❌ فشل الحفظ: ' + error.message, 'error');
+                    else { showToast('✅ تم حفظ المهام', 'success'); openPreview(consultationId); }
+                });
+
+                // حفظ حالة المهام (للموظف)
+                document.querySelectorAll('.btn-save-employee-tasks').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const taskId = this.dataset.id;
+                        const checkedActions = [];
+                        const checkedDocs = [];
+                        document.querySelectorAll(`.employee-task-action[data-task-id="${taskId}"]:checked`).forEach(cb => checkedActions.push(cb.value));
+                        document.querySelectorAll(`.employee-task-doc[data-task-id="${taskId}"]:checked`).forEach(cb => checkedDocs.push(cb.value));
+                        if (checkedActions.length === 0 && checkedDocs.length === 0) {
+                            showToast('⚠️ حدد عنصراً واحداً على الأقل', 'warn');
+                            return;
+                        }
+                        const progressNotes = `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
+                        const { error } = await supabase.from('client_followups')
+                            .update({ notes: progressNotes, followup_status: 'in_progress' })
+                            .eq('id', taskId);
+                        if (error) showToast('❌ فشل: ' + error.message, 'error');
+                        else { showToast('✅ تم الحفظ', 'success'); openPreview(consultationId); }
+                    });
+                });
+
+                // تعذر التنفيذ
+                document.querySelectorAll('.btn-fail-task').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const taskId = this.dataset.id;
+                        const reason = await showPrompt('🔴 سبب تعذر التنفيذ', '', 'اكتب السبب...');
+                        if (!reason) return;
+                        const { error } = await supabase.from('client_followups')
+                            .update({ followup_status: 'failed', notes: reason }).eq('id', taskId);
+                        if (error) showToast('❌ فشل: ' + error.message, 'error');
+                        else { showToast('✅ تم التسجيل', 'success'); openPreview(consultationId); }
+                    });
+                });
+
+                // إضافة مرفق
+                document.getElementById('btnAddFollowupAttachment')?.addEventListener('click', async function() {
+                    const consId = this.dataset.id;
+                    const file = document.getElementById('newFollowupAttachment').files[0];
+                    if (!file) { showToast('⚠️ اختر ملفاً أولاً', 'warn'); return; }
+                    const err = validateFile(file);
+                    if (err) { showToast('❌ ' + err, 'error'); return; }
+                    try {
+                        const filePath = await uploadFile(file);
+                        const { data: { user } } = await supabase.auth.getUser();
+                        const { error } = await supabase.from('client_followups').insert({
+                            request_id: consId,
+                            notes: '',
+                            followup_status: 'new',
+                            created_by: user?.id,
+                            contact_method: 'other',
+                            action: '',
+                            followup_date: new Date().toISOString(),
+                            attachment_path: filePath,
+                            is_attachment_only: true
+                        });
+                        if (error) { await deleteFileFromStorage(filePath); throw error; }
+                        showToast('✅ تم إضافة المرفق', 'success');
+                        openPreview(consId);
+                    } catch (e) {
+                        showToast('❌ ' + e.message, 'error');
+                    }
+                });
+
+                // إضافة متابعة عامة
+                document.getElementById('btnAddFollowup')?.addEventListener('click', async function() {
+                    const consId = this.dataset.id;
+                    const note = document.getElementById('newFollowupNote').value.trim();
+                    const status = document.getElementById('newFollowupStatus').value.trim() || null;
+                    if (!note) { showToast('⚠️ اكتب ملاحظة', 'warn'); return; }
+                    const { data: { user } } = await supabase.auth.getUser();
+                    if (!user) { showToast('❌ انتهت الجلسة', 'error'); return; }
+                    const { error } = await supabase.from('client_followups').insert({
+                        request_id: consId, notes: note, followup_status: status,
+                        created_by: user.id, contact_method: 'other',
+                        action: 'متابعة', followup_date: new Date().toISOString()
+                    });
+                    if (error) showToast('❌ فشل: ' + error.message, 'error');
+                    else { showToast('✅ تم', 'success'); openPreview(consId); }
+                });
+
+                // تكليف موظف
+                document.getElementById('btnCreateTask')?.addEventListener('click', async function() {
+                    const assigneeId = document.getElementById('assigneeSelect').value;
+                    const dueDate = document.getElementById('followupDueDate').value;
+                    const notes = document.getElementById('managerNotes').value.trim();
+                    if (!assigneeId) { showToast('⚠️ اختر الموظف', 'warn'); return; }
+                    const selectedActions = [...document.querySelectorAll('.task-action-checkbox:checked')].map(cb => cb.value);
+                    const selectedDocs = [...document.querySelectorAll('.task-doc-checkbox:checked')].map(cb => cb.value);
+                    if (selectedActions.length === 0 && selectedDocs.length === 0) {
+                        showToast('⚠️ حدد الإجراءات أو المستندات', 'warn'); return;
+                    }
+                    const actionText = `الإجراءات: ${selectedActions.join(', ') || 'لا يوجد'} | المستندات: ${selectedDocs.join(', ') || 'لا يوجد'}`;
+                    const taskData = {
+                        request_id: consultationId,
+                        followup_date: new Date().toISOString(),
+                        contact_method: 'other',
+                        action: actionText,
+                        notes: notes,
+                        next_followup: dueDate ? new Date(dueDate).toISOString() : null,
+                        followup_status: 'pending',
+                        created_by: currentUser.id,
+                        assigned_to: assigneeId,
+                        is_attachment_only: false
+                    };
+                    const { data: existingTasks } = await supabase.from('client_followups')
+                        .select('id, action').eq('request_id', consultationId)
+                        .eq('assigned_to', assigneeId).eq('is_attachment_only', false)
+                        .in('followup_status', ['pending', 'in_progress']);
+
+                    if (existingTasks && existingTasks.length > 0) {
+                        const update = await showConfirm(
+                            `⚠️ يوجد مهمة سابقة لهذا الموظف.\n\nالمهمة: ${existingTasks[0].action || 'لا يوجد'}\n\nموافق = تحديث • إلغاء = إنشاء مهمة جديدة`,
+                            'تحديث', 'إنشاء جديدة'
+                        );
+                        if (update) {
+                            const { error } = await supabase.from('client_followups')
+                                .update({
+                                    action: actionText, notes, next_followup: taskData.next_followup,
+                                    followup_status: 'pending', followup_date: new Date().toISOString()
+                                }).eq('id', existingTasks[0].id);
+                            if (error) showToast('❌ ' + error.message, 'error');
+                            else { showToast('✅ تم التحديث', 'success'); openPreview(consultationId); }
+                            return;
+                        }
+                    }
+
+                    const { error } = await supabase.from('client_followups').insert(taskData);
+                    if (error) { showToast('❌ ' + error.message, 'error'); return; }
+
+                    const assignedEmp = allEmployees.find(e => e.id === assigneeId);
+                    if (assignedEmp && assignedEmp.role === 'followup_staff') {
+                        await supabase.from('consultation_requests')
+                            .update({ assigned_to: assigneeId }).eq('id', consultationId);
+                    }
+                    showToast('✅ تم التكليف', 'success');
+                    openPreview(consultationId);
+                });
+
+                // إضافة إلى السكرتير
+                document.getElementById('btnAddToSecretary')?.addEventListener('click', async function() {
+                    const secretaryId = document.getElementById('secretarySelect').value;
+                    const dueDate = document.getElementById('followupDueDate').value;
+                    const notes = document.getElementById('managerNotes').value.trim();
+                    if (!secretaryId) { showToast('⚠️ اختر السكرتير', 'warn'); return; }
+                    const selectedActions = [...document.querySelectorAll('.task-action-checkbox:checked')].map(cb => cb.value);
+                    const selectedDocs = [...document.querySelectorAll('.task-doc-checkbox:checked')].map(cb => cb.value);
+                    if (selectedActions.length === 0 && selectedDocs.length === 0) {
+                        showToast('⚠️ حدد الإجراءات أو المستندات', 'warn'); return;
+                    }
+                    const actionText = `الإجراءات: ${selectedActions.join(', ') || 'لا يوجد'} | المستندات: ${selectedDocs.join(', ') || 'لا يوجد'}`;
+                    const { error } = await supabase.from('client_followups').insert({
+                        request_id: consultationId,
+                        followup_date: new Date().toISOString(),
+                        contact_method: 'other',
+                        action: actionText,
+                        notes: notes,
+                        next_followup: dueDate ? new Date(dueDate).toISOString() : null,
+                        followup_status: 'pending',
+                        created_by: currentUser.id,
+                        assigned_to: secretaryId,
+                        is_attachment_only: false
+                    });
+                    if (error) showToast('❌ ' + error.message, 'error');
+                    else { showToast('✅ تم الإضافة', 'success'); openPreview(consultationId); }
+                });
+
+                // حذف مرفق
+                document.querySelectorAll('.btn-delete-attachment').forEach(btn => {
+                    btn.addEventListener('click', async function() {
+                        const attachmentId = this.dataset.id;
+                        const ok = await showConfirm('هل تريد حذف هذا المرفق؟', 'حذف', 'إلغاء', '#dc3545');
+                        if (!ok) return;
+                        const { data: att } = await supabase.from('client_followups')
+                            .select('attachment_path').eq('id', attachmentId).single();
+                        if (att?.attachment_path) await deleteFileFromStorage(att.attachment_path);
+                        const { error } = await supabase.from('client_followups').delete().eq('id', attachmentId);
+                        if (error) showToast('❌ ' + error.message, 'error');
+                        else { showToast('✅ تم الحذف', 'success'); openPreview(consultationId); }
+                    });
+                });
+
+            } catch (err) {
+                console.error('خطأ في openPreview:', err);
+                body.innerHTML = `<div class="message error">❌ خطأ غير متوقع: ${escapeHtml(err.message)}</div>`;
+            }
+        }
+		        // =========================================================
+        // إدارة الموظفين
+        // =========================================================
+        async function addEmployee() {
+            const name = document.getElementById('empName').value.trim();
+            const email = document.getElementById('empEmail').value.trim();
+            const password = document.getElementById('empPassword').value.trim();
+            const role = document.getElementById('empRole').value;
+            const status = document.getElementById('empStatus').value === 'true';
+            const btn = document.getElementById('btnAddEmployee');
+
+            if (!name || !email || !password) {
+                showToast('⚠️ املأ جميع الحقول', 'warn'); return;
+            }
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { showToast('❌ انتهت الجلسة', 'error'); return; }
+
+            btn.disabled = true;
+            btn.textContent = '...';
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/add-employee`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({ name, email, password, role, status })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (response.ok) {
+                    showToast('✅ تم إضافة الموظف', 'success');
+                    await fetchEmployees();
+                    document.getElementById('empName').value = '';
+                    document.getElementById('empEmail').value = '';
+                    document.getElementById('empPassword').value = '';
+                } else {
+                    showToast('❌ ' + (result.error || 'فشل الإضافة'), 'error');
+                }
+            } catch (err) {
+                showToast('❌ خطأ: ' + err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'إضافة';
+            }
+        }
+
+        async function deleteEmployee(id) {
+            const ok = await showConfirm('هل أنت متأكد من حذف هذا الموظف؟', 'حذف', 'إلغاء', '#dc3545');
+            if (!ok) return;
+
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) { showToast('❌ انتهت الجلسة', 'error'); return; }
+
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-employee`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
+                    },
+                    body: JSON.stringify({ userId: id })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (response.ok) {
+                    showToast('✅ تم الحذف', 'success');
+                    await fetchEmployees();
+                } else {
+                    showToast('❌ ' + (result.error || 'فشل الحذف'), 'error');
+                }
+            } catch (err) {
+                showToast('❌ خطأ: ' + err.message, 'error');
+            }
+        }
+
+        async function openEditEmployeeModal(emp) {
+            const newName = await showPrompt('تعديل اسم الموظف:', emp.full_name);
+            if (newName === null) return;
+
+            const validRoles = ['manager', 'followup_staff', 'secretary'];
+            const newRole = await showPrompt(`تعديل الدور (${validRoles.join(' / ')}):`, emp.role);
+            if (newRole === null) return;
+            if (!validRoles.includes(newRole)) {
+                showToast('❌ دور غير صالح', 'error'); return;
+            }
+
+            const newStatus = await showConfirm(
+                'هل الموظف نشط؟',
+                'نشط', 'غير نشط'
+            );
+
+            const { error } = await supabase.from('staff_profiles')
+                .update({ full_name: newName, role: newRole, is_active: newStatus })
+                .eq('id', emp.id);
+
+            if (error) showToast('❌ ' + error.message, 'error');
+            else { showToast('✅ تم التعديل', 'success'); await fetchEmployees(); }
+        }
+
+        async function openEditConsultationModal(item) {
+            const newName = await showPrompt('تعديل اسم العميل:', item.client_name);
+            if (newName === null) return;
+            const newPhone = await showPrompt('تعديل رقم الهاتف:', item.phone);
+            if (newPhone === null) return;
+            const newStatus = await showPrompt('تعديل الحالة (new/contacted/in_progress/resolved):', item.status || 'new');
+            if (newStatus === null) return;
+
+            const { error } = await supabase.from('consultation_requests')
+                .update({ client_name: newName, phone: newPhone, status: newStatus })
+                .eq('id', item.id);
+
+            if (error) showToast('❌ ' + error.message, 'error');
+            else { showToast('✅ تم التعديل', 'success'); await fetchConsultations(); }
+        }
+		        async function fetchEmployees() {
+            try {
+                const { data, error } = await supabase
+                    .from('staff_profiles').select('*')
+                    .order('full_name', { ascending: true });
+                if (error) throw error;
+                allEmployees = data || [];
+                renderEmployees(allEmployees);
+            } catch (err) {
+                document.getElementById('employeesContainer').innerHTML =
+                    `<div class="message error">❌ ${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        // ============================================================
+        // 🔴 الشاشة الذكية - دالة تحميل التنبيهات
+        // ============================================================
+        async function loadSmartAlerts() {
+            const container = document.getElementById('alertsContainer');
+            if (!container) return;
+            let alerts = [];
+            try {
+                const today = new Date().toISOString().split('T')[0];
+
+                if (currentUser?.role === 'followup_staff') {
+                    const { data: overdueTasks } = await supabase
+                        .from('client_followups').select('id')
+                        .eq('assigned_to', currentUser.id)
+                        .eq('is_attachment_only', false)
+                        .in('followup_status', ['pending', 'in_progress'])
+                        .lt('next_followup', today);
+
+                    if (overdueTasks?.length) {
+                        alerts.push({ icon: '⚠️', color: '#dc3545', text: `لديك ${overdueTasks.length} مهمة تجاوزت موعدها`, type: 'overdue' });
+                    }
+                    const { data: newTasks } = await supabase
+                        .from('client_followups').select('id')
+                        .eq('assigned_to', currentUser.id)
+                        .eq('is_attachment_only', false)
+                        .eq('followup_status', 'pending');
+                    if (newTasks?.length) {
+                        alerts.push({ icon: '📋', color: '#17a2b8', text: `لديك ${newTasks.length} مهمة بانتظار التنفيذ`, type: 'new_tasks' });
+                    }
+                    const twoDaysFromNow = new Date();
+                    twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+                    const twoDaysStr = twoDaysFromNow.toISOString().split('T')[0];
+                    const { data: upcomingTasks } = await supabase
+                        .from('client_followups').select('id')
+                        .eq('assigned_to', currentUser.id)
+                        .eq('is_attachment_only', false)
+                        .in('followup_status', ['pending', 'in_progress'])
+                        .gte('next_followup', today).lte('next_followup', twoDaysStr);
+                    if (upcomingTasks?.length) {
+                        alerts.push({ icon: '⏰', color: '#ffc107', text: `لديك ${upcomingTasks.length} مهمة خلال يومين`, type: 'upcoming' });
+                    }
+                }
+
+                if (currentUser?.role === 'manager') {
+                    const { data: allOverdue } = await supabase
+                        .from('client_followups').select('id')
+                        .eq('is_attachment_only', false)
+                        .in('followup_status', ['pending', 'in_progress'])
+                        .lt('next_followup', today);
+                    if (allOverdue?.length) {
+                        alerts.push({ icon: '⚠️', color: '#dc3545', text: `هناك ${allOverdue.length} مهمة متأخرة`, type: 'overdue' });
+                    }
+                    const { data: pendingTasks } = await supabase
+                        .from('client_followups').select('id')
+                        .eq('is_attachment_only', false)
+                        .eq('followup_status', 'pending');
+                    if (pendingTasks?.length) {
+                        alerts.push({ icon: '📋', color: '#17a2b8', text: `${pendingTasks.length} مهمة بانتظار التنفيذ`, type: 'pending_tasks' });
+                    }
+                }
+
+                if (currentUser?.role === 'secretary') {
+                    const { data: newRequests } = await supabase
+                        .from('consultation_requests').select('id')
+                        .eq('created_by', currentUser.id).eq('status', 'new');
+                    if (newRequests?.length) {
+                        alerts.push({ icon: '🔔', color: '#ffc107', text: `لديك ${newRequests.length} طلب جديد`, type: 'new_requests' });
+                    }
+                    const { data: assignedTasks } = await supabase
+                        .from('client_followups').select('id')
+                        .eq('assigned_to', currentUser.id)
+                        .eq('is_attachment_only', false)
+                        .in('followup_status', ['pending', 'in_progress']);
+                    if (assignedTasks?.length) {
+                        alerts.push({ icon: '📌', color: '#2d7aff', text: `${assignedTasks.length} مهمة مكلف بها`, type: 'assigned_tasks' });
+                    }
+                }
+
+                if (alerts.length === 0) {
+                    container.innerHTML = `<div style="background:#e7f9ef; border-radius:8px; padding:10px 15px; font-size:13px; color:#28a745; display:flex; align-items:center; gap:8px;">✅ لا توجد تنبيهات حالياً.</div>`;
+                } else {
+                    container.innerHTML = alerts.map(a => `
+                        <div class="smart-alert" data-type="${a.type}" style="border-right:4px solid ${a.color};">
+                            <span style="font-size:18px;">${a.icon}</span>
+                            <span>${escapeHtml(a.text)}</span>
+                            <span style="margin-right:auto; font-size:11px; color:#2d7aff;">👁️ التفاصيل</span>
+                        </div>
+                    `).join('');
+                }
+                document.querySelectorAll('.smart-alert').forEach(el => {
+                    el.addEventListener('click', function() { showAlertDetails(this.dataset.type); });
+                });
+            } catch (err) {
+                console.error('خطأ في التنبيهات:', err);
+                container.innerHTML = `<div style="color:#dc3545; font-size:13px;">❌ تعذر تحميل التنبيهات.</div>`;
+            }
+        }
+
+        // ============================================================
+        // عرض تفاصيل التنبيه
+        // ============================================================
+        async function showAlertDetails(alertType) {
+            const modalHtml = `
+                <div id="alertDetailsModal" style="position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; display:flex; justify-content:center; align-items:center; padding:20px;">
+                    <div style="background:white; border-radius:16px; padding:25px; width:90%; max-width:900px; max-height:85vh; overflow-y:auto;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid #2d7aff; padding-bottom:12px;">
+                            <h2 id="alertModalTitle" style="color:#1a2a3a; margin:0;">📋 تفاصيل التنبيه</h2>
+                            <button id="closeAlertModal" style="background:#dc3545; color:white; border:none; border-radius:50%; width:35px; height:35px; font-size:18px; cursor:pointer;">✕</button>
+                        </div>
+                        <div id="alertModalBody"><div style="text-align:center; color:#6c757d;">⏳ جاري التحميل...</div></div>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            document.getElementById('closeAlertModal').addEventListener('click', () => document.getElementById('alertDetailsModal').remove());
+            document.getElementById('alertDetailsModal').addEventListener('click', function(e) { if (e.target === this) this.remove(); });
+
+            const body = document.getElementById('alertModalBody');
+            const title = document.getElementById('alertModalTitle');
+
+            try {
+                let tasks = [];
+                let titleText = '';
+                const today = new Date().toISOString().split('T')[0];
+
+                if (alertType === 'overdue') {
+                    titleText = '⚠️ المهام المتأخرة';
+                    let q = supabase.from('client_followups')
+                        .select('*, consultation_requests!inner(client_name, phone, service)')
+                        .eq('is_attachment_only', false)
+                        .in('followup_status', ['pending', 'in_progress'])
+                        .lt('next_followup', today);
+                    if (currentUser?.role === 'followup_staff') q = q.eq('assigned_to', currentUser.id);
+                    const { data } = await q; tasks = data || [];
+                }
+                if (alertType === 'pending_tasks' || alertType === 'new_tasks') {
+                    titleText = '📋 المهام بانتظار التنفيذ';
+                    let q = supabase.from('client_followups')
+                        .select('*, consultation_requests!inner(client_name, phone, service)')
+                        .eq('is_attachment_only', false).eq('followup_status', 'pending');
+                    if (currentUser?.role === 'followup_staff') q = q.eq('assigned_to', currentUser.id);
+                    const { data } = await q; tasks = data || [];
+                }
+                if (alertType === 'upcoming') {
+                    titleText = '⏰ مواعيد قريبة';
+                    const twoDaysFromNow = new Date(); twoDaysFromNow.setDate(twoDaysFromNow.getDate() + 2);
+                    const twoDaysStr = twoDaysFromNow.toISOString().split('T')[0];
+                    let q = supabase.from('client_followups')
+                        .select('*, consultation_requests!inner(client_name, phone, service)')
+                        .eq('is_attachment_only', false)
+                        .in('followup_status', ['pending', 'in_progress'])
+                        .gte('next_followup', today).lte('next_followup', twoDaysStr);
+                    if (currentUser?.role === 'followup_staff') q = q.eq('assigned_to', currentUser.id);
+                    const { data } = await q; tasks = data || [];
+                }
+                if (alertType === 'new_requests') {
+                    titleText = '🔔 طلبات جديدة';
+                    const { data } = await supabase.from('consultation_requests').select('*')
+                        .eq('created_by', currentUser.id).eq('status', 'new');
+                    tasks = data || [];
+                }
+                if (alertType === 'assigned_tasks') {
+                    titleText = '📌 المهام المكلف بها';
+                    const { data } = await supabase.from('client_followups')
+                        .select('*, consultation_requests!inner(client_name, phone, service)')
+                        .eq('assigned_to', currentUser.id)
+                        .eq('is_attachment_only', false)
+                        .in('followup_status', ['pending', 'in_progress']);
+                    tasks = data || [];
+                }
+
+                title.textContent = titleText;
+                if (tasks.length === 0) {
+                    body.innerHTML = '<div style="text-align:center; color:#6c757d; padding:20px;">لا توجد تفاصيل.</div>';
+                    return;
+                }
+
+                // جدول موحّد
+                let html = `<div class="table-responsive"><table style="width:100%; border-collapse:collapse;">
+                    <thead><tr style="background:#2d7aff; color:white;">
+                        <th style="padding:10px;">#</th>
+                        <th style="padding:10px;">اسم العميل</th>
+                        <th style="padding:10px;">الهاتف</th>
+                        <th style="padding:10px;">الخدمة</th>
+                        <th style="padding:10px;">الإجراء</th>
+                    </tr></thead><tbody>`;
+
+                tasks.forEach((item, idx) => {
+                    const clientName = item.consultation_requests?.client_name || item.client_name || 'غير محدد';
+                    const phone = item.consultation_requests?.phone || item.phone || '—';
+                    const service = item.consultation_requests?.service || item.service || '—';
+                    const reqId = item.request_id || item.id;
+                    html += `<tr style="border-bottom:1px solid #e9edf4;">
+                        <td style="padding:10px; text-align:center;">${idx + 1}</td>
+                        <td style="padding:10px; text-align:center;">${escapeHtml(clientName)}</td>
+                        <td style="padding:10px; text-align:center;">${escapeHtml(phone)}</td>
+                        <td style="padding:10px; text-align:center;">${escapeHtml(service)}</td>
+                        <td style="padding:10px; text-align:center;">
+                            <button class="btn-open-preview" data-request-id="${reqId}" style="background:#17a2b8; color:white; border:none; padding:5px 12px; border-radius:6px; cursor:pointer; font-size:12px;">📄 معاينة</button>
+                        </td>
+                    </tr>`;
+                });
+                html += `</tbody></table></div>`;
+                body.innerHTML = html;
+
+                document.querySelectorAll('.btn-open-preview').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        document.getElementById('alertDetailsModal')?.remove();
+                        openPreview(this.dataset.requestId);
+                    });
+                });
+            } catch (err) {
+                body.innerHTML = `<div style="color:#dc3545; text-align:center;">❌ ${escapeHtml(err.message)}</div>`;
+            }
+        }
+		        // =========================================================
+        // جلب الطلبات (حسب الدور)
+        // =========================================================
+        async function fetchConsultations() {
+            try {
+                if (currentUser?.role === 'secretary') {
+                    // استعلام موحّد للطلبات التي أدخلها السكرتير أو كُلّف بها
+                    const { data: createdByMe } = await supabase
+                        .from('consultation_requests').select('*')
+                        .eq('created_by', currentUser.id);
+
+                    const { data: assignedTasks } = await supabase
+                        .from('client_followups').select('request_id')
+                        .eq('assigned_to', currentUser.id).eq('is_attachment_only', false);
+
+                    const assignedIds = [...new Set((assignedTasks || []).map(t => t.request_id))];
+                    let assignedRequests = [];
+                    if (assignedIds.length > 0) {
+                        const { data } = await supabase.from('consultation_requests').select('*').in('id', assignedIds);
+                        assignedRequests = data || [];
+                    }
+                    const merged = new Map();
+                    [...(createdByMe || []), ...assignedRequests].forEach(i => merged.set(i.id, i));
+                    allConsultations = Array.from(merged.values())
+                        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                } else if (currentUser?.role === 'followup_staff') {
+                    const { data, error } = await supabase.from('consultation_requests').select('*')
+                        .eq('assigned_to', currentUser.id).order('created_at', { ascending: false });
+                    if (error) throw error;
+                    allConsultations = data || [];
+                } else {
+                    const { data, error } = await supabase.from('consultation_requests').select('*')
+                        .order('created_at', { ascending: false });
+                    if (error) throw error;
+                    allConsultations = data || [];
+                }
+                applyFilters();
+            } catch (err) {
+                document.getElementById('consultationsContainer').innerHTML =
+                    `<div class="message error">❌ ${escapeHtml(err.message)}</div>`;
+            }
+        }
+
+        function applyFilters() {
+            const dateFrom = document.getElementById('filterDateFrom')?.value || '';
+            const dateTo = document.getElementById('filterDateTo')?.value || '';
+            const service = document.getElementById('filterService')?.value || '';
+
+            let filtered = [...allConsultations];
+            if (dateFrom) {
+                const from = new Date(dateFrom); from.setHours(0,0,0,0);
+                filtered = filtered.filter(i => i.created_at && new Date(i.created_at) >= from);
+            }
+            if (dateTo) {
+                const to = new Date(dateTo); to.setHours(23,59,59,999);
+                filtered = filtered.filter(i => i.created_at && new Date(i.created_at) <= to);
+            }
+            if (service) filtered = filtered.filter(i => i.service === service);
+
+            currentFilteredData = filtered;
+            renderConsultations(filtered, allEmployees);
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
+            document.getElementById(sectionId)?.classList.add('active');
+            if (sectionId === 'sectionConsultations') {
+                if (allConsultations.length === 0) fetchConsultations();
+                else applyFilters();
+                loadSmartAlerts(); // 🔴 تحديث التنبيهات
+            } else if (sectionId === 'sectionEmployees') {
+                if (allEmployees.length === 0) fetchEmployees();
+                else renderEmployees(allEmployees);
+            }
+        }
+
+        async function handleLogout() {
+            try {
+                await supabase.auth.signOut();
+                window.location.href = 'login.html';
+            } catch (e) {
+                showToast('❌ خطأ في تسجيل الخروج', 'error');
+            }
+        }
+		        // =========================================================
+        // تهيئة الصفحة
+        // =========================================================
+        async function initPage() {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            if (error || !session) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const { data: profile, error: profileError } = await supabase
+                .from('staff_profiles').select('*').eq('id', session.user.id).single();
+
+            if (profileError || !profile) {
+                showToast('لا توجد صلاحيات. جاري تحويلك...', 'error');
+                await supabase.auth.signOut();
+                setTimeout(() => window.location.href = 'login.html', 1500);
+                return;
+            }
+
+            currentUser = { id: profile.id, role: profile.role, full_name: profile.full_name };
+            document.getElementById('userNameDisplay').textContent = `👤 ${currentUser.full_name}`;
+
+            const titles = {
+                manager: '🏛️ لوحة تحكم المدير',
+                secretary: '📝 لوحة السكرتير',
+                followup_staff: '📋 لوحة المتابعة'
+            };
+            document.getElementById('pageTitle').innerHTML =
+                `${titles[currentUser.role] || '🏛️ لوحة التحكم'} <span class="user-info">👤 ${escapeHtml(currentUser.full_name)}</span>`;
+
+            const btnEmp = document.getElementById('btnShowEmployees');
+            const btnManual = document.getElementById('btnManualEntry');
+
+            if (currentUser.role === 'manager') {
+                btnEmp.classList.remove('hidden');
+                btnManual.classList.remove('hidden');
+            } else if (currentUser.role === 'secretary') {
+                btnEmp.classList.add('hidden');
+                btnManual.classList.remove('hidden');
+            } else {
+                btnEmp.classList.add('hidden');
+                btnManual.classList.add('hidden');
+            }
+
+            document.getElementById('btnShowConsultations').addEventListener('click', () => showSection('sectionConsultations'));
+            document.getElementById('btnManualEntry').addEventListener('click', () => showSection('sectionManualEntry'));
+            document.getElementById('btnShowEmployees').addEventListener('click', () => showSection('sectionEmployees'));
+            document.getElementById('btnLogout').addEventListener('click', handleLogout);
+            document.getElementById('btnApplyFilters').addEventListener('click', applyFilters);
+            document.getElementById('btnResetFilters').addEventListener('click', () => {
+                document.getElementById('filterDateFrom').value = '';
+                document.getElementById('filterDateTo').value = '';
+                document.getElementById('filterService').value = '';
+                applyFilters();
+            });
+            document.getElementById('btnAddEmployee').addEventListener('click', addEmployee);
+            document.getElementById('btnAddManualConsultation').addEventListener('click', addManualConsultation);
+
+            await fetchEmployees();
+            await fetchConsultations();
+            await loadSmartAlerts();
+            showSection('sectionConsultations');
+
+            // فتح المعاينة تلقائياً من URL
+            const previewId = new URLSearchParams(window.location.search).get('preview');
+            if (previewId) setTimeout(() => openPreview(previewId), 500);
+        }
+
+        // =========================================================
+        // الإدخال اليدوي
+        // =========================================================
+        async function addManualConsultation() {
+            const name = document.getElementById('manualName').value.trim();
+            const phone = document.getElementById('manualPhone').value.trim();
+            const email = document.getElementById('manualEmail').value.trim();
+            const company = document.getElementById('manualCompany').value.trim();
+            const service = document.getElementById('manualService').value;
+            const message = document.getElementById('manualMessage').value.trim();
+            const out = document.getElementById('manualMsg');
+            const btn = document.getElementById('btnAddManualConsultation');
+            const attachmentInput = document.getElementById('manualAttachment');
+            const file = attachmentInput ? attachmentInput.files[0] : null;
+
+            if (!name || !phone || !service) {
+                out.textContent = 'يرجى ملء الحقول الإلزامية.';
+                out.style.color = '#dc3545';
+                return;
+            }
+
+            btn.disabled = true;
+            out.textContent = 'جاري التحقق...';
+            out.style.color = '#6c757d';
+
+            let uploadedPath = null;
+            try {
+                // فحص التكرار
+                const { data: existing } = await supabase.from('consultation_requests')
+                    .select('id, client_name, phone, service, created_at')
+                    .eq('client_name', name).eq('phone', phone).eq('service', service)
+                    .order('created_at', { ascending: false }).limit(1);
+
+                if (existing?.length) {
+                    const lastDate = new Date(existing[0].created_at);
+                    const diffHours = (Date.now() - lastDate.getTime()) / 36e5;
+                    if (diffHours < 24) {
+                        const isSame = await showConfirm(
+                            `⚠️ يوجد طلب سابق بنفس البيانات:\n\nالاسم: ${name}\nالهاتف: ${phone}\nالتاريخ: ${lastDate.toLocaleString('ar-EG')}\n\nموافق = إلغاء • إلغاء = متابعة`,
+                            'إلغاء الإرسال', 'حفظ كطلب جديد', '#6c757d'
+                        );
+                        if (isSame) {
+                            out.textContent = '❌ طلب مكرر خلال 24 ساعة';
+                            out.style.color = '#dc3545';
+                            btn.disabled = false;
+                            return;
+                        }
+                    }
+                }
+
+                out.textContent = 'جاري الحفظ...';
+
+                // رفع الملف
+                if (file) {
+                    uploadedPath = await uploadFile(file);
+                }
+
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) throw new Error('انتهت الجلسة');
+
+                const { error } = await supabase.from('consultation_requests').insert({
+                    client_name: name,
+                    phone: phone,
+                    email: email || null,
+                    company: company || null,
+                    service: service || null,
+                    message: message || null,
+                    privacy_accepted: true,
+                    status: 'new',
+                    created_by: session.user.id,
+                    attachment_path: uploadedPath
+                });
+
+                if (error) {
+                    if (uploadedPath) await deleteFileFromStorage(uploadedPath);
+                    throw error;
+                }
+
+                out.textContent = '✅ تم الحفظ بنجاح!';
+                out.style.color = '#28a745';
+                showToast('✅ تم حفظ الطلب', 'success');
+                ['manualName','manualPhone','manualEmail','manualCompany','manualService','manualMessage'].forEach(id => document.getElementById(id).value = '');
+                if (attachmentInput) attachmentInput.value = '';
+                await fetchConsultations();
+                await loadSmartAlerts();
+            } catch (err) {
+                if (uploadedPath) await deleteFileFromStorage(uploadedPath);
+                out.textContent = '❌ ' + err.message;
+                out.style.color = '#dc3545';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        // إغلاق نافذة المعاينة
+        document.getElementById('modalClose').addEventListener('click', () => {
+            document.getElementById('previewModal').classList.remove('active');
+        });
+        document.getElementById('previewModal').addEventListener('click', function(e) {
+            if (e.target === this) this.classList.remove('active');
+        });
+
+        document.addEventListener('DOMContentLoaded', initPage);
+
+    })();
+</script>
+</body>
+</html>
