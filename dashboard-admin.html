@@ -394,89 +394,151 @@
             setTimeout(() => { toast.style.opacity = '0'; toast.style.transition = 'opacity 0.3s'; setTimeout(() => toast.remove(), 300); }, 2500);
         }
 		        // =========================================================
-        // عرض الطلبات
-        // =========================================================
-        function renderConsultations(data, employees) {
-            const container = document.getElementById('consultationsContainer');
-            if (!container) return;
-            if (!data || data.length === 0) {
-                container.innerHTML = `<div class="message">📭 لا توجد طلبات تطابق الفلتر.</div>`;
-                return;
-            }
+// =========================================================
+// عرض الطلبات في الجدول
+// =========================================================
+function renderConsultations(data, employees) {
+    const container = document.getElementById('consultationsContainer');
+    if (!container) return;
 
-            const isManager = currentUser?.role === 'manager';
-            let rows = '';
-            data.forEach((item, idx) => {
-                const assignedEmp = employees ? employees.find(e => e.id === item.assigned_to) : null;
-                const assignedName = assignedEmp ? assignedEmp.full_name : 'غير محدد';
-                const attachmentCell = item.attachment_path
-                    ? `<a href="#" class="btn-open-attachment" data-path="${escapeHtml(item.attachment_path)}" style="color:#2d7aff;">📎 ملف</a>`
-                    : '—';
+    if (!data || data.length === 0) {
+        container.innerHTML = `<div class="message">📭 لا توجد طلبات تطابق الفلتر.</div>`;
+        return;
+    }
 
-                rows += `
-                    <tr data-id="${item.id}">
-                        <td>${idx + 1}</td>
-                        <td>${escapeHtml(item.client_name) || 'غير محدد'}</td>
-                        <td>${escapeHtml(item.email) || '—'}</td>
-                        <td>${escapeHtml(item.phone) || '—'}</td>
-                        <td>${escapeHtml(item.service) || '—'}</td>
-                        <td>${attachmentCell}</td>
-                        <td>${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-EG') : '—'}</td>
-                        <td>${escapeHtml(assignedName)}</td>
-                        <td>
-                            <button class="btn-preview" data-id="${item.id}">📄 معاينة</button>
-                            ${isManager ? `
-                                <button class="btn-edit-cons" data-id="${item.id}">✏️ تعديل</button>
-                                <button class="btn-delete-cons" data-id="${item.id}">🗑️ حذف</button>
-                            ` : ''}
-                        </td>
-                    </tr>
-                `;
-            });
+    const isManager = currentUser?.role === 'manager';
+    let rows = '';
 
-            container.innerHTML = `
-                <div class="table-responsive">
-                    <table>
-                        <thead><tr>
-                            <th>#</th><th>اسم العميل</th><th>البريد</th><th>الهاتف</th>
-                            <th>الخدمة</th><th>المرفقات</th><th>التاريخ</th>
-                            <th>المتابع</th><th>الإجراء</th>
-                        </tr></thead>
-                        <tbody>${rows}</tbody>
-                    </table>
-                </div>
-            `;
+    data.forEach((item, idx) => {
+        // 🔴 جمع كل المكلَّفين من مصدرين:
+        // 1. consultation_requests.assigned_to (المسؤول الرئيسي)
+        // 2. client_followups (كل المهام النشطة)
+        const assigneeIds = new Set();
 
-            document.querySelectorAll('.btn-preview').forEach(btn => {
-                btn.addEventListener('click', function() { openPreview(this.dataset.id); });
-            });
-            document.querySelectorAll('.btn-edit-cons').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const item = allConsultations.find(c => c.id === this.dataset.id);
-                    if (item) openEditConsultationModal(item);
-                });
-            });
-            document.querySelectorAll('.btn-delete-cons').forEach(btn => {
-                btn.addEventListener('click', async function() {
-                    const id = this.dataset.id;
-                    const ok = await showConfirm('هل أنت متأكد من حذف هذا الطلب؟', 'حذف', 'إلغاء', '#dc3545');
-                    if (!ok) return;
-                    const { error } = await supabase.from('consultation_requests').delete().eq('id', id);
-                    if (error) showToast('❌ فشل الحذف: ' + error.message, 'error');
-                    else { showToast('✅ تم حذف الطلب', 'success'); await fetchConsultations(); }
-                });
-            });
-            // روابط المرفقات
-            document.querySelectorAll('.btn-open-attachment').forEach(a => {
-                a.addEventListener('click', async function(e) {
-                    e.preventDefault();
-                    const url = await resolveAttachmentUrl(this.dataset.path);
-                    if (url) window.open(url, '_blank');
-                    else showToast('تعذر فتح المرفق', 'error');
-                });
-            });
+        if (item.assigned_to) {
+            assigneeIds.add(item.assigned_to);
         }
 
+        const fromTasks = window.__requestAssignees?.[item.id];
+        if (fromTasks) {
+            fromTasks.forEach(id => assigneeIds.add(id));
+        }
+
+        // تحويل المعرّفات إلى أسماء
+        const assignedNames = [...assigneeIds]
+            .map(id => {
+                const emp = employees.find(e => e.id === id);
+                return emp ? emp.full_name : null;
+            })
+            .filter(Boolean);
+
+        // إزالة التكرار (في حال وُجد نفس الاسم مرتين)
+        const uniqueNames = [...new Set(assignedNames)];
+
+        const assignedName = uniqueNames.length > 0
+            ? uniqueNames.join(' • ')
+            : 'غير محدد';
+
+        // خلية المرفق
+        const attachmentCell = item.attachment_path
+            ? `<a href="#" class="btn-open-attachment" data-path="${escapeHtml(item.attachment_path)}" style="color:#2d7aff;">📎 ملف</a>`
+            : '—';
+
+        // صف الجدول
+        rows += `
+            <tr data-id="${item.id}">
+                <td>${idx + 1}</td>
+                <td>${escapeHtml(item.client_name) || 'غير محدد'}</td>
+                <td>${escapeHtml(item.email) || '—'}</td>
+                <td>${escapeHtml(item.phone) || '—'}</td>
+                <td>${escapeHtml(item.service) || '—'}</td>
+                <td>${attachmentCell}</td>
+                <td>${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-EG') : '—'}</td>
+                <td>${escapeHtml(assignedName)}</td>
+                <td>
+                    <button class="btn-preview" data-id="${item.id}">📄 معاينة</button>
+                    ${isManager ? `
+                        <button class="btn-edit-cons" data-id="${item.id}">✏️ تعديل</button>
+                        <button class="btn-delete-cons" data-id="${item.id}">🗑️ حذف</button>
+                    ` : ''}
+                </td>
+            </tr>
+        `;
+    });
+
+    container.innerHTML = `
+        <div class="table-responsive">
+            <table>
+                <thead><tr>
+                    <th>#</th>
+                    <th>اسم العميل</th>
+                    <th>البريد</th>
+                    <th>الهاتف</th>
+                    <th>الخدمة</th>
+                    <th>المرفقات</th>
+                    <th>التاريخ</th>
+                    <th>المتابع</th>
+                    <th>الإجراء</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+        </div>
+    `;
+
+    // =========================================================
+    // ربط الأحداث
+    // =========================================================
+
+    // زر المعاينة
+    document.querySelectorAll('.btn-preview').forEach(btn => {
+        btn.addEventListener('click', function() {
+            openPreview(this.dataset.id);
+        });
+    });
+
+    // زر التعديل
+    document.querySelectorAll('.btn-edit-cons').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const item = allConsultations.find(c => c.id === this.dataset.id);
+            if (item) openEditConsultationModal(item);
+        });
+    });
+
+    // زر الحذف
+    document.querySelectorAll('.btn-delete-cons').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const id = this.dataset.id;
+            const ok = await showConfirm(
+                'هل أنت متأكد من حذف هذا الطلب؟',
+                'حذف', 'إلغاء', '#dc3545'
+            );
+            if (!ok) return;
+
+            const { error } = await supabase
+                .from('consultation_requests')
+                .delete()
+                .eq('id', id);
+
+            if (error) {
+                showToast('❌ فشل الحذف: ' + error.message, 'error');
+            } else {
+                showToast('✅ تم حذف الطلب', 'success');
+                await fetchConsultations();
+                await loadSmartAlerts();
+            }
+        });
+    });
+
+    // روابط المرفقات
+    document.querySelectorAll('.btn-open-attachment').forEach(a => {
+        a.addEventListener('click', async function(e) {
+            e.preventDefault();
+            const url = await resolveAttachmentUrl(this.dataset.path);
+            if (url) window.open(url, '_blank');
+            else showToast('تعذر فتح المرفق', 'error');
+        });
+    });
+}
         // =========================================================
         // عرض الموظفين
         // =========================================================
@@ -1410,47 +1472,121 @@
             }
         }
 		        // =========================================================
-        // جلب الطلبات (حسب الدور)
+// =========================================================
+// جلب الطلبات (حسب الدور) + جلب المكلَّفين النشطين
+// =========================================================
+async function fetchConsultations() {
+    try {
         // =========================================================
-        async function fetchConsultations() {
-            try {
-                if (currentUser?.role === 'secretary') {
-                    // استعلام موحّد للطلبات التي أدخلها السكرتير أو كُلّف بها
-                    const { data: createdByMe } = await supabase
-                        .from('consultation_requests').select('*')
-                        .eq('created_by', currentUser.id);
+        // 1) جلب الطلبات حسب الدور
+        // =========================================================
+        if (currentUser?.role === 'secretary') {
+            // الطلبات التي أدخلها السكرتير
+            const { data: createdByMe } = await supabase
+                .from('consultation_requests')
+                .select('*')
+                .eq('created_by', currentUser.id);
 
-                    const { data: assignedTasks } = await supabase
-                        .from('client_followups').select('request_id')
-                        .eq('assigned_to', currentUser.id).eq('is_attachment_only', false);
+            // الطلبات المُكلَّف بها عبر client_followups
+            const { data: assignedTasks } = await supabase
+                .from('client_followups')
+                .select('request_id')
+                .eq('assigned_to', currentUser.id)
+                .eq('is_attachment_only', false);
 
-                    const assignedIds = [...new Set((assignedTasks || []).map(t => t.request_id))];
-                    let assignedRequests = [];
-                    if (assignedIds.length > 0) {
-                        const { data } = await supabase.from('consultation_requests').select('*').in('id', assignedIds);
-                        assignedRequests = data || [];
-                    }
-                    const merged = new Map();
-                    [...(createdByMe || []), ...assignedRequests].forEach(i => merged.set(i.id, i));
-                    allConsultations = Array.from(merged.values())
-                        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-                } else if (currentUser?.role === 'followup_staff') {
-                    const { data, error } = await supabase.from('consultation_requests').select('*')
-                        .eq('assigned_to', currentUser.id).order('created_at', { ascending: false });
-                    if (error) throw error;
-                    allConsultations = data || [];
-                } else {
-                    const { data, error } = await supabase.from('consultation_requests').select('*')
-                        .order('created_at', { ascending: false });
-                    if (error) throw error;
-                    allConsultations = data || [];
-                }
-                applyFilters();
-            } catch (err) {
-                document.getElementById('consultationsContainer').innerHTML =
-                    `<div class="message error">❌ ${escapeHtml(err.message)}</div>`;
+            const assignedIds = [...new Set((assignedTasks || []).map(t => t.request_id))];
+
+            let assignedRequests = [];
+            if (assignedIds.length > 0) {
+                const { data, error } = await supabase
+                    .from('consultation_requests')
+                    .select('*')
+                    .in('id', assignedIds);
+                if (error) console.warn('خطأ في جلب الطلبات المُكلَّف بها:', error);
+                assignedRequests = data || [];
             }
+
+            // دمج بلا تكرار
+            const merged = new Map();
+            [...(createdByMe || []), ...assignedRequests].forEach(i => merged.set(i.id, i));
+            allConsultations = Array.from(merged.values())
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        } else if (currentUser?.role === 'followup_staff') {
+            // الموظف: الطلبات المُسندة إليه مباشرة
+            const { data: directAssigned, error: directError } = await supabase
+                .from('consultation_requests')
+                .select('*')
+                .eq('assigned_to', currentUser.id);
+
+            if (directError) console.warn('خطأ في جلب الطلبات المُسندة مباشرة:', directError);
+
+            // + الطلبات المُكلَّف بها عبر client_followups
+            const { data: assignedTasks } = await supabase
+                .from('client_followups')
+                .select('request_id')
+                .eq('assigned_to', currentUser.id)
+                .eq('is_attachment_only', false);
+
+            const assignedIds = [...new Set((assignedTasks || []).map(t => t.request_id))];
+
+            let tasksRequests = [];
+            if (assignedIds.length > 0) {
+                const { data, error } = await supabase
+                    .from('consultation_requests')
+                    .select('*')
+                    .in('id', assignedIds);
+                if (error) console.warn('خطأ في جلب الطلبات المُكلَّف بها:', error);
+                tasksRequests = data || [];
+            }
+
+            const merged = new Map();
+            [...(directAssigned || []), ...tasksRequests].forEach(i => merged.set(i.id, i));
+            allConsultations = Array.from(merged.values())
+                .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        } else {
+            // المدير يرى كل شيء
+            const { data, error } = await supabase
+                .from('consultation_requests')
+                .select('*')
+                .order('created_at', { ascending: false });
+            if (error) throw error;
+            allConsultations = data || [];
         }
+
+        // =========================================================
+        // 2) 🔴 جلب كل المهام النشطة لربط المكلَّفين بالطلبات
+        // =========================================================
+        const { data: allActiveTasks, error: tasksError } = await supabase
+            .from('client_followups')
+            .select('request_id, assigned_to, followup_status, is_attachment_only')
+            .eq('is_attachment_only', false)
+            .in('followup_status', ['pending', 'in_progress']);
+
+        if (tasksError) console.warn('خطأ في جلب المهام النشطة:', tasksError);
+
+        // بناء خريطة: request_id → Set(assigned_to ids)
+        window.__requestAssignees = {};
+        (allActiveTasks || []).forEach(t => {
+            if (!t.assigned_to) return;
+            if (!window.__requestAssignees[t.request_id]) {
+                window.__requestAssignees[t.request_id] = new Set();
+            }
+            window.__requestAssignees[t.request_id].add(t.assigned_to);
+        });
+
+        console.log('📊 عدد الطلبات:', allConsultations.length);
+        console.log('📊 المكلَّفون النشطون:', window.__requestAssignees);
+
+        applyFilters();
+
+    } catch (err) {
+        console.error('خطأ في fetchConsultations:', err);
+        document.getElementById('consultationsContainer').innerHTML =
+            `<div class="message error">❌ ${escapeHtml(err.message)}</div>`;
+    }
+}
 
         function applyFilters() {
             const dateFrom = document.getElementById('filterDateFrom')?.value || '';
