@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #f4f6f9 0%, #e7eef9 100%);
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px;
+        }
+        .container {
+            background: white; padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+            width: 100%; max-width: 420px;
+            animation: fadeIn 0.4s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        h1 { color: #1a2a3a; text-align: center; margin-bottom: 30px; font-size: 26px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 6px; font-weight: 600; color: #1a2a3a; font-size: 14px; }
+        input {
+            width: 100%; padding: 12px 16px;
+            border: 1px solid #dce1e8; border-radius: 8px;
+            font-size: 15px; transition: 0.3s;
+            font-family: inherit;
+        }
+        input:focus { border-color: #2d7aff; outline: none; box-shadow: 0 0 0 3px rgba(45,122,255,0.1); }
+        input:disabled { background: #f4f6f9; cursor: not-allowed; }
+        button {
+            width: 100%; padding: 12px;
+            background: #2d7aff; color: white;
+            border: none; border-radius: 8px;
+            font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        button:hover:not(:disabled) { background: #1a5cc4; transform: translateY(-2px); }
+        button:disabled { background: #8ab0e8; cursor: not-allowed; transform: none; }
+        .hidden { display: none !important; }
+        .error-message {
+            color: #721c24; background: #f8d7da;
+            padding: 12px 16px; border-radius: 8px;
+            margin-bottom: 20px; border-right: 4px solid #dc3545;
+            font-size: 14px; line-height: 1.5;
+        }
+        .error-message.hidden { display: none; }
+        /* مؤشر قوة كلمة المرور */
+        .password-strength {
+            height: 4px; background: #e9edf4;
+            border-radius: 2px; margin-top: 6px; overflow: hidden;
+        }
+        .password-strength-bar {
+            height: 100%; width: 0%;
+            transition: width 0.3s, background 0.3s;
+        }
+        .password-hint {
+            font-size: 12px; margin-top: 6px; color: #6c757d;
+        }
+        /* Spinner */
+        .spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: white; border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Toast */
+        .toast {
+            position: fixed; top: 20px; left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px; border-radius: 8px;
+            font-weight: 600; color: white;
+            z-index: 9999; box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s ease;
+            max-width: 90%; text-align: center;
+        }
+        .toast.success { background: #28a745; }
+        .toast.error { background: #dc3545; }
+        .toast.info { background: #2d7aff; }
+        /* Footer */
+        .footer-text {
+            text-align: center; margin-top: 20px;
+            font-size: 13px; color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ========================================================= -->
+<!-- شاشة تسجيل الدخول -->
+<!-- ========================================================= -->
+<div class="container" id="login-section">
+    <h1>🔐 تسجيل الدخول</h1>
+    <div id="errorMessage" class="error-message hidden"></div>
+    <form id="loginForm" novalidate>
+        <div class="form-group">
+            <label for="email">البريد الإلكتروني</label>
+            <input type="email" id="email" placeholder="example@domain.com" required autocomplete="email">
+        </div>
+        <div class="form-group">
+            <label for="password">كلمة المرور</label>
+            <input type="password" id="password" placeholder="كلمة المرور" required autocomplete="current-password">
+        </div>
+        <button type="submit" id="loginBtn">
+            <span id="loginBtnText">دخول</span>
+        </button>
+    </form>
+    <p class="footer-text">© جميع الحقوق محفوظة</p>
+</div>
+
+<!-- ========================================================= -->
+<!-- شاشة تغيير كلمة المرور (للموظف الجديد) -->
+<!-- ========================================================= -->
+<div class="container hidden" id="change-password-section">
+    <h1>🔒 تغيير كلمة المرور</h1>
+    <p style="text-align:center; color:#555; margin-bottom:20px; font-size:14px;">
+        لأسباب أمنية، يجب تغيير كلمة المرور قبل الدخول.
+    </p>
+    <div id="changeError" class="error-message hidden"></div>
+
+    <div class="form-group">
+        <label for="new-password">كلمة المرور الجديدة</label>
+        <input type="password" id="new-password" placeholder="6 خانات على الأقل" autocomplete="new-password">
+        <div class="password-strength">
+            <div class="password-strength-bar" id="strengthBar"></div>
+        </div>
+        <div class="password-hint" id="strengthHint">يُفضّل 8 خانات مع أحرف وأرقام</div>
+    </div>
+
+    <div class="form-group">
+        <label for="confirm-password">تأكيد كلمة المرور</label>
+        <input type="password" id="confirm-password" placeholder="أعد كتابة كلمة المرور" autocomplete="new-password">
+    </div>
+
+    <button id="changePasswordBtn">
+        <span id="changePasswordBtnText">حفظ وتغيير كلمة المرور</span>
+    </button>
+</div>
+
+<script>
+    (function() {
+        'use strict';
+
+        // ⚠️ تم الاحتفاظ بالعنوان والمفتاح الأصليين
+        const SUPABASE_URL = 'https://ycwtrymlqepftuvgqxui.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_mO2nXgZyuQy3Fh1ry_20eg_CMszH3mS';
+
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // =========================================================
+        // عناصر DOM
+        // =========================================================
+        const loginForm = document.getElementById('loginForm');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const errorDiv = document.getElementById('errorMessage');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginBtnText = document.getElementById('loginBtnText');
+
+        const loginSection = document.getElementById('login-section');
+        const changePasswordSection = document.getElementById('change-password-section');
+        const changeError = document.getElementById('changeError');
+        const changePasswordBtn = document.getElementById('changePasswordBtn');
+        const changePasswordBtnText = document.getElementById('changePasswordBtnText');
+
+        const newPasswordInput = document.getElementById('new-password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        const strengthBar = document.getElementById('strengthBar');
+        const strengthHint = document.getElementById('strengthHint');
+
+        let currentUser = null; // بروفايل المستخدم الحالي
+
+        // =========================================================
+        // أدوات مساعدة
+        // =========================================================
+        function showToast(message, type = 'info', duration = 3000) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s';
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
+
+        function showError(element, msg) {
+            element.textContent = msg;
+            element.classList.remove('hidden');
+        }
+
+        function hideError(element) {
+            element.classList.add('hidden');
+            element.textContent = '';
+        }
+
+        function setButtonLoading(btn, textSpan, loadingText) {
+            btn.disabled = true;
+            textSpan.innerHTML = `<span class="spinner"></span> ${loadingText}`;
+        }
+
+        function resetButton(btn, textSpan, originalText) {
+            btn.disabled = false;
+            textSpan.textContent = originalText;
+        }
+
+        // ترجمة أخطاء Supabase الشائعة
+        function translateAuthError(message) {
+            if (!message) return 'حدث خطأ غير معروف.';
+            const msg = message.toLowerCase();
+            if (msg.includes('invalid login credentials')) return 'البريد الإلكتروني أو كلمة المرور غير صحيحة.';
+            if (msg.includes('email not confirmed')) return 'لم يتم تأكيد البريد الإلكتروني بعد.';
+            if (msg.includes('user not found')) return 'لا يوجد حساب بهذا البريد الإلكتروني.';
+            if (msg.includes('too many requests')) return 'محاولات كثيرة. حاول لاحقاً.';
+            if (msg.includes('network')) return 'تعذر الاتصال بالخدمة. تحقق من الإنترنت.';
+            if (msg.includes('password should be at least')) return 'كلمة المرور قصيرة جداً.';
+            if (msg.includes('email')) return 'البريد الإلكتروني غير صالح.';
+            return message; // إرجاع الأصلي إذا لم نعرفه
+        }
+
+        // مؤشر قوة كلمة المرور
+        function evaluatePasswordStrength(password) {
+            let score = 0;
+            if (password.length >= 6) score++;
+            if (password.length >= 8) score++;
+            if (/[A-Z]/.test(password) || /[a-z]/.test(password)) score++;
+            if (/\d/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+
+            if (score <= 2) return { level: 1, width: '33%', color: '#dc3545', hint: 'ضعيفة' };
+            if (score === 3) return { level: 2, width: '66%', color: '#ffc107', hint: 'متوسطة' };
+            return { level: 3, width: '100%', color: '#28a745', hint: 'قوية' };
+        }
+
+        newPasswordInput.addEventListener('input', () => {
+            const val = newPasswordInput.value;
+            if (!val) {
+                strengthBar.style.width = '0%';
+                strengthHint.textContent = 'يُفضّل 8 خانات مع أحرف وأرقام';
+                strengthHint.style.color = '#6c757d';
+                return;
+            }
+            const s = evaluatePasswordStrength(val);
+            strengthBar.style.width = s.width;
+            strengthBar.style.background = s.color;
+            strengthHint.textContent = `قوة كلمة المرور: ${s.hint}`;
+            strengthHint.style.color = s.color;
+        });
+
+        // =========================================================
+        // التحقق من الجلسة + توجيه المستخدم
+        // =========================================================
+        async function resolveProfile(user) {
+            const { data, error } = await supabase
+                .from('staff_profiles')
+                .select('role, must_change_password, is_active, full_name')
+                .eq('id', user.id)
+                .maybeSingle();
+
+            if (error) throw error;
+            return data;
+        }
+
+        function redirectByRole(role) {
+            // ⚠️ جميع الأدوار تذهب للوحة التحكم حالياً
+            return 'dashboard-admin.html';
+        }
+
+        async function routeUser(user) {
+            let profile;
+            try {
+                profile = await resolveProfile(user);
+            } catch (e) {
+                console.error('خطأ في جلب بيانات المستخدم:', e);
+                await supabase.auth.signOut();
+                showSection('login');
+                showError(errorDiv, 'تعذر التحقق من الحساب. حاول مرة أخرى.');
+                return;
+            }
+
+            if (!profile) {
+                await supabase.auth.signOut();
+                showSection('login');
+                showError(errorDiv, 'هذا الحساب لم يعد متاحاً. يرجى التواصل مع الإدارة أو تسجيل الدخول بحساب آخر.');
+                return;
+            }
+
+            if (profile.is_active === false) {
+                await supabase.auth.signOut();
+                showSection('login');
+                showError(errorDiv, 'هذا الحساب غير مُنشَّط. يرجى التواصل مع الإدارة.');
+                return;
+            }
+
+            currentUser = profile;
+
+            // إذا كان موظفاً جديداً ويجب تغيير كلمة المرور
+            if (profile.must_change_password === true) {
+                showSection('changePassword');
+                return;
+            }
+
+            // التوجيه النهائي
+            window.location.href = redirectByRole(profile.role);
+        }
+
+        function showSection(section) {
+            loginSection.classList.add('hidden');
+            changePasswordSection.classList.add('hidden');
+
+            if (section === 'login') loginSection.classList.remove('hidden');
+            else if (section === 'changePassword') changePasswordSection.classList.remove('hidden');
+        }
+
+        // فحص الجلسة عند فتح الصفحة
+        async function checkSession() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                await routeUser(session.user);
+            } else {
+                showSection('login');
+            }
+        }
+
+        // =========================================================
+        // تسجيل الدخول
+        // =========================================================
+        loginForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            hideError(errorDiv);
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!email || !password) {
+                showError(errorDiv, 'يرجى ملء جميع الحقول.');
+                return;
+            }
+
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showError(errorDiv, 'البريد الإلكتروني غير صالح.');
+                return;
+            }
+
+            setButtonLoading(loginBtn, loginBtnText, 'جاري الدخول...');
+
+            try {
+                const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+                if (error) {
+                    showError(errorDiv, translateAuthError(error.message));
+                    resetButton(loginBtn, loginBtnText, 'دخول');
+                    return;
+                }
+
+                if (!data.session) {
+                    showError(errorDiv, 'حدث خطأ غير متوقع. حاول مرة أخرى.');
+                    resetButton(loginBtn, loginBtnText, 'دخول');
+                    return;
+                }
+
+                showToast('✅ تم تسجيل الدخول بنجاح', 'success', 1500);
+
+                // توجيه بعد التحقق من البروفايل
+                await routeUser(data.session.user);
+
+            } catch (err) {
+                console.error('خطأ تسجيل الدخول:', err);
+                showError(errorDiv, 'تعذر الاتصال بالخدمة. تحقق من الإنترنت وحاول مرة أخرى.');
+                resetButton(loginBtn, loginBtnText, 'دخول');
+            }
+        });
+
+        // =========================================================
+        // تغيير كلمة المرور (إجباري للموظف الجديد)
+        // =========================================================
+        changePasswordBtn.addEventListener('click', async function() {
+            const newPass = newPasswordInput.value;
+            const confirmPass = confirmPasswordInput.value;
+
+            hideError(changeError);
+
+            // التحقق من المدخلات
+            if (!newPass || !confirmPass) {
+                showError(changeError, 'يرجى إدخال كلمة المرور الجديدة وتأكيدها.');
+                return;
+            }
+            if (newPass.length < 6) {
+                showError(changeError, 'كلمة المرور يجب أن تكون 6 خانات على الأقل.');
+                return;
+            }
+            if (newPass !== confirmPass) {
+                showError(changeError, 'كلمتا المرور غير متطابقتين.');
+                return;
+            }
+
+            // التحقق من وجود جلسة
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                showError(changeError, 'انتهت الجلسة. يرجى تسجيل الدخول مرة أخرى.');
+                setTimeout(() => window.location.reload(), 2000);
+                return;
+            }
+
+            setButtonLoading(changePasswordBtn, changePasswordBtnText, 'جاري الحفظ...');
+
+            try {
+                // 1) تحديث كلمة المرور في Supabase Auth
+                const { error: updateError } = await supabase.auth.updateUser({ password: newPass });
+                if (updateError) {
+                    showError(changeError, translateAuthError(updateError.message));
+                    resetButton(changePasswordBtn, changePasswordBtnText, 'حفظ وتغيير كلمة المرور');
+                    return;
+                }
+
+                // 2) إلغاء علم must_change_password
+                const { error: profileError } = await supabase
+                    .from('staff_profiles')
+                    .update({ must_change_password: false })
+                    .eq('id', session.user.id);
+
+                if (profileError) {
+                    console.warn('تعذر تحديث must_change_password:', profileError);
+                    // لا نُفشل العملية لأن كلمة المرور تغيّرت بنجاح
+                }
+
+                showToast('✅ تم تغيير كلمة المرور بنجاح', 'success', 2000);
+
+                // تحديث الـ currentUser وإعادة التوجيه
+                currentUser = { ...currentUser, must_change_password: false };
+
+                setTimeout(() => {
+                    window.location.href = redirectByRole(currentUser.role);
+                }, 1200);
+
+            } catch (err) {
+                console.error('خطأ تغيير كلمة المرور:', err);
+                showError(changeError, 'تعذر تغيير كلمة المرور. حاول مرة أخرى.');
+                resetButton(changePasswordBtn, changePasswordBtnText, 'حفظ وتغيير كلمة المرور');
+            }
+        });
+
+        // =========================================================
+        // الاستماع لتغيرات حالة المصادقة (مثل refresh token)
+        // =========================================================
+        supabase.auth.onAuthStateChange((event, session) => {
+            if (event === 'SIGNED_OUT') {
+                showSection('login');
+            }
+        });
+
+        // =========================================================
+        // نقطة البداية
+        // =========================================================
+        checkSession();
+
+    })();
+</script>
+</body>
+</html>
