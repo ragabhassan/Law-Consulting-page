@@ -390,32 +390,12 @@
             let rows = '';
 
             data.forEach((item, idx) => {
-                // جمع كل المكلَّفين من مصدرين
-                const assigneeIds = new Set();
-                if (item.assigned_to) assigneeIds.add(item.assigned_to);
-                const fromTasks = window.__requestAssignees?.[item.id];
-                if (fromTasks) fromTasks.forEach(id => assigneeIds.add(id));
-
-
-
-              // 🔴 الأولوية: موظفو المتابعة. إذا لا يوجد، السكرتير. إذا لا يوجد، "غير محدد"
-const staffNames = [];
-const secretaryNames = [];
-[...assigneeIds].forEach(id => {
-    const emp = employees.find(e => e.id === id);
-    if (!emp) return;
-    if (emp.role === 'followup_staff') staffNames.push(emp.full_name);
-    else if (emp.role === 'secretary') secretaryNames.push(emp.full_name);
-});
-
-let assignedName;
-if (staffNames.length > 0) {
-    assignedName = [...new Set(staffNames)].join(' • ');
-} else if (secretaryNames.length > 0) {
-    assignedName = `📝 ${[...new Set(secretaryNames)].join(' • ')}`;
-} else {
-    assignedName = 'غير محدد';
-}
+    // 🔴 الموظف المسند = من consultation_requests.assigned_to فقط
+    let assignedName = 'غير محدد';
+    if (item.assigned_to) {
+        const emp = employees.find(e => e.id === item.assigned_to);
+        if (emp) assignedName = emp.full_name;
+    }
                 const attachmentCell = item.attachment_path
                     ? `<a href="#" class="btn-open-attachment" data-path="${escapeHtml(item.attachment_path)}" style="color:#2d7aff;">📎 ملف</a>`
                     : '—';
