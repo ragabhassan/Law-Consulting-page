@@ -407,15 +407,7 @@ const secretaryNames = [];  // السكرتير (كبديل)
     else if (emp.role === 'secretary') secretaryNames.push(emp.full_name);
 });
 
-// ✅ الأولوية: موظفو المتابعة. إذا لا يوجد، السكرتير. إذا لا يوجد، "غير محدد"
-let assignedName;
-if (staffNames.length > 0) {
-    assignedName = [...new Set(staffNames)].join(' • ');
-} else if (secretaryNames.length > 0) {
-    assignedName = `📝 ${[...new Set(secretaryNames)].join(' • ')}`;
-} else {
-    assignedName = 'غير محدد';
-}
+
               // 🔴 الأولوية: موظفو المتابعة. إذا لا يوجد، السكرتير. إذا لا يوجد، "غير محدد"
 const staffNames = [];
 const secretaryNames = [];
