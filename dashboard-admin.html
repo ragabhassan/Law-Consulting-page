@@ -567,38 +567,21 @@ if (staffNames.length > 0) {
                 const mainAttachmentUrl = consultation.attachment_path
                     ? await resolveAttachmentUrl(consultation.attachment_path) : null;
 
-               // 🔴 البحث عن الموظف المسند من مصدرين
+// 🔴 الموظف المسند = من consultation_requests.assigned_to فقط
+// (موظف المتابعة الرئيسي — لا يُحتسب السكرتير هنا)
 let assignedName = 'غير محدد';
-const assigneeIds = new Set();
-
 if (consultation.assigned_to) {
-    assigneeIds.add(consultation.assigned_to);
-}
-
-const { data: activeTasks } = await supabase
-    .from('client_followups')
-    .select('assigned_to')
-    .eq('request_id', consultationId)
-    .eq('is_attachment_only', false)
-    .in('followup_status', ['pending', 'in_progress']);
-
-(activeTasks || []).forEach(t => {
-    if (t.assigned_to) assigneeIds.add(t.assigned_to);
-});
-
-const staffNames = [];
-const secretaryNames = [];
-[...assigneeIds].forEach(id => {
-    const emp = allEmployees.find(e => e.id === id);
-    if (!emp) return;
-    if (emp.role === 'followup_staff') staffNames.push(emp.full_name);
-    else if (emp.role === 'secretary') secretaryNames.push(emp.full_name);
-});
-
-if (staffNames.length > 0) {
-    assignedName = [...new Set(staffNames)].join(' • ');
-} else if (secretaryNames.length > 0) {
-    assignedName = `📝 ${[...new Set(secretaryNames)].join(' • ')}`;
+    const emp = allEmployees.find(e => e.id === consultation.assigned_to);
+    if (emp) {
+        assignedName = emp.full_name;
+    } else {
+        const { data: profile } = await supabase
+            .from('staff_profiles')
+            .select('full_name')
+            .eq('id', consultation.assigned_to)
+            .single();
+        if (profile) assignedName = profile.full_name;
+    }
 }
                 // ===== بطاقة العميل =====
                 const customerCard = `
