@@ -396,15 +396,26 @@
                 const fromTasks = window.__requestAssignees?.[item.id];
                 if (fromTasks) fromTasks.forEach(id => assigneeIds.add(id));
 
-                // 🔴 موظفو المتابعة فقط (استبعاد السكرتير والمدير)
-                const assignedNames = [...assigneeIds]
-                    .map(id => {
-                        const emp = employees.find(e => e.id === id);
-                        if (emp && emp.role === 'followup_staff') return emp.full_name;
-                        return null;
-                    })
-                    .filter(Boolean);
+// 🔴 اجمع المكلَّفين: موظفو المتابعة أولاً، وإن لم يوجد اعرض السكرتير
+const staffNames = [];      // موظفو المتابعة
+const secretaryNames = [];  // السكرتير (كبديل)
 
+[...assigneeIds].forEach(id => {
+    const emp = employees.find(e => e.id === id);
+    if (!emp) return;
+    if (emp.role === 'followup_staff') staffNames.push(emp.full_name);
+    else if (emp.role === 'secretary') secretaryNames.push(emp.full_name);
+});
+
+// ✅ الأولوية: موظفو المتابعة. إذا لا يوجد، السكرتير. إذا لا يوجد، "غير محدد"
+let assignedName;
+if (staffNames.length > 0) {
+    assignedName = [...new Set(staffNames)].join(' • ');
+} else if (secretaryNames.length > 0) {
+    assignedName = `📝 ${[...new Set(secretaryNames)].join(' • ')}`;
+} else {
+    assignedName = 'غير محدد';
+}
                 const uniqueNames = [...new Set(assignedNames)];
                 const assignedName = uniqueNames.length > 0 ? uniqueNames.join(' • ') : 'غير محدد';
 
