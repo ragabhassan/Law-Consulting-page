@@ -1551,27 +1551,8 @@ if (consultation.assigned_to) {
                     allConsultations = data || [];
                 }
 
-                // 2) جلب كل المهام النشطة لربط المكلَّفين بالطلبات
-                const { data: allActiveTasks, error: tasksError } = await supabase
-                    .from('client_followups')
-                    .select('request_id, assigned_to, followup_status, is_attachment_only')
-                    .eq('is_attachment_only', false)
-                    .in('followup_status', ['pending', 'in_progress']);
-
-                if (tasksError) console.warn('خطأ في جلب المهام النشطة:', tasksError);
-
-                window.__requestAssignees = {};
-                (allActiveTasks || []).forEach(t => {
-                    if (!t.assigned_to) return;
-                    if (!window.__requestAssignees[t.request_id]) {
-                        window.__requestAssignees[t.request_id] = new Set();
-                    }
-                    window.__requestAssignees[t.request_id].add(t.assigned_to);
-                });
-
-                console.log('📊 عدد الطلبات:', allConsultations.length);
-                applyFilters();
-
+console.log('📊 عدد الطلبات:', allConsultations.length);
+applyFilters();
             } catch (err) {
                 console.error('خطأ في fetchConsultations:', err);
                 document.getElementById('consultationsContainer').innerHTML =
