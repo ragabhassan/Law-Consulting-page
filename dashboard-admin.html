@@ -416,9 +416,24 @@ if (staffNames.length > 0) {
 } else {
     assignedName = 'غير محدد';
 }
-                const uniqueNames = [...new Set(assignedNames)];
-                const assignedName = uniqueNames.length > 0 ? uniqueNames.join(' • ') : 'غير محدد';
+              // 🔴 الأولوية: موظفو المتابعة. إذا لا يوجد، السكرتير. إذا لا يوجد، "غير محدد"
+const staffNames = [];
+const secretaryNames = [];
+[...assigneeIds].forEach(id => {
+    const emp = employees.find(e => e.id === id);
+    if (!emp) return;
+    if (emp.role === 'followup_staff') staffNames.push(emp.full_name);
+    else if (emp.role === 'secretary') secretaryNames.push(emp.full_name);
+});
 
+let assignedName;
+if (staffNames.length > 0) {
+    assignedName = [...new Set(staffNames)].join(' • ');
+} else if (secretaryNames.length > 0) {
+    assignedName = `📝 ${[...new Set(secretaryNames)].join(' • ')}`;
+} else {
+    assignedName = 'غير محدد';
+}
                 const attachmentCell = item.attachment_path
                     ? `<a href="#" class="btn-open-attachment" data-path="${escapeHtml(item.attachment_path)}" style="color:#2d7aff;">📎 ملف</a>`
                     : '—';
