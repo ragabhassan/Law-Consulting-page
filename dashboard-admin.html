@@ -396,16 +396,6 @@
                 const fromTasks = window.__requestAssignees?.[item.id];
                 if (fromTasks) fromTasks.forEach(id => assigneeIds.add(id));
 
-// 🔴 اجمع المكلَّفين: موظفو المتابعة أولاً، وإن لم يوجد اعرض السكرتير
-const staffNames = [];      // موظفو المتابعة
-const secretaryNames = [];  // السكرتير (كبديل)
-
-[...assigneeIds].forEach(id => {
-    const emp = employees.find(e => e.id === id);
-    if (!emp) return;
-    if (emp.role === 'followup_staff') staffNames.push(emp.full_name);
-    else if (emp.role === 'secretary') secretaryNames.push(emp.full_name);
-});
 
 
               // 🔴 الأولوية: موظفو المتابعة. إذا لا يوجد، السكرتير. إذا لا يوجد، "غير محدد"
