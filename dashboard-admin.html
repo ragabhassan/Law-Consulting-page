@@ -2476,12 +2476,6 @@ async function loadOverdueTasks() {
             openPreview(previewId);
         }, 500);
     }
-		if (sectionId === 'sectionConsultations') {
-        if (allConsultations.length === 0) fetchConsultations();
-        else applyFilters();
-        loadSmartAlerts(); // 🔴 تحديث التنبيهات
-     }
-
    }
 
        async function addManualConsultation() {
