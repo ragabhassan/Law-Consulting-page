@@ -1190,14 +1190,14 @@ document.querySelectorAll('.btn-fail-task').forEach(btn => {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${session.access_token}`
                     },
-                    body: JSON.stringify({
-                        name: name,
-                        email: email,
-                        password: password,
-                        role: role,
-                        status: status
-                    })
-                });
+                   body: JSON.stringify({
+    full_name: name,   // ← تم تغيير `name` إلى `full_name`
+    email,
+    password,
+    role,
+    status
+}) 
+				});
 
                 const result = await response.json();
                 if (response.ok) {
