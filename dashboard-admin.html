@@ -1355,7 +1355,7 @@ document.querySelectorAll('.btn-fail-task').forEach(btn => {
                         'Authorization': `Bearer ${session.access_token}`
                     },
                     body: JSON.stringify({
-                        name: name,
+                        full_name: name,
                         email: email,
                         password: password,
                         role: role,
