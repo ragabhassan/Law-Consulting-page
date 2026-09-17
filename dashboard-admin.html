@@ -805,6 +805,11 @@ else if (currentUser?.role === 'secretary') {
                 ` : ''}
                 
                 ${task.notes ? `<div style="font-size: 12px; color: #555; margin-bottom: 8px; background: #fff9e6; padding: 8px; border-radius: 6px; border-right: 3px solid #ffc107;"><strong>📝 تعليمات المدير:</strong> ${task.notes}</div>` : ''}
+				${task.notes && task.notes.includes('تم إنجاز:') ? `
+    <div style="font-size: 12px; color: #555; margin-bottom: 8px; background: #e7f9ef; padding: 8px; border-radius: 6px; border-right: 3px solid #28a745;">
+        <strong>✅ آخر تحديث:</strong> ${task.notes.split('تم إنجاز:')[1] || ''}
+    </div>
+` : ''}
                 
                 <div style="font-size: 12px; color: #555; margin-bottom: 10px;">
                     <strong>📅 موعد التنفيذ:</strong> ${dueDate}
@@ -873,54 +878,134 @@ else if (currentUser?.role === 'secretary') {
                     `;
                 }
 
-                               let followupsCard = `
-                    <div class="dashboard-card">
-                        <div class="dashboard-card-header">
-                            <h3><span class="icon-circle">📊</span> ${currentUser?.role === 'manager' ? 'المهام التي تم إنجازها' : 'سجل المتابعات'}</h3>
-                        </div>
-                        <div class="dashboard-card-body">
-                            ${(() => {
-                                // 🔴 للمدير: عرض فقط المتابعات التي تم إنجازها (تحتوي على "تم إنجاز")
-                                let displayFollowups = followups || [];
-                                if (currentUser?.role === 'manager') {
-                                    displayFollowups = displayFollowups.filter(f => f.notes && f.notes.includes('تم إنجاز'));
-                                }
-                                
-                                if (displayFollowups.length === 0) {
-                                    return '<div class="message">لا توجد مهام تم إنجازها بعد.</div>';
-                                }
+let followupsCard = `
+    <div class="dashboard-card">
+        <div class="dashboard-card-header">
+            <h3><span class="icon-circle">📊</span> ${currentUser?.role === 'manager' ? 'سجل متابعة المهام' : 'سجل المتابعات'}</h3>
+        </div>
+        <div class="dashboard-card-body">
+            ${(() => {
+                let displayFollowups = (followups || []).filter(f => !f.is_attachment_only);
 
-                                return displayFollowups.map(f => {
-                                    const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
-                                    let followerName = 'المدير';
-                                    if (f.assigned_to) {
-                                        const emp = allEmployees.find(e => e.id === f.assigned_to);
-                                        if (emp) followerName = emp.full_name;
-                                    }
-                                    // عرض حالة المهمة
-                                    const statusLabels = {
-                                        pending: { text: '⏳ بانتظار التنفيذ', color: '#ffc107' },
-                                        in_progress: { text: '🔄 قيد التنفيذ', color: '#17a2b8' },
-                                        completed: { text: '✅ تم التنفيذ', color: '#28a745' },
-                                        failed: { text: '❌ تعذر التنفيذ', color: '#dc3545' }
-                                    };
-                                    const status = statusLabels[f.followup_status] || { text: f.followup_status || 'غير محدد', color: '#6c757d' };
+                // 🔴 للمدير: عرض كل المهام (منجزة + قيد التنفيذ + متعذرة)
+                // 🔴 للموظف: عرض كل المهام الخاصة به
+                if (displayFollowups.length === 0) {
+                    return '<div class="message">لا توجد مهام مسندة بعد.</div>';
+                }
 
-                                    return `<div class="dashboard-followup-item" style="border-right-color: ${status.color};">
-                                        <div class="date">
-                                            <strong>الموظف:</strong> ${followerName} | 
-                                            <strong>التاريخ:</strong> ${date} | 
-                                            <span style="background: ${status.color}; color: white; padding: 2px 8px; border-radius: 10px; font-size: 10px;">${status.text}</span>
-                                        </div>
-                                        <div class="note"><strong>المطلوب:</strong> ${f.action || '-'}</div>
-                                        ${f.notes && f.notes.includes('تم إنجاز') ? `<div class="note" style="background: #e7f3ff; padding: 6px; border-radius: 4px; margin-top: 5px;"><strong>✅ ما تم إنجازه:</strong> ${f.notes.replace('تم إنجاز: ', '').replace(' — المستندات: ', ' | المستندات: ')}</div>` : `<div class="note"><strong>تعليمات المدير:</strong> ${f.notes || '-'}</div>`}
-                                        ${f.next_followup ? `<div class="note"><strong>موعد التنفيذ:</strong> ${new Date(f.next_followup).toLocaleString('ar-EG')}</div>` : ''}
-                                    </div>`;
-                                }).join('');
-                            })()}
+                // ترتيب المهام: الأحدث أولاً
+                displayFollowups.sort((a, b) => new Date(b.followup_date) - new Date(a.followup_date));
+
+                return displayFollowups.map(f => {
+                    const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
+                    const dueDate = f.next_followup ? new Date(f.next_followup).toLocaleDateString('ar-EG') : 'غير محدد';
+                    
+                    // اسم الموظف المنفذ
+                    let followerName = 'غير محدد';
+                    if (f.assigned_to) {
+                        const emp = allEmployees.find(e => e.id === f.assigned_to);
+                        if (emp) followerName = emp.full_name;
+                    }
+
+                    // حالة المهمة
+                    const statusLabels = {
+                        pending: { text: '⏳ بانتظار التنفيذ', color: '#ffc107', bg: '#fff9e6' },
+                        in_progress: { text: '🔄 قيد التنفيذ', color: '#17a2b8', bg: '#e7f3ff' },
+                        completed: { text: '✅ تم التنفيذ', color: '#28a745', bg: '#e7f9ef' },
+                        failed: { text: '❌ تعذر التنفيذ', color: '#dc3545', bg: '#f8d7da' }
+                    };
+                    const status = statusLabels[f.followup_status] || { text: f.followup_status || 'غير محدد', color: '#6c757d', bg: '#f0f2f5' };
+
+                    // تحليل الإجراءات والمستندات من حقل action
+                    const actionText = f.action || '';
+                    const actionParts = actionText.split('|');
+                    const actionsList = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim() : '';
+                    const docsList = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim() : '';
+                    
+                    const actionsArray = actionsList ? actionsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+                    const docsArray = docsList ? docsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+
+                    // تحليل ما تم إنجازه من notes
+                    let achievedHtml = '';
+                    let notesHtml = '';
+                    
+                    if (f.notes) {
+                        if (f.notes.includes('تم إنجاز:')) {
+                            // الموظف حفظ تقدمه
+                            const parts = f.notes.split('—');
+                            const achievedPart = parts[0] ? parts[0].replace('تم إنجاز:', '').trim() : '';
+                            const docsPart = parts[1] ? parts[1].replace('المستندات:', '').trim() : '';
+                            
+                            achievedHtml = `
+                                <div style="background: #e7f9ef; padding: 8px 10px; border-radius: 6px; margin-top: 8px; border-right: 3px solid #28a745;">
+                                    <strong style="color: #28a745; font-size: 12px;">✅ ما تم إنجازه:</strong>
+                                    <div style="font-size: 12px; color: #333; margin-top: 4px;">${achievedPart || 'لا شيء'}</div>
+                                    ${docsPart ? `<div style="font-size: 12px; color: #333; margin-top: 4px;"><strong>📎 المستندات:</strong> ${docsPart}</div>` : ''}
+                                </div>
+                            `;
+                        } else {
+                            // ملاحظات عادية (تعليمات المدير أو سبب التعذر)
+                            const notesColor = f.followup_status === 'failed' ? '#dc3545' : '#ffc107';
+                            const notesBg = f.followup_status === 'failed' ? '#f8d7da' : '#fff9e6';
+                            const notesLabel = f.followup_status === 'failed' ? '❌ سبب تعذر التنفيذ' : '📝 ملاحظات';
+                            notesHtml = `
+                                <div style="background: ${notesBg}; padding: 8px 10px; border-radius: 6px; margin-top: 8px; border-right: 3px solid ${notesColor};">
+                                    <strong style="color: ${notesColor}; font-size: 12px;">${notesLabel}:</strong>
+                                    <div style="font-size: 12px; color: #333; margin-top: 4px;">${f.notes}</div>
+                                </div>
+                            `;
+                        }
+                    }
+
+                    return `
+                        <div class="dashboard-followup-item" style="border-right: 4px solid ${status.color}; background: ${status.bg}; margin-bottom: 12px; padding: 12px;">
+                            <!-- رأس المهمة -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                <strong style="color: #1a2a3a; font-size: 13px;">📋 مهمة #${(f.id || '').slice(0, 8)}</strong>
+                                <span style="background: ${status.color}; color: white; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600;">${status.text}</span>
+                            </div>
+                            
+                            <!-- معلومات أساسية -->
+                            <div style="font-size: 12px; color: #555; margin-bottom: 8px;">
+                                <strong>👤 الموظف:</strong> ${followerName} | 
+                                <strong>📅 تاريخ الإنشاء:</strong> ${date}
+                            </div>
+                            <div style="font-size: 12px; color: #555; margin-bottom: 8px;">
+                                <strong>⏰ موعد التنفيذ:</strong> ${dueDate}
+                            </div>
+
+                            <!-- الإجراءات المطلوبة -->
+                            ${actionsArray.length > 0 ? `
+                                <div style="margin-bottom: 6px;">
+                                    <strong style="color: #333; font-size: 12px;">📌 الإجراءات المطلوبة:</strong>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                                        ${actionsArray.map(a => `<span style="background: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; border: 1px solid #dce1e8;">${a}</span>`).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <!-- المستندات المطلوبة -->
+                            ${docsArray.length > 0 ? `
+                                <div style="margin-bottom: 6px;">
+                                    <strong style="color: #333; font-size: 12px;">📎 المستندات المطلوبة:</strong>
+                                    <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
+                                        ${docsArray.map(d => `<span style="background: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; border: 1px solid #dce1e8;">${d}</span>`).join('')}
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <!-- ما تم إنجازه -->
+                            ${achievedHtml}
+
+                            <!-- ملاحظات الموظف / المدير -->
+                            ${notesHtml}
                         </div>
-                    </div>
-                `;
+                    `;
+                }).join('');
+            })()}
+        </div>
+    </div>
+`;
                 let attachmentsCard = `
                     <div class="dashboard-card">
                         <div class="dashboard-card-header">
@@ -1011,13 +1096,26 @@ document.querySelectorAll('.btn-save-employee-tasks').forEach(btn => {
             return;
         }
 
-        const progressNotes = `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
+// 🔴 جلب الملاحظات الحالية للمهمة قبل التحديث
+const { data: currentTask } = await supabase
+    .from('client_followups')
+    .select('notes')
+    .eq('id', taskId)
+    .single();
 
+const managerNotes = currentTask?.notes && !currentTask.notes.includes('تم إنجاز:') 
+    ? currentTask.notes 
+    : '';
+
+// 🔴 دمج ملاحظات المدير مع ما تم إنجازه
+const progressNotes = managerNotes 
+    ? `${managerNotes}\n\nتم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`
+    : `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
         const { error } = await supabase
             .from('client_followups')
             .update({ 
                 notes: progressNotes,
-                followup_status: 'in_progress'
+                followup_status: (checkedActions.length > 0 && checkedDocs.length > 0) ? 'completed' : 'in_progress'
             })
             .eq('id', taskId);
 
