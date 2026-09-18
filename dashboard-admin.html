@@ -683,85 +683,126 @@ else if (currentUser?.role === 'followup_staff') {
 
     let tasksHtml = '';
     if (myActiveTasks && myActiveTasks.length > 0) {
-        myActiveTasks.forEach((task) => {
-            const dueDate = task.next_followup ? new Date(task.next_followup).toLocaleDateString('ar-EG') : 'غير محدد';
-            const statusLabels = {
-                pending: { text: '⏳ بانتظار التنفيذ', color: '#ffc107' },
-                in_progress: { text: '🔄 قيد التنفيذ', color: '#17a2b8' },
-                completed: { text: '✅ تم التنفيذ', color: '#28a745' },
-                failed: { text: '❌ تعذر التنفيذ', color: '#dc3545' }
-            };
-            const status = statusLabels[task.followup_status] || { text: task.followup_status || 'غير محدد', color: '#6c757d' };
+myActiveTasks.forEach((task) => {
+    const dueDate = task.next_followup ? new Date(task.next_followup).toLocaleDateString('ar-EG') : 'غير محدد';
+    const statusLabels = {
+        pending: { text: '⏳ بانتظار التنفيذ', color: '#ffc107' },
+        in_progress: { text: '🔄 قيد التنفيذ', color: '#17a2b8' },
+        completed: { text: '✅ تم التنفيذ', color: '#28a745' },
+        failed: { text: '❌ تعذر التنفيذ', color: '#dc3545' }
+    };
+    const status = statusLabels[task.followup_status] || { text: task.followup_status || 'غير محدد', color: '#6c757d' };
 
-            const actionText = task.action || '';
-            const actionParts = actionText.split('|');
-            const actionsList = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim() : '';
-            const docsList = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim() : '';
-            
-            const actionsArray = actionsList ? actionsList.split(',').map(i => i.trim()).filter(i => i) : [];
-            const docsArray = docsList ? docsList.split(',').map(i => i.trim()).filter(i => i) : [];
+    // تحليل الإجراءات والمستندات المطلوبة
+    const actionText = task.action || '';
+    const actionParts = actionText.split('|');
+    const actionsList = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim() : '';
+    const docsList = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim() : '';
+    const actionsArray = actionsList ? actionsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+    const docsArray = docsList ? docsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
 
-            tasksHtml += `
-                <div style="border: 1px solid #e9edf4; padding: 12px; border-radius: 8px; margin-bottom: 15px; background: #f8faff; border-right: 4px solid ${status.color};">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <strong style="color: #1a2a3a;">📋 مهمة #${task.id.slice(0, 8)}</strong>
-                        <span style="background: ${status.color}; color: white; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">${status.text}</span>
-                    </div>
-                    
-                    ${actionsArray.length > 0 ? `
-                        <div style="margin-bottom: 10px;">
-                            <strong style="color: #333; font-size: 13px;">الإجراءات المطلوبة:</strong>
-                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
-                                ${actionsArray.map((act) => `
-                                    <label style="display: flex; align-items: center; gap: 5px; background: white; padding: 6px 10px; border-radius: 6px; border: 1px solid #dce1e8; font-size: 12px;">
-                                        <input type="checkbox" class="employee-task-action" data-task-id="${task.id}" value="${act}"> ${act}
-                                    </label>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                    
-                    ${docsArray.length > 0 ? `
-                        <div style="margin-bottom: 10px;">
-                            <strong style="color: #333; font-size: 13px;">المستندات المطلوبة:</strong>
-                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
-                                ${docsArray.map((doc) => `
-                                    <label style="display: flex; align-items: center; gap: 5px; background: white; padding: 6px 10px; border-radius: 6px; border: 1px solid #dce1e8; font-size: 12px;">
-                                        <input type="checkbox" class="employee-task-doc" data-task-id="${task.id}" value="${doc}"> ${doc}
-                                    </label>
-                                `).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-                    
-                    ${task.notes ? `<div style="font-size: 12px; color: #555; margin-bottom: 8px; background: #fff9e6; padding: 8px; border-radius: 6px; border-right: 3px solid #ffc107;"><strong>📝 تعليمات المدير:</strong> ${task.notes}</div>` : ''}
-                    
-                    <div style="font-size: 12px; color: #555; margin-bottom: 10px;">
-                        <strong>📅 موعد التنفيذ:</strong> ${dueDate}
-                    </div>
-                    
-                    <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                        <button class="btn-save-employee-tasks" data-id="${task.id}" style="background: #2d7aff; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">💾 حفظ حالة المهام</button>
-                        <button class="btn-fail-task" data-id="${task.id}" style="background: #dc3545; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">🔴 تعذر التنفيذ</button>
-                    </div>
-                </div>
-            `;
-        });
-    } else {
-        tasksHtml = '<div class="message">✅ لا توجد مهام نشطة حالياً — كل شيء منجز.</div>';
+    // 🔴 استخراج العناصر المنجزة من notes
+    const doneActions = [];
+    const doneDocs = [];
+    if (task.notes && task.notes.includes('تم إنجاز:')) {
+        const parts = task.notes.split('—');
+        const aPart = parts[0] ? parts[0].replace('تم إنجاز:', '').trim() : '';
+        const dPart = parts[1] ? parts[1].replace('المستندات:', '').trim() : '';
+        if (aPart && aPart !== 'لا شيء') aPart.split(',').forEach(x => doneActions.push(x.trim()));
+        if (dPart && dPart !== 'لا شيء') dPart.split(',').forEach(x => doneDocs.push(x.trim()));
     }
 
-    tasksCard = `
-        <div class="dashboard-card">
-            <div class="dashboard-card-header">
-                <h3><span class="icon-circle">🔔</span> المهام المسندة إليّ</h3>
+    // 🔴 تحديد ما إذا كانت المهمة منتهية
+    const isFinished = task.followup_status === 'completed' || task.followup_status === 'failed';
+
+    // 🔴 حساب نسبة التقدم
+    const totalReq = actionsArray.length + docsArray.length;
+    const totalDone = doneActions.length + doneDocs.length;
+    const percent = totalReq > 0 ? Math.round((totalDone / totalReq) * 100) : 0;
+
+    tasksHtml += `
+        <div style="border: 1px solid #e9edf4; padding: 12px; border-radius: 8px; margin-bottom: 15px; background: #f8faff; border-right: 4px solid ${status.color};">
+            <!-- رأس المهمة -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <strong style="color: #1a2a3a;">📋 مهمة #${task.id.slice(0, 8)}</strong>
+                <span style="background: ${status.color}; color: white; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">${status.text}</span>
             </div>
-            <div class="dashboard-card-body">
-                ${tasksHtml}
+
+            <!-- الإجراءات المطلوبة -->
+            ${actionsArray.length > 0 ? `
+                <div style="margin-bottom: 10px;">
+                    <strong style="color: #333; font-size: 13px;">الإجراءات المطلوبة (${doneActions.length}/${actionsArray.length}):</strong>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
+                        ${actionsArray.map((act) => {
+                            const isDone = doneActions.includes(act);
+                            return `
+                                <label style="display: flex; align-items: center; gap: 5px; background: ${isDone ? '#e7f9ef' : 'white'}; padding: 6px 10px; border-radius: 6px; border: 1px solid ${isDone ? '#28a745' : '#dce1e8'}; font-size: 12px; ${isDone ? 'text-decoration: line-through; color: #28a745; font-weight: 600;' : ''}">
+                                    <input type="checkbox" class="employee-task-action" data-task-id="${task.id}" value="${act}" ${isDone ? 'checked disabled' : (isFinished ? 'disabled' : '')}>
+                                    ${isDone ? '✅' : ''} ${act}
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            ` : ''}
+
+            <!-- المستندات المطلوبة -->
+            ${docsArray.length > 0 ? `
+                <div style="margin-bottom: 10px;">
+                    <strong style="color: #333; font-size: 13px;">المستندات المطلوبة (${doneDocs.length}/${docsArray.length}):</strong>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
+                        ${docsArray.map((doc) => {
+                            const isDone = doneDocs.includes(doc);
+                            return `
+                                <label style="display: flex; align-items: center; gap: 5px; background: ${isDone ? '#e7f9ef' : 'white'}; padding: 6px 10px; border-radius: 6px; border: 1px solid ${isDone ? '#28a745' : '#dce1e8'}; font-size: 12px; ${isDone ? 'text-decoration: line-through; color: #28a745; font-weight: 600;' : ''}">
+                                    <input type="checkbox" class="employee-task-doc" data-task-id="${task.id}" value="${doc}" ${isDone ? 'checked disabled' : (isFinished ? 'disabled' : '')}>
+                                    ${isDone ? '✅' : ''} ${doc}
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            ` : ''}
+
+            <!-- 🔴 شريط التقدم (يظهر فقط عند وجود تقدم) -->
+            ${(task.followup_status === 'in_progress' || task.followup_status === 'completed') && totalReq > 0 ? `
+                <div style="margin-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #555; margin-bottom: 4px;">
+                        <span>نسبة الإنجاز</span>
+                        <span>${percent}%</span>
+                    </div>
+                    <div style="background: #f0f2f5; border-radius: 12px; height: 12px; overflow: hidden;">
+                        <div style="background: ${percent === 100 ? '#28a745' : '#2d7aff'}; height: 100%; width: ${percent}%; transition: width 0.3s;"></div>
+                    </div>
+                </div>
+            ` : ''}
+
+            <!-- تعليمات المدير (تظهر فقط إن لم تكن هناك إنجازات) -->
+            ${task.notes && !task.notes.includes('تم إنجاز:') ? `
+                <div style="font-size: 12px; color: #555; margin-top: 8px; background: #fff9e6; padding: 8px; border-radius: 6px; border-right: 3px solid #ffc107;">
+                    <strong>📝 تعليمات المدير:</strong> ${task.notes}
+                </div>
+            ` : ''}
+
+            <!-- موعد التنفيذ -->
+            <div style="font-size: 12px; color: #555; margin-top: 8px;">
+                <strong>📅 موعد التنفيذ:</strong> ${dueDate}
             </div>
+
+            <!-- الأزرار أو رسالة الانتهاء -->
+            ${!isFinished ? `
+                <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn-save-employee-tasks" data-id="${task.id}" style="background: #2d7aff; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">💾 حفظ حالة المهام</button>
+                    <button class="btn-fail-task" data-id="${task.id}" style="background: #dc3545; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">🔴 تعذر التنفيذ</button>
+                </div>
+            ` : `
+                <div style="margin-top: 10px; padding: 8px; background: ${status.color}; color: white; border-radius: 6px; font-size: 12px; text-align: center; font-weight: 600;">
+                    ${task.followup_status === 'completed' ? '✅ المهمة مكتملة' : '❌ المهمة متعذرة'}
+                </div>
+            `}
         </div>
     `;
-} 
+});
 else if (currentUser?.role === 'secretary') {
     // 🟢 للسكرتير: قسمان
     // 1) المهام المسندة إليه (مع إمكانية التحديث)
