@@ -1057,10 +1057,19 @@ else if (currentUser?.role === 'secretary') {
     // 🟢 السكرتير: (1) مهام الموظف الأصلي (للاطلاع) + (2) مهامه الشخصية (مع تحديث)
     const allTasks = (followups || []).filter(f => !f.is_attachment_only);
     
-    // المهام المسندة للموظف الأصلي (consultation.assigned_to)
-    const originalAssigneeId = consultation.assigned_to;
-    const originalTasks = allTasks.filter(f => f.assigned_to === originalAssigneeId);
-    
+// 🔴 تحديد الموظف الأصلي: أول مهمة في client_followups مسندة لموظف متابعة
+const allTasksSorted = [...allTasks].sort((a, b) => new Date(a.followup_date) - new Date(b.followup_date));
+const firstFollowupStaffTask = allTasksSorted.find(f => {
+    const emp = allEmployees.find(e => e.id === f.assigned_to);
+    return emp && emp.role === 'followup_staff';
+});
+
+const originalAssigneeId = firstFollowupStaffTask?.assigned_to || consultation.assigned_to;
+
+// المهام المسندة للموظف الأصلي (استثناء مهام السكرتير نفسه)
+const originalTasks = allTasks.filter(f => 
+    f.assigned_to === originalAssigneeId && f.assigned_to !== currentUser.id
+);
     // المهام المسندة للسكرتير شخصياً
     const myTasks = allTasks.filter(f => f.assigned_to === currentUser.id);
     
