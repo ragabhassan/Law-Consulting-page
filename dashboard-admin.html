@@ -352,7 +352,7 @@
         let allEmployees = [];
         let currentFilteredData = [];
 
-function renderConsultations(data, employees) {
+ async function renderConsultations(data, employees) {
     const container = document.getElementById('consultationsContainer');
     if (!container) return;
     if (!data || data.length === 0) {
@@ -360,13 +360,51 @@ function renderConsultations(data, employees) {
         return;
     }
 
+    // 🔴 جلب آخر مهمة لكل طلب من client_followups لتحديد "المتابع" الفعلي
+    const requestIds = data.map(item => item.id);
+    
+    const { data: followupsData } = await supabase
+        .from('client_followups')
+        .select('request_id, assigned_to, followup_date, followup_status')
+        .in('request_id', requestIds)
+        .eq('is_attachment_only', false)
+        .order('followup_date', { ascending: false });
+
+    // 🔴 بناء خريطة: request_id -> آخر مهمة
+    const latestTaskMap = {};
+    (followupsData || []).forEach(f => {
+        if (!latestTaskMap[f.request_id]) {
+            latestTaskMap[f.request_id] = f;
+        }
+    });
+
     let rows = '';
     data.forEach((item, idx) => {
-        // 🔴 قراءة المتابع الأصلي من consultation_requests.assigned_to فقط
+        // 🔴 تحديد المتابع: أولاً من client_followups، ثم من consultation_requests
         let assignedName = 'غير محدد';
-        if (item.assigned_to) {
+        const latestTask = latestTaskMap[item.id];
+        
+        if (latestTask && latestTask.assigned_to) {
+            const emp = employees ? employees.find(e => e.id === latestTask.assigned_to) : null;
+            if (emp) assignedName = emp.full_name;
+        } else if (item.assigned_to) {
             const emp = employees ? employees.find(e => e.id === item.assigned_to) : null;
             if (emp) assignedName = emp.full_name;
+        }
+
+        // 🔴 إضافة شارة الحالة بجانب اسم المتابع
+        let statusBadge = '';
+        if (latestTask) {
+            const statusLabels = {
+                pending: { text: '⏳', color: '#ffc107' },
+                in_progress: { text: '🔄', color: '#17a2b8' },
+                completed: { text: '✅', color: '#28a745' },
+                failed: { text: '❌', color: '#dc3545' }
+            };
+            const st = statusLabels[latestTask.followup_status];
+            if (st) {
+                statusBadge = `<span style="background: ${st.color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-right: 5px;">${st.text}</span>`;
+            }
         }
 
         rows += `
@@ -378,7 +416,7 @@ function renderConsultations(data, employees) {
                 <td>${item.service || '—'}</td>
                 <td>${item.attachment_path ? `<a href="${item.attachment_path}" target="_blank" style="color: #2d7aff;">📎 ملف</a>` : '—'}</td>
                 <td>${item.created_at ? new Date(item.created_at).toLocaleDateString('ar-EG') : '—'}</td>
-                <td>${assignedName}</td>
+                <td>${statusBadge} ${assignedName}</td>
                 <td>
                     <button class="btn-preview" data-id="${item.id}">📄 معاينة</button>
                     <button class="btn-edit-cons" data-id="${item.id}">✏️ تعديل</button>
@@ -401,7 +439,7 @@ function renderConsultations(data, employees) {
         </div>
     `;
 
-    // ربط الأزرار (نفس الكود القديم)
+    // ربط الأزرار
     document.querySelectorAll('.btn-preview').forEach(btn => {
         btn.addEventListener('click', function() {
             openPreview(this.dataset.id);
