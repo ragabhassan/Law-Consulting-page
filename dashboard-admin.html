@@ -1386,63 +1386,63 @@ document.querySelectorAll('.btn-fail-task-inline').forEach(btn => {
                     });
                 }
 // 🔴 زر حفظ حالة المهام (للموظف)
-// 🔴 زر حفظ حالة المهام (للموظف)
 document.querySelectorAll('.btn-save-employee-tasks').forEach(btn => {
     btn.addEventListener('click', async function() {
-        const taskId = this.dataset.id; // 🔴 تأكد من data-id في الزر
+        const taskId = this.dataset.id;
 
         // جمع العناصر المحددة
         const checkedActions = [];
         const checkedDocs = [];
-
-        document.querySelectorAll(`.employee-task-action[data-task-id="${taskId}"]:checked`).forEach(cb => {
-            checkedActions.push(cb.value);
-        });
-        document.querySelectorAll(`.employee-task-doc[data-task-id="${taskId}"]:checked`).forEach(cb => {
-            checkedDocs.push(cb.value);
-        });
-
-        console.log('taskId:', taskId);
-        console.log('checkedActions:', checkedActions);
-        console.log('checkedDocs:', checkedDocs);
+        document.querySelectorAll(`.employee-task-action[data-task-id="${taskId}"]:checked`).forEach(cb => checkedActions.push(cb.value));
+        document.querySelectorAll(`.employee-task-doc[data-task-id="${taskId}"]:checked`).forEach(cb => checkedDocs.push(cb.value));
 
         if (checkedActions.length === 0 && checkedDocs.length === 0) {
             alert('يرجى تحديد عنصر واحد على الأقل قبل الحفظ.');
             return;
         }
 
-// 🔴 جلب الملاحظات الحالية للمهمة قبل التحديث
-const { data: currentTask } = await supabase
-    .from('client_followups')
-    .select('notes')
-    .eq('id', taskId)
-    .single();
+        // جلب المهمة الحالية
+        const { data: currentTask } = await supabase
+            .from('client_followups')
+            .select('notes, action')
+            .eq('id', taskId)
+            .single();
 
-const managerNotes = currentTask?.notes && !currentTask.notes.includes('تم إنجاز:') 
-    ? currentTask.notes 
-    : '';
+        // استخراج كل المتطلبات لحساب الاكتمال
+        const actionParts = (currentTask?.action || '').split('|');
+        const allActions = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+        const allDocs = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
 
-// 🔴 دمج ملاحظات المدير مع ما تم إنجازه
-const progressNotes = managerNotes 
-    ? `${managerNotes}\n\nتم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`
-    : `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
+        const managerNotes = currentTask?.notes && !currentTask.notes.includes('تم إنجاز:') 
+            ? currentTask.notes 
+            : '';
+
+        const progressNotes = managerNotes 
+            ? `${managerNotes}\n\nتم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`
+            : `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
+
+        // 🔴 تحديد الحالة بدقة
+        const totalRequired = allActions.length + allDocs.length;
+        const totalDone = checkedActions.length + checkedDocs.length;
+        const isComplete = totalRequired > 0 && totalDone >= totalRequired;
+
         const { error } = await supabase
             .from('client_followups')
             .update({ 
                 notes: progressNotes,
-                followup_status: (checkedActions.length > 0 && checkedDocs.length > 0) ? 'completed' : 'in_progress'
+                followup_status: isComplete ? 'completed' : 'in_progress'
             })
             .eq('id', taskId);
 
         if (error) {
             alert('❌ فشل حفظ الحالة: ' + error.message);
         } else {
-            alert('✅ تم حفظ حالة المهمة بنجاح!');
+            alert(isComplete ? '✅ اكتملت المهمة! تم تحويل حالتها إلى "تم التنفيذ".' : '✅ تم حفظ التقدم. المهمة الآن "قيد التنفيذ".');
             openPreview(consultationId);
         }
     });
 });
-// 🔴 زر تعذر التنفيذ (للموظف)
+				// 🔴 زر تعذر التنفيذ (للموظف)
 document.querySelectorAll('.btn-fail-task').forEach(btn => {
     btn.addEventListener('click', async function() {
         const taskId = this.dataset.id;
