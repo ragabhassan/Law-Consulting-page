@@ -16,7 +16,9 @@
         h1 { color: #1a2a3a; border-bottom: 3px solid #2d7aff; padding-bottom: 12px; margin-bottom: 25px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
         .user-info { font-size: 16px; font-weight: normal; color: #555; }
 
-        /* شريط التنقل */
+        /* ============================================================
+           شريط التنقل
+           ============================================================ */
         .nav-bar { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 30px; background: #eef2f7; padding: 15px; border-radius: 12px; }
         .nav-btn { background: white; border: none; padding: 12px 28px; border-radius: 30px; font-size: 16px; font-weight: 600; color: #1a2a3a; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.08); transition: 0.3s; border: 1px solid transparent; }
         .nav-btn:hover { background: #2d7aff; color: white; box-shadow: 0 6px 14px rgba(45,122,255,0.3); transform: translateY(-2px); }
@@ -24,12 +26,16 @@
         .nav-btn.logout:hover { background: #cc0000; }
         .nav-btn.hidden { display: none; }
 
-        /* الأقسام */
+        /* ============================================================
+           الأقسام
+           ============================================================ */
         .section { display: none; animation: fadeIn 0.4s ease; }
         .section.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* الفلاتر */
+        /* ============================================================
+           الفلاتر
+           ============================================================ */
         .filters { display: flex; gap: 15px; flex-wrap: wrap; margin-bottom: 25px; background: #f8faff; padding: 15px; border-radius: 12px; align-items: center; }
         .filters label { font-weight: 600; color: #1a2a3a; }
         .filters input, .filters select { padding: 8px 14px; border: 1px solid #dce1e8; border-radius: 8px; font-size: 14px; }
@@ -38,14 +44,18 @@
         .filters button.reset { background: #6c757d; }
         .filters button.reset:hover { background: #5a6268; }
 
-        /* الجدول */
+        /* ============================================================
+           الجدول
+           ============================================================ */
         .table-responsive { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
         th { background: #2d7aff; color: white; padding: 12px 10px; text-align: center; font-weight: 600; white-space: nowrap; }
         td { padding: 10px; border-bottom: 1px solid #e9edf4; text-align: center; vertical-align: middle; }
         tr:hover td { background: #f8faff; }
 
-        /* أزرار الجدول */
+        /* ============================================================
+           أزرار الجدول
+           ============================================================ */
         .btn-preview { background: #17a2b8; color: white; border: none; padding: 4px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; }
         .btn-preview:hover { background: #138496; }
         .btn-edit-cons { background: #ffc107; color: #000; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 4px; }
@@ -53,7 +63,9 @@
         .btn-delete-cons { background: #dc3545; color: white; border: none; padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; margin: 0 4px; }
         .btn-delete-cons:hover { background: #c82333; }
 
-        /* بطاقات الموظفين */
+        /* ============================================================
+           بطاقات الموظفين
+           ============================================================ */
         .employee-card { background: #f8faff; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-right: 5px solid #2d7aff; flex-wrap: wrap; gap: 10px; }
         .employee-card .info { display: flex; gap: 30px; flex-wrap: wrap; }
         .employee-card .info strong { color: #1a2a3a; }
@@ -64,12 +76,16 @@
         .btn-delete-emp { background: #dc3545; color: white; }
         .btn-delete-emp:hover { background: #c82333; }
 
-        /* الرسائل */
+        /* ============================================================
+           الرسائل والتحميل
+           ============================================================ */
         .message { padding: 16px; background: #fff3cd; border-radius: 10px; border-right: 6px solid #ffc107; margin: 20px 0; }
         .message.error { background: #f8d7da; border-color: #dc3545; }
         .loading { text-align: center; padding: 40px; color: #6c757d; }
 
-        /* Modal */
+        /* ============================================================
+           النوافذ المنبثقة (Modal)
+           ============================================================ */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 16, 28, 0.75); z-index: 1000; justify-content: center; align-items: center; }
         .modal-overlay.active { display: flex; }
         .modal-content { background: #f4f6f9; width: 100%; height: 100vh; max-width: none; max-height: none; border-radius: 0; padding: 20px 30px; box-shadow: none; display: flex; flex-direction: column; overflow-y: auto; }
@@ -77,7 +93,9 @@
         .modal-close:hover { background: #c82333; }
         .modal-title { font-size: 28px; color: #1a2a3a; border-bottom: 3px solid #2d7aff; padding-bottom: 10px; margin-bottom: 15px; text-align: right; position: relative; }
 
-        /* لوحة المعاينة */
+        /* ============================================================
+           بنية لوحة المعاينة (Grid)
+           ============================================================ */
         .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; overflow-y: auto; padding: 10px; flex-grow: 1; }
         .dashboard-card { background: #ffffff; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); padding: 20px; border: 1px solid #e9edf4; transition: all 0.3s ease; }
         .dashboard-card:hover { box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
@@ -85,17 +103,35 @@
         .dashboard-card-header h3 { font-size: 17px; color: #1a2a3a; margin: 0; }
         .dashboard-card-header .icon-circle { width: 35px; height: 35px; border-radius: 12px; background: linear-gradient(135deg, #2d7aff, #1a5cc4); display: flex; align-items: center; justify-content: center; font-size: 18px; color: white; }
 
+        /* ============================================================
+           عناصر البطاقة
+           ============================================================ */
         .dashboard-detail-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid #f0f2f5; }
         .dashboard-detail-row:last-child { border-bottom: none; }
         .dashboard-detail-label { font-weight: 700; color: #333; font-size: 13px; width: 110px; margin: 0; }
         .dashboard-detail-value { flex: 1; color: #555; font-size: 13px; }
 
-        .dashboard-followup-item { padding: 10px; border-radius: 10px; background: #f8faff; margin-bottom: 8px; border-right: 4px solid #2d7aff; }
+        /* ============================================================
+           عناصر المهام والمتابعات
+           ============================================================ */
+        .dashboard-checkbox-item { padding: 6px; border-bottom: 1px dashed #eee; font-size: 13px; background: #f0f4ff; border-radius: 6px; margin-bottom: 6px; }
+        .dashboard-checkbox-item input[type="checkbox"] { margin-right: 8px; }
+        .dashboard-checkbox-item label { font-size: 13px; color: #333; }
 
+        .dashboard-followup-item { padding: 10px; border-radius: 10px; background: #f8faff; margin-bottom: 8px; border-right: 4px solid #2d7aff; }
+        .dashboard-followup-item .date { font-size: 12px; color: #6c757d; margin-bottom: 4px; }
+        .dashboard-followup-item .note { font-size: 13px; color: #333; }
+
+        /* ============================================================
+           عناصر المرفقات
+           ============================================================ */
         .dashboard-attachment-item { padding: 8px; border-radius: 10px; background: #f0f4ff; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
         .dashboard-attachment-item a { color: #2d7aff; text-decoration: none; margin-right: 10px; }
         .dashboard-attachment-item .btn-delete-attachment { background: #dc3545; color: white; border: none; border-radius: 6px; padding: 3px 8px; font-size: 10px; cursor: pointer; }
 
+        /* ============================================================
+           نماذج الإدخال
+           ============================================================ */
         .dashboard-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
         .dashboard-form-grid input, .dashboard-form-grid textarea { width: 100%; padding: 10px; border: 1px solid #dce1e8; border-radius: 8px; font-size: 13px; }
         .dashboard-form-grid button { width: 100%; }
@@ -103,6 +139,9 @@
         .dashboard-btn { background: #2d7aff; color: white; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; margin-top: 10px; }
         .dashboard-btn:hover { background: #1a5cc4; }
 
+        /* ============================================================
+           نماذج الإضافة
+           ============================================================ */
         .add-employee-form { background: #f8faff; padding: 20px; border-radius: 12px; margin-bottom: 30px; border: 1px solid #e9edf4; }
         .add-employee-form .form-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: end; }
         .add-employee-form .form-group { flex: 1; min-width: 150px; }
@@ -111,6 +150,9 @@
         .add-employee-form button { background: #28a745; color: white; border: none; padding: 8px 24px; border-radius: 6px; cursor: pointer; font-weight: 600; }
         .add-employee-form button:hover { background: #218838; }
 
+        /* ============================================================
+           تخصيص ألوان البطاقات
+           ============================================================ */
         .dashboard-card:nth-child(1) .icon-circle { background: linear-gradient(135deg, #17a2b8, #138496); }
         .dashboard-card:nth-child(2) .icon-circle { background: linear-gradient(135deg, #28a745, #218838); }
         .dashboard-card:nth-child(3) .icon-circle { background: linear-gradient(135deg, #ffc107, #e0a800); }
@@ -118,6 +160,9 @@
         .dashboard-card:nth-child(5) .icon-circle { background: linear-gradient(135deg, #ff4d4d, #cc0000); }
         .dashboard-card:nth-child(6) .icon-circle { background: linear-gradient(135deg, #2d7aff, #1a5cc4); }
 
+        /* ============================================================
+           الاستجابة للجوال
+           ============================================================ */
         @media (max-width: 900px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .dashboard-detail-row { flex-direction: column; align-items: flex-start; gap: 2px; }
@@ -135,234 +180,6 @@
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h1 id="pageTitle">🏛️ لوحة التحكم <span class="user-info" id="userNameDisplay"></span></h1>
-    
-    <div class="nav-bar">
-        <button class="nav-btn" id="btnShowConsultations">📋 عرض الطلبات</button>
-        <button class="nav-btn hidden" id="btnManualEntry">📝 إدخال طلب يدوي</button>
-        <button class="nav-btn hidden" id="btnShowEmployees">👥 إدارة الموظفين</button>
-        <button class="nav-btn hidden" id="btnShowReports">📊 التقارير</button>
-        <button class="nav-btn logout" id="btnLogout">🚪 تسجيل الخروج</button>
-    </div>
-
-    <!-- ============================================================
-         قسم الطلبات
-         ============================================================ -->
-    <div id="sectionConsultations" class="section active">
-        <!-- التنبيهات الذكية -->
-        <div id="smartAlerts" style="background: linear-gradient(135deg, #f0f4ff, #e7f3ff); border-radius: 12px; padding: 15px 20px; margin-bottom: 20px; border-right: 5px solid #2d7aff;">
-            <h3 style="color: #1a2a3a; margin: 0 0 12px 0; display: flex; align-items: center; gap: 10px;">
-                <span style="background: linear-gradient(135deg, #2d7aff, #1a5cc4); color: white; width: 35px; height: 35px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px;">🔔</span>
-                التنبيهات الذكية
-            </h3>
-            <div id="alertsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;">
-                <div style="color: #718096; font-size: 13px;">⏳ جاري تحميل التنبيهات...</div>
-            </div>
-        </div>
-
-        <h2>📋 قائمة الطلبات</h2>
-        <div class="filters" id="filterContainer">
-            <label>🔍 اسم العميل:</label>
-            <input type="text" id="filterClientName" placeholder="ابحث باسم العميل...">
-            
-            <label>📅 من:</label>
-            <input type="date" id="filterDateFrom">
-            <label>إلى:</label>
-            <input type="date" id="filterDateTo">
-            
-            <label>📌 الخدمة:</label>
-            <select id="filterService">
-                <option value="">الكل</option>
-                <option value="corporate">استشارات الشركات</option>
-                <option value="contracts">صياغة العقود</option>
-                <option value="litigation">قضايا وتقاضي</option>
-                <option value="arbitration">تحكيم وتسوية نزاعات</option>
-                <option value="ip">حماية الملكية الفكرية</option>
-                <option value="other">استشارة عامة</option>
-            </select>
-            
-            <button id="btnApplyFilters">🔍 تطبيق</button>
-            <button id="btnResetFilters" class="reset">↺ إعادة تعيين</button>
-        </div>
-        <div id="consultationsContainer"><div class="loading">⏳ جاري التحميل...</div></div>
-    </div>
-
-    <!-- ============================================================
-         قسم الإدخال اليدوي
-         ============================================================ -->
-    <div id="sectionManualEntry" class="section">
-        <h2>📝 إدخال طلب استشارة (يدوي)</h2>
-        <div class="add-employee-form">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>اسم العميل *</label>
-                    <input type="text" id="manualName" placeholder="الاسم الكامل">
-                </div>
-                <div class="form-group">
-                    <label>رقم الهاتف *</label>
-                    <input type="text" id="manualPhone" placeholder="01xxxxxxxxx">
-                </div>
-                <div class="form-group">
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" id="manualEmail" placeholder="example@domain.com">
-                </div>
-                <div class="form-group">
-                    <label>الشركة (اختياري)</label>
-                    <input type="text" id="manualCompany" placeholder="اسم الشركة">
-                </div>
-                <div class="form-group">
-                    <label>الخدمة المطلوبة</label>
-                    <select id="manualService">
-                        <option value="">اختر الخدمة</option>
-                        <option value="corporate">استشارات الشركات</option>
-                        <option value="contracts">صياغة العقود</option>
-                        <option value="litigation">قضايا وتقاضي</option>
-                        <option value="arbitration">تحكيم وتسوية نزاعات</option>
-                        <option value="ip">حماية الملكية الفكرية</option>
-                        <option value="other">استشارة عامة</option>
-                    </select>
-                </div>
-            </div>
-            <div class="form-row" style="margin-top: 10px;">
-                <div class="form-group" style="flex: 2;">
-                    <label>تفاصيل الطلب</label>
-                    <textarea id="manualMessage" rows="4" style="width:100%; padding:8px; border:1px solid #dce1e8; border-radius:6px;" placeholder="اكتب ملخص الطلب هنا..."></textarea>
-                </div>
-                <div class="form-group" style="flex: 2;">
-                    <label>📎 إرفاق ملف (صورة أو PDF - اختياري)</label>
-                    <input type="file" id="manualAttachment" accept="image/*,.pdf" style="width: 100%; padding: 8px; border: 1px solid #dce1e8; border-radius: 6px;">
-                </div>
-            </div>
-            <div class="form-group">
-                <button id="btnAddManualConsultation" class="primary" style="margin-top: 10px;">➕ حفظ الطلب</button>
-                <span id="manualMsg" style="margin-right: 15px;"></span>
-            </div>
-        </div>
-    </div>
-
-    <!-- ============================================================
-         قسم الموظفين
-         ============================================================ -->
-    <div id="sectionEmployees" class="section">
-        <h2>👥 إدارة الموظفين</h2>
-        <div class="add-employee-form" id="addEmployeeForm">
-            <h3 style="margin-bottom:10px;">➕ إضافة موظف جديد</h3>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>الاسم الكامل</label>
-                    <input type="text" id="empName" placeholder="اسم الموظف">
-                </div>
-                <div class="form-group">
-                    <label>البريد الإلكتروني</label>
-                    <input type="email" id="empEmail" placeholder="example@domain.com">
-                </div>
-                <div class="form-group">
-                    <label>كلمة المرور المؤقتة</label>
-                    <input type="text" id="empPassword" placeholder="كلمة مرور مؤقتة">
-                </div>
-                <div class="form-group">
-                    <label>الدور</label>
-                    <select id="empRole">
-                        <option value="followup_staff">موظف متابعة</option>
-                        <option value="manager">مدير</option>
-                        <option value="secretary">سكرتير</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>الحالة</label>
-                    <select id="empStatus">
-                        <option value="true">نشط</option>
-                        <option value="false">غير نشط</option>
-                    </select>
-                </div>
-                <button id="btnAddEmployee">إضافة</button>
-            </div>
-        </div>
-        <div id="employeesContainer"><div class="loading">⏳ جاري التحميل...</div></div>
-    </div>
-
-    <!-- ============================================================
-         قسم التقارير
-         ============================================================ -->
-    <div id="sectionReports" class="section">
-        <h2 style="display: flex; justify-content: space-between; align-items: center;">
-            📊 لوحة التقارير
-            <button onclick="window.print()" style="background: #2d7aff; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">🖨️ طباعة التقرير</button>
-        </h2>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px;">
-            <div class="dashboard-card" style="text-align: center;">
-                <div style="font-size: 32px;">📋</div>
-                <div style="font-size: 14px; color: #718096;">إجمالي الطلبات</div>
-                <div id="statTotalRequests" style="font-size: 28px; font-weight: 700; color: #1a2a3a; margin-top: 8px;">0</div>
-            </div>
-            <div class="dashboard-card" style="text-align: center;">
-                <div style="font-size: 32px;">✅</div>
-                <div style="font-size: 14px; color: #718096;">المهام المنجزة</div>
-                <div id="statCompletedTasks" style="font-size: 28px; font-weight: 700; color: #28a745; margin-top: 8px;">0</div>
-            </div>
-            <div class="dashboard-card" style="text-align: center;">
-                <div style="font-size: 32px;">⏳</div>
-                <div style="font-size: 14px; color: #718096;">المهام قيد التنفيذ</div>
-                <div id="statPendingTasks" style="font-size: 28px; font-weight: 700; color: #ffc107; margin-top: 8px;">0</div>
-            </div>
-            <div class="dashboard-card" style="text-align: center;">
-                <div style="font-size: 32px;">⚠️</div>
-                <div style="font-size: 14px; color: #718096;">المهام المتأخرة</div>
-                <div id="statOverdueTasks" style="font-size: 28px; font-weight: 700; color: #dc3545; margin-top: 8px;">0</div>
-            </div>
-        </div>
-
-        <div style="margin-top: 25px;">
-            <h3 style="color: #1a2a3a; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                <span style="background: linear-gradient(135deg, #2d7aff, #1a5cc4); color: white; width: 35px; height: 35px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">👥</span>
-                أداء الموظفين
-            </h3>
-            <div id="employeePerformanceTable" style="background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
-                <div style="text-align: center; color: #6c757d;">⏳ جاري التحميل...</div>
-            </div>
-        </div>
-
-        <div style="margin-top: 25px;">
-            <h3 style="color: #1a2a3a; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                <span style="background: linear-gradient(135deg, #28a745, #218838); color: white; width: 35px; height: 35px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">📊</span>
-                الطلبات حسب الخدمة
-            </h3>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
-                    <canvas id="serviceChart" style="max-height: 300px;"></canvas>
-                </div>
-                <div id="serviceTable" style="background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
-                    <div style="text-align: center; color: #6c757d;">⏳ جاري التحميل...</div>
-                </div>
-            </div>
-        </div>
-
-        <div style="margin-top: 25px;">
-            <h3 style="color: #1a2a3a; margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-                <span style="background: linear-gradient(135deg, #dc3545, #c82333); color: white; width: 35px; height: 35px; border-radius: 12px; display: flex; align-items: center; justify-content: center;">⚠️</span>
-                المهام المتأخرة
-            </h3>
-            <div id="overdueTasksTable" style="background: white; border-radius: 12px; padding: 15px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
-                <div style="text-align: center; color: #6c757d;">⏳ جاري التحميل...</div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ============================================================
-     نافذة المعاينة
-     ============================================================ -->
-<div class="modal-overlay" id="previewModal">
-    <div class="modal-content">
-        <button class="modal-close" id="modalClose">✕</button>
-        <div class="modal-title" id="modalTitle">تفاصيل الطلب</div>
-        <div id="modalBody"><div class="loading">⏳ جاري التحميل...</div></div>
-    </div>
-</div>
-
 <script>
 (function() {
     'use strict';
@@ -377,10 +194,10 @@
     // ============================================================
     // 2. المتغيرات العامة
     // ============================================================
-    let currentUser = null;
-    let allConsultations = [];
-    let allEmployees = [];
-    let currentFilteredData = [];
+    let currentUser = null;              // المستخدم الحالي
+    let allConsultations = [];           // كل الطلبات
+    let allEmployees = [];               // كل الموظفين
+    let currentFilteredData = [];        // الطلبات بعد الفلترة
 
     // قائمة متطلبات الخدمات (ثابتة لأن جدول service_requirements فارغ)
     const SERVICE_REQUIREMENTS = {
@@ -411,9 +228,10 @@
     };
 
     // ============================================================
-    // 3. التهيئة
+    // 3. التهيئة الأولية للصفحة
     // ============================================================
     async function initPage() {
+        // 3.1 التحقق من الجلسة
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error || !session) {
             alert('يرجى تسجيل الدخول أولاً.');
@@ -421,6 +239,7 @@
             return;
         }
 
+        // 3.2 جلب بيانات المستخدم
         const { data: profile, error: profileError } = await supabase
             .from('staff_profiles')
             .select('*')
@@ -433,42 +252,62 @@
             return;
         }
 
-        currentUser = { id: profile.id, role: profile.role, full_name: profile.full_name };
+        currentUser = {
+            id: profile.id,
+            role: profile.role,
+            full_name: profile.full_name
+        };
+
+        // 3.3 عرض اسم المستخدم
         document.getElementById('userNameDisplay').textContent = `👤 ${currentUser.full_name}`;
 
+        // 3.4 تهيئة الأزرار حسب الدور
         setupRoleButtons();
 
+        // 3.5 ربط أحداث الأزرار
         document.getElementById('btnShowConsultations').addEventListener('click', () => showSection('sectionConsultations'));
         document.getElementById('btnManualEntry').addEventListener('click', () => showSection('sectionManualEntry'));
         document.getElementById('btnShowEmployees').addEventListener('click', () => showSection('sectionEmployees'));
-        document.getElementById('btnShowReports').addEventListener('click', () => { showSection('sectionReports'); loadReports(); });
+        document.getElementById('btnShowReports').addEventListener('click', () => {
+            showSection('sectionReports');
+            loadReports();
+        });
         document.getElementById('btnLogout').addEventListener('click', handleLogout);
 
+        // 3.6 فلاتر
         document.getElementById('btnApplyFilters').addEventListener('click', applyFilters);
         document.getElementById('btnResetFilters').addEventListener('click', resetFilters);
-        document.getElementById('filterClientName').addEventListener('input', applyFilters);
+        document.getElementById('filterClientName').addEventListener('input', applyFilters); // بحث فوري
 
+        // 3.7 إضافة موظف
         document.getElementById('btnAddEmployee').addEventListener('click', addEmployee);
+
+        // 3.8 إدخال طلب يدوي
         document.getElementById('btnAddManualConsultation').addEventListener('click', addManualConsultation);
 
+        // 3.9 إغلاق النوافذ المنبثقة
         document.getElementById('modalClose').addEventListener('click', closePreview);
         document.getElementById('previewModal').addEventListener('click', function(e) {
             if (e.target === this) closePreview();
         });
 
+        // 3.10 جلب البيانات الأولية
         await fetchEmployees();
         await fetchConsultations();
         await loadSmartAlerts();
 
         showSection('sectionConsultations');
 
+        // 3.11 فتح المعاينة تلقائياً إذا وُجد بارامتر preview
         const urlParams = new URLSearchParams(window.location.search);
         const previewId = urlParams.get('preview');
-        if (previewId) setTimeout(() => openPreview(previewId), 500);
+        if (previewId) {
+            setTimeout(() => openPreview(previewId), 500);
+        }
     }
 
     // ============================================================
-    // 4. الأزرار حسب الدور
+    // 4. تهيئة الأزرار حسب الدور
     // ============================================================
     function setupRoleButtons() {
         const btnEmployees = document.getElementById('btnShowEmployees');
@@ -494,11 +333,12 @@
     }
 
     // ============================================================
-    // 5. التنقل
+    // 5. التنقل بين الأقسام
     // ============================================================
     function showSection(sectionId) {
         document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
-        document.getElementById(sectionId)?.classList.add('active');
+        const target = document.getElementById(sectionId);
+        if (target) target.classList.add('active');
 
         if (sectionId === 'sectionConsultations') {
             if (allConsultations.length === 0) fetchConsultations();
@@ -523,50 +363,90 @@
     // ============================================================
     async function fetchEmployees() {
         try {
-            const { data, error } = await supabase.from('staff_profiles').select('*').order('full_name', { ascending: true });
+            const { data, error } = await supabase
+                .from('staff_profiles')
+                .select('*')
+                .order('full_name', { ascending: true });
+
             if (error) throw error;
             allEmployees = data || [];
             renderEmployees(allEmployees);
         } catch (err) {
+            console.error(err);
             document.getElementById('employeesContainer').innerHTML = `<div class="message error">❌ ${err.message}</div>`;
         }
     }
 
     // ============================================================
-    // 8. جلب الطلبات حسب الدور
+    // 8. جلب الطلبات (حسب الدور)
     // ============================================================
     async function fetchConsultations() {
         try {
             if (currentUser.role === 'secretary') {
-                const { data: createdByMe } = await supabase.from('consultation_requests').select('*').eq('created_by', currentUser.id).order('created_at', { ascending: false });
-                const { data: assignedTasks } = await supabase.from('client_followups').select('request_id').eq('assigned_to', currentUser.id).eq('is_attachment_only', false);
+                // السكرتير: الطلبات التي أدخلها + الطلبات التي له مهام فيها
+                const { data: createdByMe } = await supabase
+                    .from('consultation_requests')
+                    .select('*')
+                    .eq('created_by', currentUser.id)
+                    .order('created_at', { ascending: false });
+
+                const { data: assignedTasks } = await supabase
+                    .from('client_followups')
+                    .select('request_id')
+                    .eq('assigned_to', currentUser.id)
+                    .eq('is_attachment_only', false);
+
                 const assignedRequestIds = [...new Set((assignedTasks || []).map(t => t.request_id))];
+
                 let assignedRequests = [];
                 if (assignedRequestIds.length > 0) {
-                    const { data: arData } = await supabase.from('consultation_requests').select('*').in('id', assignedRequestIds).order('created_at', { ascending: false });
+                    const { data: arData } = await supabase
+                        .from('consultation_requests')
+                        .select('*')
+                        .in('id', assignedRequestIds)
+                        .order('created_at', { ascending: false });
                     assignedRequests = arData || [];
                 }
+
+                // دمج بدون تكرار
                 const mergedMap = new Map();
-                [...(createdByMe || []), ...assignedRequests].forEach(item => mergedMap.set(item.id, item));
+                [...(createdByMe || []), ...assignedRequests].forEach(item => {
+                    mergedMap.set(item.id, item);
+                });
                 allConsultations = Array.from(mergedMap.values());
                 allConsultations.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
             } else if (currentUser.role === 'followup_staff') {
-                const { data, error } = await supabase.from('consultation_requests').select('*').eq('assigned_to', currentUser.id).order('created_at', { ascending: false });
+                // الموظف: الطلبات المسندة إليه
+                const { data, error } = await supabase
+                    .from('consultation_requests')
+                    .select('*')
+                    .eq('assigned_to', currentUser.id)
+                    .order('created_at', { ascending: false });
+
                 if (error) throw error;
                 allConsultations = data || [];
+
             } else {
-                const { data, error } = await supabase.from('consultation_requests').select('*').order('created_at', { ascending: false });
+                // المدير: كل الطلبات
+                const { data, error } = await supabase
+                    .from('consultation_requests')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
                 if (error) throw error;
                 allConsultations = data || [];
             }
+
             applyFilters();
         } catch (err) {
+            console.error(err);
             document.getElementById('consultationsContainer').innerHTML = `<div class="message error">❌ ${err.message}</div>`;
         }
     }
 
     // ============================================================
-    // 9. تطبيق الفلاتر
+    // 9. تطبيق الفلاتر (مع البحث بالاسم)
     // ============================================================
     async function applyFilters() {
         const dateFrom = document.getElementById('filterDateFrom')?.value || '';
@@ -576,17 +456,33 @@
 
         let filtered = [...allConsultations];
 
-        if (dateFrom) { const from = new Date(dateFrom); from.setHours(0,0,0,0); filtered = filtered.filter(item => item.created_at && new Date(item.created_at) >= from); }
-        if (dateTo) { const to = new Date(dateTo); to.setHours(23,59,59,999); filtered = filtered.filter(item => item.created_at && new Date(item.created_at) <= to); }
-        if (service) filtered = filtered.filter(item => item.service === service);
-        if (clientName) filtered = filtered.filter(item => (item.client_name || '').toLowerCase().includes(clientName));
+        // فلتر التاريخ من
+        if (dateFrom) {
+            const from = new Date(dateFrom); from.setHours(0,0,0,0);
+            filtered = filtered.filter(item => item.created_at && new Date(item.created_at) >= from);
+        }
+        // فلتر التاريخ إلى
+        if (dateTo) {
+            const to = new Date(dateTo); to.setHours(23,59,59,999);
+            filtered = filtered.filter(item => item.created_at && new Date(item.created_at) <= to);
+        }
+        // فلتر الخدمة
+        if (service) {
+            filtered = filtered.filter(item => item.service === service);
+        }
+        // فلتر اسم العميل (جديد)
+        if (clientName) {
+            filtered = filtered.filter(item => 
+                (item.client_name || '').toLowerCase().includes(clientName)
+            );
+        }
 
         currentFilteredData = filtered;
         await renderConsultations(filtered, allEmployees);
     }
 
     // ============================================================
-    // 10. إعادة التعيين
+    // 10. إعادة تعيين الفلاتر
     // ============================================================
     function resetFilters() {
         document.getElementById('filterDateFrom').value = '';
@@ -597,16 +493,18 @@
     }
 
     // ============================================================
-    // 11. عرض الطلبات
+    // 11. عرض قائمة الطلبات
     // ============================================================
     async function renderConsultations(data, employees) {
         const container = document.getElementById('consultationsContainer');
         if (!container) return;
+
         if (!data || data.length === 0) {
             container.innerHTML = `<div class="message">📭 لا توجد طلبات تطابق الفلتر.</div>`;
             return;
         }
 
+        // جلب آخر مهمة لكل طلب (لتحديد شارة الحالة)
         const requestIds = data.map(item => item.id);
         const { data: followupsData } = await supabase
             .from('client_followups')
@@ -615,19 +513,24 @@
             .eq('is_attachment_only', false)
             .order('followup_date', { ascending: false });
 
+        // بناء خريطة: request_id -> آخر مهمة
         const latestTaskMap = {};
         (followupsData || []).forEach(f => {
-            if (!latestTaskMap[f.request_id]) latestTaskMap[f.request_id] = f;
+            if (!latestTaskMap[f.request_id]) {
+                latestTaskMap[f.request_id] = f;
+            }
         });
 
         let rows = '';
         data.forEach((item, idx) => {
+            // 🔴 تحديد المتابع الأصلي من consultation_requests.assigned_to
             let assignedName = 'غير محدد';
             if (item.assigned_to) {
                 const emp = employees ? employees.find(e => String(e.id) === String(item.assigned_to)) : null;
                 if (emp) assignedName = emp.full_name;
             }
 
+            // شارة الحالة
             let statusBadge = '';
             const latestTask = latestTaskMap[item.id];
             if (latestTask) {
@@ -638,7 +541,9 @@
                     failed: { text: '❌', color: '#dc3545' }
                 };
                 const st = statusLabels[latestTask.followup_status];
-                if (st) statusBadge = `<span style="background: ${st.color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-right: 5px;">${st.text}</span>`;
+                if (st) {
+                    statusBadge = `<span style="background: ${st.color}; color: white; padding: 2px 6px; border-radius: 10px; font-size: 10px; margin-right: 5px;">${st.text}</span>`;
+                }
             }
 
             rows += `
@@ -660,22 +565,42 @@
             `;
         });
 
-        const headerCols = `<th>#</th><th>اسم العميل</th><th>البريد</th><th>الهاتف</th><th>الخدمة</th><th>المرفقات</th><th>التاريخ</th><th>المتابع</th><th>الإجراء</th>`;
+        const headerCols = `
+            <th>#</th><th>اسم العميل</th><th>البريد</th><th>الهاتف</th>
+            <th>الخدمة</th><th>المرفقات</th><th>التاريخ</th>
+            <th>المتابع</th><th>الإجراء</th>
+        `;
 
-        container.innerHTML = `<div class="table-responsive"><table><thead><tr>${headerCols}</tr></thead><tbody>${rows}</tbody></table></div>`;
+        container.innerHTML = `
+            <div class="table-responsive">
+                <table>
+                    <thead><tr>${headerCols}</tr></thead>
+                    <tbody>${rows}</tbody>
+                </table>
+            </div>
+        `;
 
-        document.querySelectorAll('.btn-preview').forEach(btn => btn.addEventListener('click', function() { openPreview(this.dataset.id); }));
-        document.querySelectorAll('.btn-edit-cons').forEach(btn => btn.addEventListener('click', function() {
-            const item = allConsultations.find(c => c.id === this.dataset.id);
-            if (item) openEditConsultationModal(item);
-        }));
-        document.querySelectorAll('.btn-delete-cons').forEach(btn => btn.addEventListener('click', async function() {
-            const id = this.dataset.id;
-            if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
-            const { error } = await supabase.from('consultation_requests').delete().eq('id', id);
-            if (error) alert('❌ ' + error.message);
-            else { alert('✅ تم الحذف'); applyFilters(); }
-        }));
+        // ربط الأزرار
+        document.querySelectorAll('.btn-preview').forEach(btn => {
+            btn.addEventListener('click', function() {
+                openPreview(this.dataset.id);
+            });
+        });
+        document.querySelectorAll('.btn-edit-cons').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const item = allConsultations.find(c => c.id === this.dataset.id);
+                if (item) openEditConsultationModal(item);
+            });
+        });
+        document.querySelectorAll('.btn-delete-cons').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                const id = this.dataset.id;
+                if (!confirm('هل أنت متأكد من حذف هذا الطلب؟')) return;
+                const { error } = await supabase.from('consultation_requests').delete().eq('id', id);
+                if (error) alert('❌ فشل الحذف: ' + error.message);
+                else { alert('✅ تم حذف الطلب بنجاح'); applyFilters(); }
+            });
+        });
     }
 
     // ============================================================
@@ -685,12 +610,14 @@
         const container = document.getElementById('employeesContainer');
         if (!container) return;
         if (!data || data.length === 0) {
-            container.innerHTML = `<div class="message">👤 لا يوجد موظفون.</div>`;
+            container.innerHTML = `<div class="message">👤 لا يوجد موظفون مسجلون.</div>`;
             return;
         }
+
         let cards = '';
         data.forEach(emp => {
             const isActive = emp.is_active === true;
+            const statusText = isActive ? 'نشط' : 'غير نشط';
             const roleText = emp.role === 'manager' ? 'مدير' : emp.role === 'secretary' ? 'سكرتير' : 'موظف متابعة';
             cards += `
                 <div class="employee-card" data-id="${emp.id}">
@@ -698,7 +625,7 @@
                         <strong>${emp.full_name || 'بدون اسم'}</strong>
                         <span>📧 ${emp.email}</span>
                         <span>🔹 ${roleText}</span>
-                        <span>${isActive ? 'نشط' : 'غير نشط'}</span>
+                        <span>${statusText}</span>
                     </div>
                     <div class="actions">
                         <button class="btn-edit-emp" data-id="${emp.id}">✏️ تعديل</button>
@@ -709,63 +636,104 @@
         });
         container.innerHTML = cards;
 
-        document.querySelectorAll('.btn-edit-emp').forEach(btn => btn.addEventListener('click', function() {
-            const emp = allEmployees.find(e => e.id === this.dataset.id);
-            if (emp) openEditEmployeeModal(emp);
-        }));
-        document.querySelectorAll('.btn-delete-emp').forEach(btn => btn.addEventListener('click', function() { deleteEmployee(this.dataset.id); }));
+        document.querySelectorAll('.btn-edit-emp').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const emp = allEmployees.find(e => e.id === this.dataset.id);
+                if (emp) openEditEmployeeModal(emp);
+            });
+        });
+        document.querySelectorAll('.btn-delete-emp').forEach(btn => {
+            btn.addEventListener('click', function() {
+                deleteEmployee(this.dataset.id);
+            });
+        });
     }
 
     // ============================================================
-    // 13. تعديل/حذف موظف
+    // 13. تعديل موظف
     // ============================================================
     function openEditEmployeeModal(emp) {
         const newName = prompt('تعديل اسم الموظف:', emp.full_name);
         if (newName === null) return;
-        const newRole = prompt('الدور (manager / followup_staff / secretary):', emp.role);
+        const newRole = prompt('تعديل الدور (manager / followup_staff / secretary):', emp.role);
         if (newRole === null) return;
-        const newStatus = confirm('هل الموظف نشط؟');
+        const newStatus = confirm('هل الموظف نشط؟ (OK = نشط، Cancel = غير نشط)');
 
         (async () => {
-            const { error } = await supabase.from('staff_profiles').update({ full_name: newName, role: newRole, is_active: newStatus }).eq('id', emp.id);
-            if (error) alert('❌ ' + error.message);
-            else { alert('✅ تم التعديل'); await fetchEmployees(); }
+            const { error } = await supabase
+                .from('staff_profiles')
+                .update({ full_name: newName, role: newRole, is_active: newStatus })
+                .eq('id', emp.id);
+            if (error) alert('❌ فشل التعديل: ' + error.message);
+            else { alert('✅ تم تعديل الموظف بنجاح'); await fetchEmployees(); }
         })();
     }
 
+    // ============================================================
+    // 14. حذف موظف
+    // ============================================================
     async function deleteEmployee(id) {
-        if (!confirm('هل أنت متأكد من الحذف؟')) return;
+        if (!confirm('هل أنت متأكد من حذف هذا الموظف؟')) return;
         const { error } = await supabase.from('staff_profiles').delete().eq('id', id);
-        if (error) alert('❌ ' + error.message);
-        else { alert('✅ تم الحذف'); await fetchEmployees(); }
+        if (error) alert('❌ فشل الحذف: ' + error.message);
+        else { alert('✅ تم حذف الموظف بنجاح'); await fetchEmployees(); }
     }
 
     // ============================================================
-    // 14. تعديل طلب
+    // 15. تعديل طلب
     // ============================================================
     async function openEditConsultationModal(item) {
         const newName = prompt('تعديل اسم العميل:', item.client_name);
         if (newName === null) return;
-        const newPhone = prompt('تعديل الهاتف:', item.phone);
+        const newPhone = prompt('تعديل رقم الهاتف:', item.phone);
         if (newPhone === null) return;
-        const { error } = await supabase.from('consultation_requests').update({ client_name: newName, phone: newPhone }).eq('id', item.id);
-        if (error) alert('❌ ' + error.message);
-        else { alert('✅ تم التعديل'); applyFilters(); }
+
+        const { error } = await supabase
+            .from('consultation_requests')
+            .update({ client_name: newName, phone: newPhone })
+            .eq('id', item.id);
+
+        if (error) alert('❌ فشل التعديل: ' + error.message);
+        else { alert('✅ تم تعديل الطلب بنجاح'); applyFilters(); }
     }
 
     // ============================================================
-    // 15. buildTaskLogItem
+    // 16. تصدير الدوال للاستخدام في الجزء الثالث
+    // ============================================================
+    window.__app = {
+        supabase,
+        get currentUser() { return currentUser; },
+        get allEmployees() { return allEmployees; },
+        get allConsultations() { return allConsultations; },
+        SERVICE_REQUIREMENTS,
+        openPreview,
+        fetchConsultations,
+        fetchEmployees,
+        loadReports,
+        loadSmartAlerts,
+        addManualConsultation,
+        addEmployee,
+        applyFilters,
+        renderConsultations
+    };
+
+})();
+</script>
+    // ============================================================
+    // 17. دالة مساعدة: بناء عنصر سجل المهمة
     // ============================================================
     function buildTaskLogItem(f, editable) {
         const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
         const dueDate = f.next_followup ? new Date(f.next_followup).toLocaleDateString('ar-EG') : 'غير محدد';
 
+        // اسم الموظف المنفذ
         let followerName = 'غير محدد';
         if (f.assigned_to) {
             const emp = allEmployees.find(e => String(e.id) === String(f.assigned_to));
             if (emp) followerName = emp.full_name;
         }
 
+        // حالة المهمة
         const statusLabels = {
             pending: { text: '⏳ بانتظار التنفيذ', color: '#ffc107', bg: '#fff9e6' },
             in_progress: { text: '🔄 قيد التنفيذ', color: '#17a2b8', bg: '#e7f3ff' },
@@ -774,20 +742,25 @@
         };
         const status = statusLabels[f.followup_status] || { text: f.followup_status || 'غير محدد', color: '#6c757d', bg: '#f0f2f5' };
 
+        // تحليل الإجراءات والمستندات
         const actionText = f.action || '';
         const actionParts = actionText.split('|');
         const actionsList = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim() : '';
         const docsList = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim() : '';
+
         const actionsArray = actionsList ? actionsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
         const docsArray = docsList ? docsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
 
+        // تحليل ما تم إنجازه
         let achievedHtml = '';
         let notesHtml = '';
+
         if (f.notes) {
             if (f.notes.includes('تم إنجاز:')) {
                 const parts = f.notes.split('—');
                 const achievedPart = parts[0] ? parts[0].replace('تم إنجاز:', '').trim() : '';
                 const docsPart = parts[1] ? parts[1].replace('المستندات:', '').trim() : '';
+
                 achievedHtml = `
                     <div style="background: #e7f9ef; padding: 8px 10px; border-radius: 6px; margin-top: 8px; border-right: 3px solid #28a745;">
                         <strong style="color: #28a745; font-size: 12px;">✅ ما تم إنجازه:</strong>
@@ -808,6 +781,7 @@
             }
         }
 
+        // أزرار التحديث
         let actionButtons = '';
         if (editable && (f.followup_status === 'pending' || f.followup_status === 'in_progress')) {
             actionButtons = `
@@ -825,7 +799,8 @@
                     <span style="background: ${status.color}; color: white; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600;">${status.text}</span>
                 </div>
                 <div style="font-size: 12px; color: #555; margin-bottom: 8px;">
-                    <strong>👤 الموظف:</strong> ${followerName} | <strong>📅 تاريخ الإنشاء:</strong> ${date}
+                    <strong>👤 الموظف:</strong> ${followerName} |
+                    <strong>📅 تاريخ الإنشاء:</strong> ${date}
                 </div>
                 <div style="font-size: 12px; color: #555; margin-bottom: 8px;">
                     <strong>⏰ موعد التنفيذ:</strong> ${dueDate}
@@ -854,81 +829,121 @@
     }
 
     // ============================================================
-    // 16. openPreview
+    // 18. شاشة المعاينة (openPreview)
     // ============================================================
     async function openPreview(consultationId) {
         const modal = document.getElementById('previewModal');
         const body = document.getElementById('modalBody');
+
         modal.classList.add('active');
-        body.innerHTML = `<div class="loading">⏳ جاري التحميل...</div>`;
+        body.innerHTML = `<div class="loading">⏳ جاري تحميل التفاصيل...</div>`;
 
         try {
-            const { data: consultation, error: conError } = await supabase.from('consultation_requests').select('*').eq('id', consultationId).single();
+            // 18.1 جلب الطلب
+            const { data: consultation, error: conError } = await supabase
+                .from('consultation_requests')
+                .select('*')
+                .eq('id', consultationId)
+                .single();
+
             if (conError || !consultation) {
-                body.innerHTML = `<div class="message error">❌ ${conError?.message}</div>`;
+                body.innerHTML = `<div class="message error">❌ حدث خطأ: ${conError?.message}</div>`;
                 return;
             }
 
-            const { data: initialConsultation } = await supabase.from('initial_consultations').select('*').eq('request_id', consultationId).limit(1).maybeSingle();
+            // 18.2 متطلبات الخدمة (من القائمة الثابتة)
+            const serviceReq = SERVICE_REQUIREMENTS[consultation.service || 'other'] || SERVICE_REQUIREMENTS.other;
 
-            const { data: followups } = await supabase.from('client_followups').select('*').eq('request_id', consultationId).eq('is_attachment_only', false).order('followup_date', { ascending: false });
+            // 18.3 المقابلة الأولى
+            const { data: initialConsultation } = await supabase
+                .from('initial_consultations')
+                .select('*')
+                .eq('request_id', consultationId)
+                .limit(1)
+                .maybeSingle();
 
-            const { data: attachmentsData } = await supabase.from('client_followups').select('id, attachment_path, followup_date').eq('request_id', consultationId).eq('is_attachment_only', true).order('followup_date', { ascending: false });
+            // 18.4 كل المتابعات
+            const { data: followups } = await supabase
+                .from('client_followups')
+                .select('*')
+                .eq('request_id', consultationId)
+                .eq('is_attachment_only', false)
+                .order('followup_date', { ascending: false });
+
+            // 18.5 المرفقات الإضافية
+            const { data: attachmentsData } = await supabase
+                .from('client_followups')
+                .select('id, attachment_path, followup_date')
+                .eq('request_id', consultationId)
+                .eq('is_attachment_only', true)
+                .order('followup_date', { ascending: false });
 
             let attachmentsHtml = '';
             if (attachmentsData && attachmentsData.length > 0) {
                 attachmentsData.forEach(att => {
                     if (att.attachment_path) {
                         const date = att.followup_date ? new Date(att.followup_date).toLocaleString('ar-EG') : '—';
-                        attachmentsHtml += `<div class="dashboard-attachment-item"><a href="${att.attachment_path}" target="_blank">📎 ${date}</a><button class="btn-delete-attachment" data-id="${att.id}">🗑️ حذف</button></div>`;
+                        attachmentsHtml += `<div class="dashboard-attachment-item"><a href="${att.attachment_path}" target="_blank">📎 مرفق: ${date}</a><button class="btn-delete-attachment" data-id="${att.id}">🗑️ حذف</button></div>`;
                     }
                 });
             } else {
                 attachmentsHtml = '<div class="message">لا توجد مرفقات إضافية.</div>';
             }
 
-            // تحديد المتابع الأصلي
+            // 18.6 🔴 تحديد "المتابع الأصلي"
             let originalAssigneeId = null;
             let originalAssigneeName = 'غير محدد';
+            
             if (consultation.assigned_to) {
                 originalAssigneeId = consultation.assigned_to;
                 const emp = allEmployees.find(e => String(e.id) === String(originalAssigneeId));
                 if (emp) originalAssigneeName = emp.full_name;
             } else {
-                const firstTask = (followups || []).slice().sort((a, b) => new Date(a.followup_date) - new Date(b.followup_date)).find(f => {
-                    const emp = allEmployees.find(e => String(e.id) === String(f.assigned_to));
-                    return emp && emp.role === 'followup_staff';
-                });
-                if (firstTask) {
-                    originalAssigneeId = firstTask.assigned_to;
+                // fallback: من client_followups
+                const firstFollowupStaffTask = (followups || [])
+                    .slice()
+                    .sort((a, b) => new Date(a.followup_date) - new Date(b.followup_date))
+                    .find(f => {
+                        const emp = allEmployees.find(e => String(e.id) === String(f.assigned_to));
+                        return emp && emp.role === 'followup_staff';
+                    });
+                if (firstFollowupStaffTask) {
+                    originalAssigneeId = firstFollowupStaffTask.assigned_to;
                     const emp = allEmployees.find(e => String(e.id) === String(originalAssigneeId));
                     if (emp) originalAssigneeName = emp.full_name;
                 }
             }
 
+            // 18.7 كارت معلومات العميل
             const customerCard = `
                 <div class="dashboard-card">
-                    <div class="dashboard-card-header"><h3><span class="icon-circle">👤</span> معلومات العميل</h3></div>
+                    <div class="dashboard-card-header">
+                        <h3><span class="icon-circle">👤</span> معلومات العميل</h3>
+                    </div>
                     <div class="dashboard-card-body">
-                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">الاسم</span><span class="dashboard-detail-value">${consultation.client_name || '—'}</span></div>
-                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">البريد</span><span class="dashboard-detail-value">${consultation.email || '—'}</span></div>
-                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">الهاتف</span><span class="dashboard-detail-value">${consultation.phone || '—'}</span></div>
+                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">الاسم</span><span class="dashboard-detail-value">${consultation.client_name || 'غير محدد'}</span></div>
+                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">البريد الإلكتروني</span><span class="dashboard-detail-value">${consultation.email || '—'}</span></div>
+                        <div class="dashboard-detail-row"><span class="dashboard-detail-label">رقم الهاتف</span><span class="dashboard-detail-value">${consultation.phone || '—'}</span></div>
                         <div class="dashboard-detail-row"><span class="dashboard-detail-label">الخدمة</span><span class="dashboard-detail-value">${consultation.service || '—'}</span></div>
                         <div class="dashboard-detail-row"><span class="dashboard-detail-label">تاريخ الطلب</span><span class="dashboard-detail-value">${consultation.created_at ? new Date(consultation.created_at).toLocaleString('ar-EG') : '—'}</span></div>
                         <div class="dashboard-detail-row"><span class="dashboard-detail-label">الموظف المسند</span><span class="dashboard-detail-value">${originalAssigneeName}</span></div>
                         ${consultation.message ? `<div class="dashboard-detail-row"><span class="dashboard-detail-label">الرسالة</span><span class="dashboard-detail-value">${consultation.message}</span></div>` : ''}
-                        ${consultation.attachment_path ? `<div class="dashboard-detail-row"><span class="dashboard-detail-label">📎 الملف</span><span class="dashboard-detail-value"><a href="${consultation.attachment_path}" target="_blank" style="color: #2d7aff;">تحميل</a></span></div>` : ''}
+                        ${consultation.attachment_path ? `<div class="dashboard-detail-row"><span class="dashboard-detail-label">📎 الملف</span><span class="dashboard-detail-value"><a href="${consultation.attachment_path}" target="_blank" style="color: #2d7aff;">اضغط للتحميل</a></span></div>` : ''}
                     </div>
                 </div>
             `;
 
-            const tasksCard = buildTasksCard(consultationId, followups, originalAssigneeId, originalAssigneeName);
+            // 18.8 كارت المهام (حسب الدور)
+            let tasksCard = buildTasksCard(consultationId, followups, originalAssigneeId, originalAssigneeName);
 
+            // 18.9 كارت المقابلة الأولى
             let initialCard = '';
             if (initialConsultation) {
                 initialCard = `
                     <div class="dashboard-card">
-                        <div class="dashboard-card-header"><h3><span class="icon-circle">📝</span> المقابلة الأولى</h3></div>
+                        <div class="dashboard-card-header">
+                            <h3><span class="icon-circle">📝</span> المقابلة الأولى</h3>
+                        </div>
                         <div class="dashboard-card-body">
                             <div class="dashboard-detail-row"><span class="dashboard-detail-label">التاريخ</span><span class="dashboard-detail-value">${initialConsultation.consultation_date ? new Date(initialConsultation.consultation_date).toLocaleString('ar-EG') : '—'}</span></div>
                             <div class="dashboard-detail-row"><span class="dashboard-detail-label">طريقة التواصل</span><span class="dashboard-detail-value">${initialConsultation.contact_method || '-'}</span></div>
@@ -941,11 +956,15 @@
                 `;
             }
 
-            const followupsCard = buildFollowupsCard(followups, originalAssigneeId, originalAssigneeName);
+            // 18.10 كارت سجل المتابعة (حسب الدور)
+            let followupsCard = buildFollowupsCard(followups, originalAssigneeId, originalAssigneeName);
 
+            // 18.11 كارت المرفقات
             const attachmentsCard = `
                 <div class="dashboard-card">
-                    <div class="dashboard-card-header"><h3><span class="icon-circle">📎</span> المرفقات الإضافية</h3></div>
+                    <div class="dashboard-card-header">
+                        <h3><span class="icon-circle">📎</span> المرفقات الإضافية</h3>
+                    </div>
                     <div class="dashboard-card-body">
                         <div id="attachmentsList">${attachmentsHtml}</div>
                         <div class="dashboard-form-grid" style="margin-top: 10px;">
@@ -956,9 +975,12 @@
                 </div>
             `;
 
+            // 18.12 كارت إضافة متابعة جديدة
             const addFollowupCard = `
                 <div class="dashboard-card">
-                    <div class="dashboard-card-header"><h3><span class="icon-circle">➕</span> إضافة متابعة جديدة</h3></div>
+                    <div class="dashboard-card-header">
+                        <h3><span class="icon-circle">➕</span> إضافة متابعة جديدة</h3>
+                    </div>
                     <div class="dashboard-card-body">
                         <div class="dashboard-form-grid">
                             <input type="text" id="newFollowupNote" placeholder="ملاحظة المتابعة">
@@ -969,35 +991,48 @@
                 </div>
             `;
 
+            // 18.13 عرض كل الكروت
             body.innerHTML = `<div class="dashboard-container">${customerCard}${tasksCard}${initialCard}${followupsCard}${attachmentsCard}${addFollowupCard}</div>`;
 
+            // 18.14 ربط الأزرار
             bindPreviewActions(consultationId);
 
         } catch (err) {
-            body.innerHTML = `<div class="message error">❌ ${err.message}</div>`;
+            body.innerHTML = `<div class="message error">❌ حدث خطأ: ${err.message}</div>`;
             console.error(err);
         }
     }
 
     // ============================================================
-    // 17. buildTasksCard
+    // 19. بناء كارت المهام (حسب الدور)
     // ============================================================
     function buildTasksCard(consultationId, followups, originalAssigneeId, originalAssigneeName) {
         if (currentUser.role === 'manager') {
+            // المدير: كارت تكليف الموظف
             return `
                 <div class="dashboard-card">
-                    <div class="dashboard-card-header"><h3><span class="icon-circle">📝</span> تكليف الموظف بمتابعة</h3></div>
+                    <div class="dashboard-card-header">
+                        <h3><span class="icon-circle">📝</span> تكليف الموظف بمتابعة</h3>
+                    </div>
                     <div class="dashboard-card-body">
                         <div style="margin-bottom: 12px;">
                             <strong style="color: #333;">الإجراءات المطلوبة:</strong>
                             <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
-                                ${['تحديد طبيعة الاستشارة', 'الاتصال بالعميل', 'تحديد موعد', 'مراجعة المستندات'].map(a => `<label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" class="task-action-checkbox" value="${a}"> ${a}</label>`).join('')}
+                                ${['تحديد طبيعة الاستشارة', 'الاتصال بالعميل', 'تحديد موعد', 'مراجعة المستندات'].map(a => `
+                                    <label style="display: flex; align-items: center; gap: 5px;">
+                                        <input type="checkbox" class="task-action-checkbox" value="${a}"> ${a}
+                                    </label>
+                                `).join('')}
                             </div>
                         </div>
                         <div style="margin-bottom: 12px;">
                             <strong style="color: #333;">المستندات المطلوبة:</strong>
                             <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
-                                ${['مستندات داعمة', 'بطاقة شخصية', 'توكيل', 'عقد'].map(d => `<label style="display: flex; align-items: center; gap: 5px;"><input type="checkbox" class="task-doc-checkbox" value="${d}"> ${d}</label>`).join('')}
+                                ${['مستندات داعمة', 'بطاقة شخصية', 'توكيل', 'عقد'].map(d => `
+                                    <label style="display: flex; align-items: center; gap: 5px;">
+                                        <input type="checkbox" class="task-doc-checkbox" value="${d}"> ${d}
+                                    </label>
+                                `).join('')}
                             </div>
                         </div>
                         <div class="dashboard-form-grid" style="grid-template-columns: 1fr 1fr; gap: 10px;">
@@ -1015,7 +1050,7 @@
                         </div>
                         <div style="margin-top: 12px;">
                             <label style="font-weight: 600; display: block; margin-bottom: 5px;">ملاحظات المدير:</label>
-                            <textarea id="managerNotes" rows="3" style="width:100%; padding:8px; border:1px solid #dce1e8; border-radius:6px;" placeholder="تعليمات..."></textarea>
+                            <textarea id="managerNotes" rows="3" style="width:100%; padding:8px; border:1px solid #dce1e8; border-radius:6px;" placeholder="تعليمات للموظف..."></textarea>
                         </div>
                         <button id="btnCreateTask" class="dashboard-btn" style="margin-top: 15px; background: #28a745;">🟢 إنشاء المتابعة وتكليف الموظف</button>
                     </div>
@@ -1023,27 +1058,56 @@
             `;
         } 
         else if (currentUser.role === 'followup_staff') {
+            // الموظف: فقط مهامه
             const myTasks = (followups || []).filter(f => String(f.assigned_to) === String(currentUser.id));
-            let tasksHtml = myTasks.length > 0 ? myTasks.map(buildEmployeeTaskItem).join('') : '<div class="message">✅ لا توجد مهام نشطة.</div>';
+            
+            let tasksHtml = '';
+            if (myTasks.length > 0) {
+                tasksHtml = myTasks.map(task => buildEmployeeTaskItem(task)).join('');
+            } else {
+                tasksHtml = '<div class="message">✅ لا توجد مهام نشطة.</div>';
+            }
+
             return `
                 <div class="dashboard-card">
-                    <div class="dashboard-card-header"><h3><span class="icon-circle">🔔</span> المهام المسندة إليّ</h3></div>
+                    <div class="dashboard-card-header">
+                        <h3><span class="icon-circle">🔔</span> المهام المسندة إليّ</h3>
+                    </div>
                     <div class="dashboard-card-body">${tasksHtml}</div>
                 </div>
             `;
         } 
         else if (currentUser.role === 'secretary') {
+            // السكرتير: (1) مهامه الشخصية + (2) مهام المتابع الأصلي (للاطلاع)
             const myTasks = (followups || []).filter(f => String(f.assigned_to) === String(currentUser.id));
-            const originalTasks = originalAssigneeId ? (followups || []).filter(f => String(f.assigned_to) === String(originalAssigneeId) && String(f.assigned_to) !== String(currentUser.id)) : [];
+            const originalTasks = originalAssigneeId 
+                ? (followups || []).filter(f => 
+                    String(f.assigned_to) === String(originalAssigneeId) && 
+                    String(f.assigned_to) !== String(currentUser.id)
+                  )
+                : [];
+
             let html = '';
             html += `<h4 style="color: #28a745; margin: 0 0 10px 0; font-size: 14px;">📌 مهامي المسندة إليّ</h4>`;
-            html += myTasks.length > 0 ? myTasks.map(t => buildTaskLogItem(t, true)).join('') : '<div class="message">لا توجد مهام مسندة إليك.</div>';
+            if (myTasks.length > 0) {
+                html += myTasks.map(t => buildTaskLogItem(t, true)).join('');
+            } else {
+                html += '<div class="message">لا توجد مهام مسندة إليك.</div>';
+            }
+
             html += `<hr style="margin: 15px 0; border: none; border-top: 1px dashed #dce1e8;">`;
-            html += `<h4 style="color: #2d7aff; margin: 0 0 10px 0; font-size: 14px;">👁️ مهام الموظف الأصلي (${originalAssigneeName})</h4>`;
-            html += originalTasks.length > 0 ? originalTasks.map(t => buildTaskLogItem(t, false)).join('') : '<div class="message">لا توجد مهام.</div>';
+            html += `<h4 style="color: #2d7aff; margin: 0 0 10px 0; font-size: 14px;">👁️ مهام الموظف الأصلي (${originalAssigneeName}) — للاطلاع</h4>`;
+            if (originalTasks.length > 0) {
+                html += originalTasks.map(t => buildTaskLogItem(t, false)).join('');
+            } else {
+                html += '<div class="message">لا توجد مهام للموظف الأصلي.</div>';
+            }
+
             return `
                 <div class="dashboard-card">
-                    <div class="dashboard-card-header"><h3><span class="icon-circle">🔔</span> المهام</h3></div>
+                    <div class="dashboard-card-header">
+                        <h3><span class="icon-circle">🔔</span> المهام</h3>
+                    </div>
                     <div class="dashboard-card-body">${html}</div>
                 </div>
             `;
@@ -1051,7 +1115,7 @@
     }
 
     // ============================================================
-    // 18. buildEmployeeTaskItem
+    // 20. بناء عنصر مهمة الموظف (للموظف)
     // ============================================================
     function buildEmployeeTaskItem(task) {
         const dueDate = task.next_followup ? new Date(task.next_followup).toLocaleDateString('ar-EG') : 'غير محدد';
@@ -1067,8 +1131,8 @@
         const actionParts = actionText.split('|');
         const actionsList = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim() : '';
         const docsList = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim() : '';
-        const actionsArray = actionsList ? actionsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
-        const docsArray = docsList ? docsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+        const actionsArray = actionsList ? actionsList.split(',').map(i => i.trim()).filter(i => i) : [];
+        const docsArray = docsList ? docsList.split(',').map(i => i.trim()).filter(i => i) : [];
 
         return `
             <div style="border: 1px solid #e9edf4; padding: 12px; border-radius: 8px; margin-bottom: 15px; background: #f8faff; border-right: 4px solid ${status.color};">
@@ -1080,7 +1144,11 @@
                     <div style="margin-bottom: 10px;">
                         <strong style="color: #333; font-size: 13px;">الإجراءات المطلوبة:</strong>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
-                            ${actionsArray.map(act => `<label style="display: flex; align-items: center; gap: 5px; background: white; padding: 6px 10px; border-radius: 6px; border: 1px solid #dce1e8; font-size: 12px;"><input type="checkbox" class="employee-task-action" data-task-id="${task.id}" value="${act}"> ${act}</label>`).join('')}
+                            ${actionsArray.map(act => `
+                                <label style="display: flex; align-items: center; gap: 5px; background: white; padding: 6px 10px; border-radius: 6px; border: 1px solid #dce1e8; font-size: 12px;">
+                                    <input type="checkbox" class="employee-task-action" data-task-id="${task.id}" value="${act}"> ${act}
+                                </label>
+                            `).join('')}
                         </div>
                     </div>
                 ` : ''}
@@ -1088,12 +1156,18 @@
                     <div style="margin-bottom: 10px;">
                         <strong style="color: #333; font-size: 13px;">المستندات المطلوبة:</strong>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
-                            ${docsArray.map(doc => `<label style="display: flex; align-items: center; gap: 5px; background: white; padding: 6px 10px; border-radius: 6px; border: 1px solid #dce1e8; font-size: 12px;"><input type="checkbox" class="employee-task-doc" data-task-id="${task.id}" value="${doc}"> ${doc}</label>`).join('')}
+                            ${docsArray.map(doc => `
+                                <label style="display: flex; align-items: center; gap: 5px; background: white; padding: 6px 10px; border-radius: 6px; border: 1px solid #dce1e8; font-size: 12px;">
+                                    <input type="checkbox" class="employee-task-doc" data-task-id="${task.id}" value="${doc}"> ${doc}
+                                </label>
+                            `).join('')}
                         </div>
                     </div>
                 ` : ''}
                 ${task.notes ? `<div style="font-size: 12px; color: #555; margin-bottom: 8px; background: #fff9e6; padding: 8px; border-radius: 6px; border-right: 3px solid #ffc107;"><strong>📝 تعليمات المدير:</strong> ${task.notes}</div>` : ''}
-                <div style="font-size: 12px; color: #555; margin-bottom: 10px;"><strong>📅 موعد التنفيذ:</strong> ${dueDate}</div>
+                <div style="font-size: 12px; color: #555; margin-bottom: 10px;">
+                    <strong>📅 موعد التنفيذ:</strong> ${dueDate}
+                </div>
                 <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
                     <button class="btn-save-employee-tasks" data-id="${task.id}" style="background: #2d7aff; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">💾 حفظ حالة المهام</button>
                     <button class="btn-fail-task" data-id="${task.id}" style="background: #dc3545; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">🔴 تعذر التنفيذ</button>
@@ -1103,42 +1177,77 @@
     }
 
     // ============================================================
-    // 19. buildFollowupsCard
+    // 21. بناء كارت سجل المتابعة
     // ============================================================
     function buildFollowupsCard(followups, originalAssigneeId, originalAssigneeName) {
         if (currentUser.role === 'manager') {
             const allTasks = followups || [];
-            let tasksHtml = allTasks.length > 0 ? allTasks.slice().sort((a, b) => new Date(b.followup_date) - new Date(a.followup_date)).map(f => buildTaskLogItem(f, false)).join('') : '<div class="message">لا توجد مهام مسندة بعد.</div>';
+            let tasksHtml = '';
+            if (allTasks.length === 0) {
+                tasksHtml = '<div class="message">لا توجد مهام مسندة بعد.</div>';
+            } else {
+                allTasks.sort((a, b) => new Date(b.followup_date) - new Date(a.followup_date));
+                tasksHtml = allTasks.map(f => buildTaskLogItem(f, false)).join('');
+            }
             return `
                 <div class="dashboard-card">
-                    <div class="dashboard-card-header"><h3><span class="icon-circle">📊</span> سجل متابعة المهام</h3></div>
+                    <div class="dashboard-card-header">
+                        <h3><span class="icon-circle">📊</span> سجل متابعة المهام</h3>
+                    </div>
                     <div class="dashboard-card-body">${tasksHtml}</div>
                 </div>
             `;
         } 
         else if (currentUser.role === 'secretary') {
             const allTasks = followups || [];
-            const originalTasks = originalAssigneeId ? allTasks.filter(f => String(f.assigned_to) === String(originalAssigneeId) && String(f.assigned_to) !== String(currentUser.id)) : [];
+            const originalTasks = originalAssigneeId 
+                ? allTasks.filter(f => 
+                    String(f.assigned_to) === String(originalAssigneeId) && 
+                    String(f.assigned_to) !== String(currentUser.id)
+                  )
+                : [];
             const myTasks = allTasks.filter(f => String(f.assigned_to) === String(currentUser.id));
+
             let html = '';
             html += `<h4 style="color: #2d7aff; margin: 0 0 10px 0; font-size: 14px;">👁️ مهام الموظف الأصلي (${originalAssigneeName})</h4>`;
-            html += originalTasks.length > 0 ? originalTasks.slice().sort((a, b) => new Date(b.followup_date) - new Date(a.followup_date)).map(f => buildTaskLogItem(f, false)).join('') : '<div class="message" style="margin-bottom: 15px;">لا توجد مهام.</div>';
+            if (originalTasks.length > 0) {
+                html += originalTasks.sort((a, b) => new Date(b.followup_date) - new Date(a.followup_date))
+                    .map(f => buildTaskLogItem(f, false)).join('');
+            } else {
+                html += '<div class="message" style="margin-bottom: 15px;">لا توجد مهام.</div>';
+            }
             html += `<hr style="margin: 15px 0; border: none; border-top: 1px dashed #dce1e8;">`;
             html += `<h4 style="color: #28a745; margin: 0 0 10px 0; font-size: 14px;">📌 مهامي المسندة إليّ</h4>`;
-            html += myTasks.length > 0 ? myTasks.slice().sort((a, b) => new Date(b.followup_date) - new Date(a.followup_date)).map(f => buildTaskLogItem(f, true)).join('') : '<div class="message">لا توجد مهام.</div>';
+            if (myTasks.length > 0) {
+                html += myTasks.sort((a, b) => new Date(b.followup_date) - new Date(a.followup_date))
+                    .map(f => buildTaskLogItem(f, true)).join('');
+            } else {
+                html += '<div class="message">لا توجد مهام.</div>';
+            }
+
             return `
                 <div class="dashboard-card">
-                    <div class="dashboard-card-header"><h3><span class="icon-circle">📊</span> سجل المتابعة</h3></div>
+                    <div class="dashboard-card-header">
+                        <h3><span class="icon-circle">📊</span> سجل المتابعة</h3>
+                    </div>
                     <div class="dashboard-card-body">${html}</div>
                 </div>
             `;
         } 
         else if (currentUser.role === 'followup_staff') {
             const myTasks = (followups || []).filter(f => String(f.assigned_to) === String(currentUser.id));
-            let tasksHtml = myTasks.length > 0 ? myTasks.slice().sort((a, b) => new Date(b.followup_date) - new Date(a.followup_date)).map(f => buildTaskLogItem(f, true)).join('') : '<div class="message">لا توجد مهام مسندة إليك.</div>';
+            let tasksHtml = '';
+            if (myTasks.length === 0) {
+                tasksHtml = '<div class="message">لا توجد مهام مسندة إليك.</div>';
+            } else {
+                myTasks.sort((a, b) => new Date(b.followup_date) - new Date(a.followup_date));
+                tasksHtml = myTasks.map(f => buildTaskLogItem(f, true)).join('');
+            }
             return `
                 <div class="dashboard-card">
-                    <div class="dashboard-card-header"><h3><span class="icon-circle">📊</span> سجل مهامي</h3></div>
+                    <div class="dashboard-card-header">
+                        <h3><span class="icon-circle">📊</span> سجل مهامي</h3>
+                    </div>
                     <div class="dashboard-card-body">${tasksHtml}</div>
                 </div>
             `;
@@ -1146,49 +1255,76 @@
     }
 
     // ============================================================
-    // 20. ربط أزرار المعاينة
+    // 22. ربط أزرار المعاينة
     // ============================================================
     function bindPreviewActions(consultationId) {
+        // زر إنشاء مهمة (للمدير)
         document.getElementById('btnCreateTask')?.addEventListener('click', () => createTask(consultationId));
 
+        // أزرار حفظ المهام (للموظف)
         document.querySelectorAll('.btn-save-employee-tasks').forEach(btn => {
-            btn.addEventListener('click', function() { saveEmployeeTask(this.dataset.id, consultationId); });
+            btn.addEventListener('click', function() {
+                saveEmployeeTask(this.dataset.id, consultationId);
+            });
         });
 
+        // أزرار تعذر التنفيذ
         document.querySelectorAll('.btn-fail-task, .btn-fail-task-inline').forEach(btn => {
-            btn.addEventListener('click', function() { failTask(this.dataset.id, consultationId); });
+            btn.addEventListener('click', function() {
+                failTask(this.dataset.id, consultationId);
+            });
         });
 
+        // أزرار تحديث المهمة (للموظف والسكرتير)
         document.querySelectorAll('.btn-update-task').forEach(btn => {
-            btn.addEventListener('click', function() { openUpdateTaskModal(this.dataset.id, consultationId); });
+            btn.addEventListener('click', function() {
+                openUpdateTaskModal(this.dataset.id, consultationId);
+            });
         });
 
-        document.getElementById('btnAddFollowupAttachment')?.addEventListener('click', function() { addAttachment(this.dataset.id, consultationId); });
-        document.getElementById('btnAddFollowup')?.addEventListener('click', function() { addFollowup(this.dataset.id, consultationId); });
+        // زر إضافة مرفق
+        document.getElementById('btnAddFollowupAttachment')?.addEventListener('click', function() {
+            addAttachment(this.dataset.id, consultationId);
+        });
 
+        // زر إضافة متابعة
+        document.getElementById('btnAddFollowup')?.addEventListener('click', function() {
+            addFollowup(this.dataset.id, consultationId);
+        });
+
+        // أزرار حذف المرفقات
         document.querySelectorAll('.btn-delete-attachment').forEach(btn => {
-            btn.addEventListener('click', function() { deleteAttachment(this.dataset.id, consultationId); });
+            btn.addEventListener('click', function() {
+                deleteAttachment(this.dataset.id, consultationId);
+            });
         });
     }
 
     // ============================================================
-    // 21. createTask
+    // 23. إنشاء مهمة (للمدير)
     // ============================================================
     async function createTask(consultationId) {
         const assigneeId = document.getElementById('assigneeSelect').value;
         const dueDate = document.getElementById('followupDueDate').value;
         const notes = document.getElementById('managerNotes').value.trim();
 
-        if (!assigneeId) { alert('يرجى اختيار الموظف.'); return; }
+        if (!assigneeId) {
+            alert('يرجى اختيار الموظف المكلف.');
+            return;
+        }
 
         const selectedActions = [];
         const selectedDocs = [];
         document.querySelectorAll('.task-action-checkbox:checked').forEach(cb => selectedActions.push(cb.value));
         document.querySelectorAll('.task-doc-checkbox:checked').forEach(cb => selectedDocs.push(cb.value));
 
-        if (selectedActions.length === 0 && selectedDocs.length === 0) { alert('يرجى تحديد الإجراءات أو المستندات.'); return; }
+        if (selectedActions.length === 0 && selectedDocs.length === 0) {
+            alert('يرجى تحديد الإجراءات أو المستندات المطلوبة.');
+            return;
+        }
 
         const actionText = `الإجراءات: ${selectedActions.join(', ') || 'لا يوجد'} | المستندات: ${selectedDocs.join(', ') || 'لا يوجد'}`;
+
         const taskData = {
             request_id: consultationId,
             followup_date: new Date().toISOString(),
@@ -1204,24 +1340,32 @@
 
         const { error } = await supabase.from('client_followups').insert(taskData);
 
-        if (error) { alert('❌ ' + error.message); return; }
+        if (error) {
+            alert('❌ فشل إنشاء المتابعة: ' + error.message);
+        } else {
+            // تحديث assigned_to في consultation_requests فقط إذا لم يكن هناك متابعة أصلية
+            const assignedEmp = allEmployees.find(e => e.id === assigneeId);
+            const { data: currentRequest } = await supabase
+                .from('consultation_requests')
+                .select('assigned_to')
+                .eq('id', consultationId)
+                .single();
 
-        const assignedEmp = allEmployees.find(e => e.id === assigneeId);
-        const { data: currentRequest } = await supabase.from('consultation_requests').select('assigned_to').eq('id', consultationId).single();
-        const hasOriginal = currentRequest?.assigned_to != null;
+            const hasOriginalAssignee = currentRequest?.assigned_to != null;
 
-        if (assignedEmp && assignedEmp.role === 'followup_staff') {
-            await supabase.from('consultation_requests').update({ assigned_to: assigneeId }).eq('id', consultationId);
-        } else if (!hasOriginal) {
-            await supabase.from('consultation_requests').update({ assigned_to: assigneeId }).eq('id', consultationId);
+            if (assignedEmp && assignedEmp.role === 'followup_staff') {
+                await supabase.from('consultation_requests').update({ assigned_to: assigneeId }).eq('id', consultationId);
+            } else if (!hasOriginalAssignee) {
+                await supabase.from('consultation_requests').update({ assigned_to: assigneeId }).eq('id', consultationId);
+            }
+
+            alert('✅ تم إنشاء المتابعة بنجاح!');
+            openPreview(consultationId);
         }
-
-        alert('✅ تم إنشاء المتابعة!');
-        openPreview(consultationId);
     }
 
     // ============================================================
-    // 22. saveEmployeeTask
+    // 24. حفظ حالة المهمة (للموظف)
     // ============================================================
     async function saveEmployeeTask(taskId, consultationId) {
         const checkedActions = [];
@@ -1229,37 +1373,54 @@
         document.querySelectorAll(`.employee-task-action[data-task-id="${taskId}"]:checked`).forEach(cb => checkedActions.push(cb.value));
         document.querySelectorAll(`.employee-task-doc[data-task-id="${taskId}"]:checked`).forEach(cb => checkedDocs.push(cb.value));
 
-        if (checkedActions.length === 0 && checkedDocs.length === 0) { alert('يرجى تحديد عنصر.'); return; }
+        if (checkedActions.length === 0 && checkedDocs.length === 0) {
+            alert('يرجى تحديد عنصر واحد على الأقل.');
+            return;
+        }
 
         const { data: currentTask } = await supabase.from('client_followups').select('notes, action').eq('id', taskId).single();
         const managerNotes = currentTask?.notes && !currentTask.notes.includes('تم إنجاز:') ? currentTask.notes : '';
+
         const progressNotes = managerNotes 
             ? `${managerNotes}\n\nتم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`
             : `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
 
+        // تحديد الحالة
         const actionParts = (currentTask?.action || '').split('|');
         const allActions = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
         const allDocs = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
         const isComplete = (checkedActions.length >= allActions.length) && (checkedDocs.length >= allDocs.length) && (allActions.length > 0 || allDocs.length > 0);
 
-        const { error } = await supabase.from('client_followups').update({ notes: progressNotes, followup_status: isComplete ? 'completed' : 'in_progress' }).eq('id', taskId);
-        if (error) alert('❌ ' + error.message);
-        else { alert('✅ تم الحفظ!'); openPreview(consultationId); }
+        const { error } = await supabase
+            .from('client_followups')
+            .update({ 
+                notes: progressNotes,
+                followup_status: isComplete ? 'completed' : 'in_progress'
+            })
+            .eq('id', taskId);
+
+        if (error) alert('❌ فشل الحفظ: ' + error.message);
+        else { alert('✅ تم حفظ الحالة!'); openPreview(consultationId); }
     }
 
     // ============================================================
-    // 23. failTask
+    // 25. تعذر التنفيذ
     // ============================================================
     async function failTask(taskId, consultationId) {
-        const reason = prompt('سبب تعذر التنفيذ:');
+        const reason = prompt('يرجى إدخال سبب تعذر التنفيذ:');
         if (!reason) return;
-        const { error } = await supabase.from('client_followups').update({ followup_status: 'failed', notes: reason }).eq('id', taskId);
-        if (error) alert('❌ ' + error.message);
-        else { alert('✅ تم التسجيل'); openPreview(consultationId); }
+
+        const { error } = await supabase
+            .from('client_followups')
+            .update({ followup_status: 'failed', notes: reason })
+            .eq('id', taskId);
+
+        if (error) alert('❌ فشل التحديث: ' + error.message);
+        else { alert('✅ تم تسجيل تعذر التنفيذ.'); openPreview(consultationId); }
     }
 
     // ============================================================
-    // 24. openUpdateTaskModal
+    // 26. نافذة تحديث المهمة
     // ============================================================
     async function openUpdateTaskModal(taskId, consultationId) {
         const { data: task } = await supabase.from('client_followups').select('*').eq('id', taskId).single();
@@ -1277,20 +1438,20 @@
                 <div style="background: white; border-radius: 16px; padding: 25px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto;">
                     <h3 style="color: #1a2a3a; margin-bottom: 15px; border-bottom: 2px solid #2d7aff; padding-bottom: 10px;">✏️ تحديث المهمة</h3>
                     <div style="margin-bottom: 15px;">
-                        <strong style="color: #333;">الإجراءات:</strong>
+                        <strong style="color: #333;">الإجراءات المطلوبة:</strong>
                         <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
                             ${actionsArray.map(act => `<label style="display: flex; align-items: center; gap: 5px; background: #f0f4ff; padding: 6px 10px; border-radius: 6px; font-size: 13px;"><input type="checkbox" class="update-action-checkbox" value="${act}"> ${act}</label>`).join('')}
                         </div>
                     </div>
                     <div style="margin-bottom: 15px;">
-                        <strong style="color: #333;">المستندات:</strong>
+                        <strong style="color: #333;">المستندات المطلوبة:</strong>
                         <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
                             ${docsArray.map(doc => `<label style="display: flex; align-items: center; gap: 5px; background: #f0f4ff; padding: 6px 10px; border-radius: 6px; font-size: 13px;"><input type="checkbox" class="update-doc-checkbox" value="${doc}"> ${doc}</label>`).join('')}
                         </div>
                     </div>
                     <div style="margin-bottom: 15px;">
                         <label style="font-weight: 600; display: block; margin-bottom: 5px;">ملاحظات إضافية:</label>
-                        <textarea id="updateNotes" rows="3" style="width: 100%; padding: 10px; border: 1px solid #dce1e8; border-radius: 8px;"></textarea>
+                        <textarea id="updateNotes" rows="3" style="width: 100%; padding: 10px; border: 1px solid #dce1e8; border-radius: 8px;" placeholder="ملاحظات..."></textarea>
                     </div>
                     <div style="display: flex; gap: 10px;">
                         <button id="saveTaskUpdate" style="flex: 1; background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">💾 حفظ</button>
@@ -1308,7 +1469,10 @@
             document.querySelectorAll('.update-doc-checkbox:checked').forEach(cb => checkedDocs.push(cb.value));
             const extraNotes = document.getElementById('updateNotes').value.trim();
 
-            if (checkedActions.length === 0 && checkedDocs.length === 0 && !extraNotes) { alert('يرجى تحديد عنصر.'); return; }
+            if (checkedActions.length === 0 && checkedDocs.length === 0 && !extraNotes) {
+                alert('يرجى تحديد عنصر أو كتابة ملاحظة.');
+                return;
+            }
 
             const originalNotes = task.notes && !task.notes.includes('تم إنجاز:') ? task.notes : '';
             const progressNotes = originalNotes 
@@ -1320,7 +1484,7 @@
             const { error } = await supabase.from('client_followups').update({ notes: progressNotes, followup_status: newStatus }).eq('id', taskId);
             document.getElementById('updateTaskModal').remove();
 
-            if (error) alert('❌ ' + error.message);
+            if (error) alert('❌ فشل الحفظ: ' + error.message);
             else { alert('✅ تم الحفظ!'); openPreview(consultationId); }
         });
 
@@ -1330,7 +1494,7 @@
     }
 
     // ============================================================
-    // 25. addAttachment
+    // 27. إضافة مرفق
     // ============================================================
     async function addAttachment(consId, consultationId) {
         const file = document.getElementById('newFollowupAttachment').files[0];
@@ -1338,7 +1502,7 @@
 
         const filePath = `${Date.now()}_${file.name}`;
         const { error: uploadError } = await supabase.storage.from('consultation-files').upload(filePath, file);
-        if (uploadError) { alert('❌ ' + uploadError.message); return; }
+        if (uploadError) { alert('❌ فشل الرفع: ' + uploadError.message); return; }
 
         const { data: urlData } = supabase.storage.from('consultation-files').getPublicUrl(filePath);
 
@@ -1348,12 +1512,12 @@
             attachment_path: urlData.publicUrl, is_attachment_only: true
         });
 
-        if (error) alert('❌ ' + error.message);
+        if (error) alert('❌ فشل الإضافة: ' + error.message);
         else { alert('✅ تم الإضافة!'); openPreview(consultationId); }
     }
 
     // ============================================================
-    // 26. addFollowup
+    // 28. إضافة متابعة
     // ============================================================
     async function addFollowup(consId, consultationId) {
         const note = document.getElementById('newFollowupNote').value.trim();
@@ -1365,29 +1529,29 @@
             contact_method: 'other', action: 'متابعة', followup_date: new Date().toISOString()
         });
 
-        if (error) alert('❌ ' + error.message);
+        if (error) alert('❌ فشل الإضافة: ' + error.message);
         else { alert('✅ تم الإضافة!'); openPreview(consultationId); }
     }
 
     // ============================================================
-    // 27. deleteAttachment
+    // 29. حذف مرفق
     // ============================================================
     async function deleteAttachment(attachmentId, consultationId) {
-        if (!confirm('حذف المرفق؟')) return;
+        if (!confirm('هل أنت متأكد من حذف هذا المرفق؟')) return;
         const { error } = await supabase.from('client_followups').delete().eq('id', attachmentId);
-        if (error) alert('❌ ' + error.message);
-        else { alert('✅ تم الحذف'); openPreview(consultationId); }
+        if (error) alert('❌ فشل الحذف: ' + error.message);
+        else { alert('✅ تم الحذف!'); openPreview(consultationId); }
     }
 
     // ============================================================
-    // 28. closePreview
+    // 30. إغلاق المعاينة
     // ============================================================
     function closePreview() {
         document.getElementById('previewModal').classList.remove('active');
     }
 
     // ============================================================
-    // 29. loadSmartAlerts
+    // 31. التنبيهات الذكية
     // ============================================================
     async function loadSmartAlerts() {
         const container = document.getElementById('alertsContainer');
@@ -1398,28 +1562,58 @@
 
         try {
             if (currentUser.role === 'followup_staff') {
-                const { data: overdueTasks } = await supabase.from('client_followups').select('id').eq('assigned_to', currentUser.id).eq('is_attachment_only', false).in('followup_status', ['pending', 'in_progress']).lt('next_followup', today);
+                const { data: overdueTasks } = await supabase
+                    .from('client_followups')
+                    .select('id')
+                    .eq('assigned_to', currentUser.id)
+                    .eq('is_attachment_only', false)
+                    .in('followup_status', ['pending', 'in_progress'])
+                    .lt('next_followup', today);
+
                 if (overdueTasks?.length > 0) alerts.push({ icon: '⚠️', color: '#dc3545', text: `لديك ${overdueTasks.length} مهمة متأخرة`, type: 'overdue' });
 
-                const { data: newTasks } = await supabase.from('client_followups').select('id').eq('assigned_to', currentUser.id).eq('is_attachment_only', false).eq('followup_status', 'pending');
-                if (newTasks?.length > 0) alerts.push({ icon: '📋', color: '#17a2b8', text: `${newTasks.length} مهمة بانتظار التنفيذ`, type: 'pending_tasks' });
+                const { data: newTasks } = await supabase
+                    .from('client_followups')
+                    .select('id')
+                    .eq('assigned_to', currentUser.id)
+                    .eq('is_attachment_only', false)
+                    .eq('followup_status', 'pending');
+
+                if (newTasks?.length > 0) alerts.push({ icon: '📋', color: '#17a2b8', text: `لديك ${newTasks.length} مهمة بانتظار التنفيذ`, type: 'pending_tasks' });
             }
 
             if (currentUser.role === 'manager') {
-                const { data: allOverdue } = await supabase.from('client_followups').select('id').eq('is_attachment_only', false).in('followup_status', ['pending', 'in_progress']).lt('next_followup', today);
+                const { data: allOverdue } = await supabase
+                    .from('client_followups')
+                    .select('id')
+                    .eq('is_attachment_only', false)
+                    .in('followup_status', ['pending', 'in_progress'])
+                    .lt('next_followup', today);
+
                 if (allOverdue?.length > 0) alerts.push({ icon: '⚠️', color: '#dc3545', text: `${allOverdue.length} مهمة متأخرة`, type: 'overdue' });
 
-                const { data: pendingTasks } = await supabase.from('client_followups').select('id').eq('is_attachment_only', false).eq('followup_status', 'pending');
+                const { data: pendingTasks } = await supabase
+                    .from('client_followups')
+                    .select('id')
+                    .eq('is_attachment_only', false)
+                    .eq('followup_status', 'pending');
+
                 if (pendingTasks?.length > 0) alerts.push({ icon: '📋', color: '#17a2b8', text: `${pendingTasks.length} مهمة بانتظار التنفيذ`, type: 'pending_tasks' });
             }
 
             if (currentUser.role === 'secretary') {
-                const { data: assignedTasks } = await supabase.from('client_followups').select('id').eq('assigned_to', currentUser.id).eq('is_attachment_only', false).in('followup_status', ['pending', 'in_progress']);
+                const { data: assignedTasks } = await supabase
+                    .from('client_followups')
+                    .select('id')
+                    .eq('assigned_to', currentUser.id)
+                    .eq('is_attachment_only', false)
+                    .in('followup_status', ['pending', 'in_progress']);
+
                 if (assignedTasks?.length > 0) alerts.push({ icon: '📌', color: '#2d7aff', text: `${assignedTasks.length} مهمة مكلف بها من المدير`, type: 'assigned_tasks' });
             }
 
             if (alerts.length === 0) {
-                container.innerHTML = `<div style="background: #e7f9ef; border-radius: 8px; padding: 10px 15px; font-size: 13px; color: #28a745;">✅ لا توجد تنبيهات.</div>`;
+                container.innerHTML = `<div style="background: #e7f9ef; border-radius: 8px; padding: 10px 15px; font-size: 13px; color: #28a745;">✅ لا توجد تنبيهات حالياً.</div>`;
             } else {
                 container.innerHTML = alerts.map(a => `
                     <div class="smart-alert" data-type="${a.type}" style="background: white; border-radius: 8px; padding: 10px 15px; font-size: 13px; display: flex; align-items: center; gap: 8px; border-right: 4px solid ${a.color}; box-shadow: 0 2px 6px rgba(0,0,0,0.05); cursor: pointer;">
@@ -1428,15 +1622,20 @@
                     </div>
                 `).join('');
 
-                document.querySelectorAll('.smart-alert').forEach(el => el.addEventListener('click', function() { showAlertDetails(this.dataset.type); }));
+                document.querySelectorAll('.smart-alert').forEach(el => {
+                    el.addEventListener('click', function() {
+                        showAlertDetails(this.dataset.type);
+                    });
+                });
             }
         } catch (err) {
-            container.innerHTML = `<div style="color: #dc3545;">❌ تعذر التحميل.</div>`;
+            console.error('خطأ في التنبيهات:', err);
+            container.innerHTML = `<div style="color: #dc3545;">❌ تعذر تحميل التنبيهات.</div>`;
         }
     }
 
     // ============================================================
-    // 30. showAlertDetails
+    // 32. عرض تفاصيل التنبيه
     // ============================================================
     async function showAlertDetails(alertType) {
         const modalHtml = `
@@ -1451,58 +1650,98 @@
             </div>
         `;
         document.body.insertAdjacentHTML('beforeend', modalHtml);
-        document.getElementById('closeAlertModal').addEventListener('click', () => document.getElementById('alertDetailsModal').remove());
+
+        document.getElementById('closeAlertModal').addEventListener('click', () => {
+            document.getElementById('alertDetailsModal').remove();
+        });
 
         const body = document.getElementById('alertModalBody');
-        const today = new Date().toISOString().split('T')[0];
 
         try {
             let tasks = [];
+            const today = new Date().toISOString().split('T')[0];
+
             if (alertType === 'overdue') {
-                let q = supabase.from('client_followups').select('*, consultation_requests!inner(client_name, service)').eq('is_attachment_only', false).in('followup_status', ['pending', 'in_progress']).lt('next_followup', today);
-                if (currentUser.role === 'followup_staff') q = q.eq('assigned_to', currentUser.id);
-                const { data } = await q; tasks = data || [];
+                let query = supabase
+                    .from('client_followups')
+                    .select('*, consultation_requests!inner(client_name, service)')
+                    .eq('is_attachment_only', false)
+                    .in('followup_status', ['pending', 'in_progress'])
+                    .lt('next_followup', today);
+                if (currentUser.role === 'followup_staff') query = query.eq('assigned_to', currentUser.id);
+                const { data } = await query;
+                tasks = data || [];
             } else if (alertType === 'pending_tasks') {
-                let q = supabase.from('client_followups').select('*, consultation_requests!inner(client_name, service)').eq('is_attachment_only', false).eq('followup_status', 'pending');
-                if (currentUser.role === 'followup_staff') q = q.eq('assigned_to', currentUser.id);
-                const { data } = await q; tasks = data || [];
+                let query = supabase
+                    .from('client_followups')
+                    .select('*, consultation_requests!inner(client_name, service)')
+                    .eq('is_attachment_only', false)
+                    .eq('followup_status', 'pending');
+                if (currentUser.role === 'followup_staff') query = query.eq('assigned_to', currentUser.id);
+                const { data } = await query;
+                tasks = data || [];
             } else if (alertType === 'assigned_tasks') {
-                const { data } = await supabase.from('client_followups').select('*, consultation_requests!inner(client_name, service)').eq('assigned_to', currentUser.id).eq('is_attachment_only', false).in('followup_status', ['pending', 'in_progress']);
+                const { data } = await supabase
+                    .from('client_followups')
+                    .select('*, consultation_requests!inner(client_name, service)')
+                    .eq('assigned_to', currentUser.id)
+                    .eq('is_attachment_only', false)
+                    .in('followup_status', ['pending', 'in_progress']);
                 tasks = data || [];
             }
 
-            if (tasks.length === 0) { body.innerHTML = '<div style="text-align: center; padding: 20px;">لا توجد تفاصيل.</div>'; return; }
+            if (tasks.length === 0) {
+                body.innerHTML = '<div style="text-align: center; padding: 20px;">لا توجد تفاصيل.</div>';
+                return;
+            }
 
-            let html = '<div class="table-responsive"><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #2d7aff; color: white;"><th style="padding: 10px;">#</th><th style="padding: 10px;">اسم العميل</th><th style="padding: 10px;">الخدمة</th><th style="padding: 10px;">الإجراء</th></tr></thead><tbody>';
+            let html = '<div class="table-responsive"><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #2d7aff; color: white;"><th style="padding: 10px;">#</th><th style="padding: 10px;">اسم العميل</th><th style="padding: 10px;">الخدمة</th><th style="padding: 10px;">المهمة</th><th style="padding: 10px;">الإجراء</th></tr></thead><tbody>';
+
             tasks.forEach((t, idx) => {
-                html += `<tr style="border-bottom: 1px solid #e9edf4;"><td style="padding: 10px; text-align: center;">${idx + 1}</td><td style="padding: 10px; text-align: center;">${t.consultation_requests?.client_name || '—'}</td><td style="padding: 10px; text-align: center;">${t.consultation_requests?.service || '—'}</td><td style="padding: 10px; text-align: center;"><button class="btn-open-preview" data-request-id="${t.request_id}" style="background: #17a2b8; color: white; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">📄 معاينة</button></td></tr>`;
+                html += `
+                    <tr style="border-bottom: 1px solid #e9edf4;">
+                        <td style="padding: 10px; text-align: center;">${idx + 1}</td>
+                        <td style="padding: 10px; text-align: center;">${t.consultation_requests?.client_name || '—'}</td>
+                        <td style="padding: 10px; text-align: center;">${t.consultation_requests?.service || '—'}</td>
+                        <td style="padding: 10px; text-align: center; font-size: 12px;">${(t.action || '—').substring(0, 50)}</td>
+                        <td style="padding: 10px; text-align: center;">
+                            <button class="btn-open-preview" data-request-id="${t.request_id}" style="background: #17a2b8; color: white; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">📄 معاينة</button>
+                        </td>
+                    </tr>
+                `;
             });
             html += '</tbody></table></div>';
             body.innerHTML = html;
 
-            body.querySelectorAll('.btn-open-preview').forEach(btn => btn.addEventListener('click', function() {
-                document.getElementById('alertDetailsModal')?.remove();
-                openPreview(this.dataset.requestId);
-            }));
+            body.querySelectorAll('.btn-open-preview').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('alertDetailsModal')?.remove();
+                    openPreview(this.dataset.requestId);
+                });
+            });
         } catch (err) {
             body.innerHTML = `<div style="color: #dc3545;">❌ ${err.message}</div>`;
         }
     }
 
     // ============================================================
-    // 31. loadReports
+    // 33. التقارير
     // ============================================================
     async function loadReports() {
         try {
+            // إجمالي الطلبات
             const { count: totalRequests } = await supabase.from('consultation_requests').select('*', { count: 'exact', head: true });
             document.getElementById('statTotalRequests').textContent = totalRequests || 0;
 
+            // المهام المنجزة
             const { count: completedTasks } = await supabase.from('client_followups').select('*', { count: 'exact', head: true }).eq('is_attachment_only', false).eq('followup_status', 'completed');
             document.getElementById('statCompletedTasks').textContent = completedTasks || 0;
 
+            // قيد التنفيذ
             const { count: pendingTasks } = await supabase.from('client_followups').select('*', { count: 'exact', head: true }).eq('is_attachment_only', false).in('followup_status', ['pending', 'in_progress']);
             document.getElementById('statPendingTasks').textContent = pendingTasks || 0;
 
+            // المتأخرة
             const today = new Date().toISOString().split('T')[0];
             const { count: overdueTasks } = await supabase.from('client_followups').select('*', { count: 'exact', head: true }).eq('is_attachment_only', false).in('followup_status', ['pending', 'in_progress']).lt('next_followup', today);
             document.getElementById('statOverdueTasks').textContent = overdueTasks || 0;
@@ -1510,21 +1749,36 @@
             await loadEmployeePerformance();
             await loadRequestsByService();
             await loadOverdueTasks();
-        } catch (err) { console.error('خطأ في التقارير:', err); }
+        } catch (err) {
+            console.error('خطأ في التقارير:', err);
+        }
     }
 
     // ============================================================
-    // 32. loadEmployeePerformance
+    // 34. أداء الموظفين
     // ============================================================
     async function loadEmployeePerformance() {
         const container = document.getElementById('employeePerformanceTable');
         if (!container) return;
 
         try {
-            const { data: employees } = await supabase.from('staff_profiles').select('id, full_name, role').in('role', ['followup_staff', 'secretary']).eq('is_active', true);
-            if (!employees || employees.length === 0) { container.innerHTML = '<div class="message">لا يوجد موظفون نشطون.</div>'; return; }
+            const { data: employees } = await supabase
+                .from('staff_profiles')
+                .select('id, full_name, role')
+                .in('role', ['followup_staff', 'secretary'])
+                .eq('is_active', true);
 
-            const { data: allTasks } = await supabase.from('client_followups').select('assigned_to, followup_status, next_followup').eq('is_attachment_only', false).not('assigned_to', 'is', null);
+            if (!employees || employees.length === 0) {
+                container.innerHTML = '<div class="message">لا يوجد موظفون نشطون.</div>';
+                return;
+            }
+
+            const { data: allTasks } = await supabase
+                .from('client_followups')
+                .select('assigned_to, followup_status, next_followup')
+                .eq('is_attachment_only', false)
+                .not('assigned_to', 'is', null);
+
             const today = new Date().toISOString().split('T')[0];
 
             const performance = employees.map(emp => {
@@ -1533,22 +1787,41 @@
                 const completed = empTasks.filter(t => t.followup_status === 'completed').length;
                 const pending = empTasks.filter(t => t.followup_status === 'pending' || t.followup_status === 'in_progress').length;
                 const overdue = empTasks.filter(t => (t.followup_status === 'pending' || t.followup_status === 'in_progress') && t.next_followup && t.next_followup < today).length;
-                const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
-                return { name: emp.full_name, role: emp.role === 'secretary' ? 'سكرتير' : 'موظف', total, completed, pending, overdue, rate };
+                const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+                return { name: emp.full_name, role: emp.role === 'secretary' ? 'سكرتير' : 'موظف', total, completed, pending, overdue, completionRate };
             });
 
-            let html = `<div class="table-responsive"><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #2d7aff; color: white;"><th style="padding: 12px;">#</th><th style="padding: 12px;">الموظف</th><th style="padding: 12px;">الدور</th><th style="padding: 12px;">إجمالي</th><th style="padding: 12px;">✅</th><th style="padding: 12px;">⏳</th><th style="padding: 12px;">⚠️</th><th style="padding: 12px;">النسبة</th></tr></thead><tbody>`;
+            let html = `<div class="table-responsive"><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #2d7aff; color: white;"><th style="padding: 12px;">#</th><th style="padding: 12px;">الموظف</th><th style="padding: 12px;">الدور</th><th style="padding: 12px;">إجمالي</th><th style="padding: 12px;">✅ منجزة</th><th style="padding: 12px;">⏳ قيد التنفيذ</th><th style="padding: 12px;">⚠️ متأخرة</th><th style="padding: 12px;">نسبة الإنجاز</th></tr></thead><tbody>`;
+
             performance.forEach((emp, idx) => {
-                const rateColor = emp.rate >= 80 ? '#28a745' : emp.rate >= 50 ? '#ffc107' : '#dc3545';
-                html += `<tr style="border-bottom: 1px solid #e9edf4;"><td style="padding: 12px; text-align: center;">${idx + 1}</td><td style="padding: 12px; text-align: center; font-weight: 600;">${emp.name}</td><td style="padding: 12px; text-align: center; font-size: 12px;">${emp.role}</td><td style="padding: 12px; text-align: center;">${emp.total}</td><td style="padding: 12px; text-align: center; color: #28a745;">${emp.completed}</td><td style="padding: 12px; text-align: center; color: #ffc107;">${emp.pending}</td><td style="padding: 12px; text-align: center; color: #dc3545;">${emp.overdue}</td><td style="padding: 12px; text-align: center;"><div style="background: #f0f2f5; border-radius: 12px; height: 20px; position: relative; overflow: hidden;"><div style="background: ${rateColor}; height: 100%; width: ${emp.rate}%;"></div><span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; font-weight: 700;">${emp.rate}%</span></div></td></tr>`;
+                const rateColor = emp.completionRate >= 80 ? '#28a745' : emp.completionRate >= 50 ? '#ffc107' : '#dc3545';
+                html += `
+                    <tr style="border-bottom: 1px solid #e9edf4;">
+                        <td style="padding: 12px; text-align: center;">${idx + 1}</td>
+                        <td style="padding: 12px; text-align: center; font-weight: 600;">${emp.name}</td>
+                        <td style="padding: 12px; text-align: center; font-size: 12px; color: #718096;">${emp.role}</td>
+                        <td style="padding: 12px; text-align: center;">${emp.total}</td>
+                        <td style="padding: 12px; text-align: center; color: #28a745;">${emp.completed}</td>
+                        <td style="padding: 12px; text-align: center; color: #ffc107;">${emp.pending}</td>
+                        <td style="padding: 12px; text-align: center; color: #dc3545;">${emp.overdue}</td>
+                        <td style="padding: 12px; text-align: center;">
+                            <div style="background: #f0f2f5; border-radius: 12px; height: 20px; position: relative; overflow: hidden;">
+                                <div style="background: ${rateColor}; height: 100%; width: ${emp.completionRate}%;"></div>
+                                <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 11px; font-weight: 700;">${emp.completionRate}%</span>
+                            </div>
+                        </td>
+                    </tr>
+                `;
             });
             html += '</tbody></table></div>';
             container.innerHTML = html;
-        } catch (err) { container.innerHTML = `<div class="message error">❌ ${err.message}</div>`; }
+        } catch (err) {
+            container.innerHTML = `<div class="message error">❌ ${err.message}</div>`;
+        }
     }
 
     // ============================================================
-    // 33. loadRequestsByService
+    // 35. الطلبات حسب الخدمة (رسم بياني + جدول)
     // ============================================================
     let serviceChartInstance = null;
 
@@ -1559,20 +1832,41 @@
 
         try {
             const { data: requests } = await supabase.from('consultation_requests').select('service');
-            if (!requests || requests.length === 0) { tableContainer.innerHTML = '<div class="message">لا توجد طلبات.</div>'; return; }
+            if (!requests || requests.length === 0) {
+                tableContainer.innerHTML = '<div class="message">لا توجد طلبات.</div>';
+                return;
+            }
 
-            const serviceNames = { corporate: 'استشارات الشركات', contracts: 'صياغة العقود', litigation: 'قضايا وتقاضي', arbitration: 'تحكيم وتسوية نزاعات', ip: 'حماية الملكية الفكرية', other: 'استشارة عامة' };
-            const serviceColors = { corporate: '#2d7aff', contracts: '#28a745', litigation: '#ffc107', arbitration: '#17a2b8', ip: '#dc3545', other: '#6c757d' };
+            const serviceNames = {
+                corporate: 'استشارات الشركات', contracts: 'صياغة العقود', litigation: 'قضايا وتقاضي',
+                arbitration: 'تحكيم وتسوية نزاعات', ip: 'حماية الملكية الفكرية', other: 'استشارة عامة'
+            };
+            const serviceColors = {
+                corporate: '#2d7aff', contracts: '#28a745', litigation: '#ffc107',
+                arbitration: '#17a2b8', ip: '#dc3545', other: '#6c757d'
+            };
 
-            const counts = {};
-            requests.forEach(r => { const s = r.service || 'other'; counts[s] = (counts[s] || 0) + 1; });
+            const serviceCounts = {};
+            requests.forEach(req => {
+                const s = req.service || 'other';
+                serviceCounts[s] = (serviceCounts[s] || 0) + 1;
+            });
+
             const total = requests.length;
-            const labels = [], data = [], colors = [];
-            Object.entries(counts).forEach(([k, c]) => { labels.push(serviceNames[k] || k); data.push(c); colors.push(serviceColors[k] || '#6c757d'); });
+            const labels = [];
+            const data = [];
+            const colors = [];
+
+            Object.entries(serviceCounts).forEach(([key, count]) => {
+                labels.push(serviceNames[key] || key);
+                data.push(count);
+                colors.push(serviceColors[key] || '#6c757d');
+            });
 
             let tableHtml = `<table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #2d7aff; color: white;"><th style="padding: 10px;">#</th><th style="padding: 10px;">الخدمة</th><th style="padding: 10px;">عدد</th><th style="padding: 10px;">النسبة</th></tr></thead><tbody>`;
-            Object.entries(counts).forEach(([k, c], idx) => {
-                tableHtml += `<tr style="border-bottom: 1px solid #e9edf4;"><td style="padding: 10px; text-align: center;">${idx + 1}</td><td style="padding: 10px; text-align: center;">${serviceNames[k] || k}</td><td style="padding: 10px; text-align: center;">${c}</td><td style="padding: 10px; text-align: center;">${Math.round((c / total) * 100)}%</td></tr>`;
+            Object.entries(serviceCounts).forEach(([key, count], idx) => {
+                const pct = Math.round((count / total) * 100);
+                tableHtml += `<tr style="border-bottom: 1px solid #e9edf4;"><td style="padding: 10px; text-align: center;">${idx + 1}</td><td style="padding: 10px; text-align: center;">${serviceNames[key] || key}</td><td style="padding: 10px; text-align: center;">${count}</td><td style="padding: 10px; text-align: center;">${pct}%</td></tr>`;
             });
             tableHtml += `<tr style="background: #f8faff; font-weight: 700;"><td colspan="2" style="padding: 10px; text-align: center;">الإجمالي</td><td style="padding: 10px; text-align: center;">${total}</td><td style="padding: 10px; text-align: center;">100%</td></tr></tbody></table>`;
             tableContainer.innerHTML = tableHtml;
@@ -1581,13 +1875,21 @@
             serviceChartInstance = new Chart(chartCanvas, {
                 type: 'doughnut',
                 data: { labels, datasets: [{ data, backgroundColor: colors, borderWidth: 2, borderColor: '#fff' }] },
-                options: { responsive: true, maintainAspectRatio: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 10 } }, tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed} (${Math.round((ctx.parsed / total) * 100)}%)` } } } }
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { size: 12 }, padding: 10 } },
+                        tooltip: { callbacks: { label: (ctx) => `${ctx.label}: ${ctx.parsed} (${Math.round((ctx.parsed / total) * 100)}%)` } }
+                    }
+                }
             });
-        } catch (err) { tableContainer.innerHTML = `<div class="message error">❌ ${err.message}</div>`; }
+        } catch (err) {
+            tableContainer.innerHTML = `<div class="message error">❌ ${err.message}</div>`;
+        }
     }
 
     // ============================================================
-    // 34. loadOverdueTasks
+    // 36. المهام المتأخرة
     // ============================================================
     async function loadOverdueTasks() {
         const container = document.getElementById('overdueTasksTable');
@@ -1595,14 +1897,21 @@
 
         try {
             const today = new Date().toISOString().split('T')[0];
-            const { data: overdueTasks } = await supabase.from('client_followups').select('id, action, next_followup, followup_status, assigned_to, request_id, consultation_requests!inner(client_name, service)').eq('is_attachment_only', false).in('followup_status', ['pending', 'in_progress']).lt('next_followup', today).order('next_followup', { ascending: true });
+            const { data: overdueTasks } = await supabase
+                .from('client_followups')
+                .select('id, action, next_followup, followup_status, assigned_to, request_id, consultation_requests!inner(client_name, service)')
+                .eq('is_attachment_only', false)
+                .in('followup_status', ['pending', 'in_progress'])
+                .lt('next_followup', today)
+                .order('next_followup', { ascending: true });
 
             if (!overdueTasks || overdueTasks.length === 0) {
                 container.innerHTML = `<div style="text-align: center; padding: 20px; color: #28a745; background: #e7f9ef; border-radius: 8px;">✅ لا توجد مهام متأخرة.</div>`;
                 return;
             }
 
-            let html = `<div class="table-responsive"><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #dc3545; color: white;"><th style="padding: 12px;">#</th><th style="padding: 12px;">اسم العميل</th><th style="padding: 12px;">الخدمة</th><th style="padding: 12px;">الموظف</th><th style="padding: 12px;">موعد التنفيذ</th><th style="padding: 12px;">أيام التأخير</th><th style="padding: 12px;">الإجراء</th></tr></thead><tbody>`;
+            let html = `<div class="table-responsive"><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #dc3545; color: white;"><th style="padding: 12px;">#</th><th style="padding: 12px;">اسم العميل</th><th style="padding: 12px;">الخدمة</th><th style="padding: 12px;">الموظف</th><th style="padding: 12px;">المهمة</th><th style="padding: 12px;">موعد التنفيذ</th><th style="padding: 12px;">أيام التأخير</th><th style="padding: 12px;">الإجراء</th></tr></thead><tbody>`;
+
             overdueTasks.forEach((task, idx) => {
                 const dueDate = task.next_followup ? new Date(task.next_followup) : null;
                 const daysOverdue = dueDate ? Math.floor((new Date() - dueDate) / (1000 * 60 * 60 * 24)) : 0;
@@ -1610,18 +1919,38 @@
                 const empName = emp ? emp.full_name : 'غير محدد';
                 const clientName = task.consultation_requests?.client_name || '—';
                 const service = task.consultation_requests?.service || '—';
+                const actionShort = (task.action || '—').substring(0, 40) + ((task.action || '').length > 40 ? '...' : '');
 
-                html += `<tr style="border-bottom: 1px solid #e9edf4; background: #fff8f8;"><td style="padding: 12px; text-align: center;">${idx + 1}</td><td style="padding: 12px; text-align: center; font-weight: 600;">${clientName}</td><td style="padding: 12px; text-align: center;">${service}</td><td style="padding: 12px; text-align: center;">${empName}</td><td style="padding: 12px; text-align: center;">${dueDate ? dueDate.toLocaleDateString('ar-EG') : '—'}</td><td style="padding: 12px; text-align: center;"><span style="background: #dc3545; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${daysOverdue} يوم</span></td><td style="padding: 12px; text-align: center;"><button class="btn-open-preview" data-request-id="${task.request_id}" style="background: #17a2b8; color: white; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">📄 معاينة</button></td></tr>`;
+                html += `
+                    <tr style="border-bottom: 1px solid #e9edf4; background: #fff8f8;">
+                        <td style="padding: 12px; text-align: center;">${idx + 1}</td>
+                        <td style="padding: 12px; text-align: center; font-weight: 600;">${clientName}</td>
+                        <td style="padding: 12px; text-align: center;">${service}</td>
+                        <td style="padding: 12px; text-align: center;">${empName}</td>
+                        <td style="padding: 12px; text-align: center; font-size: 12px;">${actionShort}</td>
+                        <td style="padding: 12px; text-align: center;">${dueDate ? dueDate.toLocaleDateString('ar-EG') : '—'}</td>
+                        <td style="padding: 12px; text-align: center;"><span style="background: #dc3545; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${daysOverdue} يوم</span></td>
+                        <td style="padding: 12px; text-align: center;">
+                            <button class="btn-open-preview" data-request-id="${task.request_id}" style="background: #17a2b8; color: white; border: none; padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;">📄 معاينة</button>
+                        </td>
+                    </tr>
+                `;
             });
             html += '</tbody></table></div>';
             container.innerHTML = html;
 
-            container.querySelectorAll('.btn-open-preview').forEach(btn => btn.addEventListener('click', function() { openPreview(this.dataset.requestId); }));
-        } catch (err) { container.innerHTML = `<div class="message error">❌ ${err.message}</div>`; }
+            container.querySelectorAll('.btn-open-preview').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    openPreview(this.dataset.requestId);
+                });
+            });
+        } catch (err) {
+            container.innerHTML = `<div class="message error">❌ ${err.message}</div>`;
+        }
     }
 
     // ============================================================
-    // 35. addManualConsultation
+    // 37. إضافة طلب يدوي
     // ============================================================
     async function addManualConsultation() {
         const name = document.getElementById('manualName').value.trim();
@@ -1632,18 +1961,53 @@
         const message = document.getElementById('manualMessage').value.trim();
         const out = document.getElementById('manualMsg');
         const btn = document.getElementById('btnAddManualConsultation');
-        const file = document.getElementById('manualAttachment').files[0];
+        const attachmentInput = document.getElementById('manualAttachment');
+        const file = attachmentInput ? attachmentInput.files[0] : null;
         let attachmentPath = null;
 
-        if (!name || !phone || !service) { out.textContent = 'يرجى ملء الحقول الإلزامية.'; return; }
+        if (!name || !phone || !service) {
+            out.textContent = 'يرجى ملء الحقول الإلزامية.';
+            return;
+        }
 
         btn.disabled = true;
+        out.textContent = 'جاري التحقق...';
+
+        // فحص التكرار
+        try {
+            const { data: existing } = await supabase
+                .from('consultation_requests')
+                .select('id, created_at')
+                .eq('client_name', name)
+                .eq('phone', phone)
+                .eq('service', service)
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (existing?.length > 0) {
+                const diffHours = (new Date() - new Date(existing[0].created_at)) / (1000 * 60 * 60);
+                if (diffHours < 24) {
+                    const proceed = confirm(`⚠️ يوجد طلب مشابه خلال 24 ساعة.\nهل تريد المتابعة؟`);
+                    if (!proceed) {
+                        out.textContent = '❌ تم الإلغاء.';
+                        btn.disabled = false;
+                        return;
+                    }
+                }
+            }
+        } catch (e) { console.warn(e); }
+
         out.textContent = 'جاري الحفظ...';
 
+        // رفع الملف
         if (file) {
             const filePath = `${Date.now()}_${file.name}`;
             const { error: uploadError } = await supabase.storage.from('consultation-files').upload(filePath, file);
-            if (uploadError) { alert('❌ ' + uploadError.message); btn.disabled = false; return; }
+            if (uploadError) {
+                alert('❌ فشل رفع الملف: ' + uploadError.message);
+                btn.disabled = false;
+                return;
+            }
             const { data: urlData } = supabase.storage.from('consultation-files').getPublicUrl(filePath);
             attachmentPath = urlData.publicUrl;
         }
@@ -1653,9 +2017,17 @@
 
         try {
             const { error } = await supabase.from('consultation_requests').insert({
-                client_name: name, full_name: name, phone: phone, email: email || null,
-                company: company || null, service: service || null, message: message || null,
-                privacy_accepted: true, status: 'new', created_by: session.user.id, attachment_path: attachmentPath
+                client_name: name,
+                full_name: name,
+                phone: phone,
+                email: email || null,
+                company: company || null,
+                service: service || null,
+                message: message || null,
+                privacy_accepted: true,
+                status: 'new',
+                created_by: session.user.id,
+                attachment_path: attachmentPath
             });
 
             if (error) throw error;
@@ -1674,11 +2046,13 @@
         } catch (err) {
             out.textContent = '❌ ' + err.message;
             out.style.color = '#dc3545';
-        } finally { btn.disabled = false; }
+        } finally {
+            btn.disabled = false;
+        }
     }
 
     // ============================================================
-    // 36. addEmployee
+    // 38. إضافة موظف (عبر Edge Function)
     // ============================================================
     async function addEmployee() {
         const name = document.getElementById('empName').value.trim();
@@ -1687,7 +2061,10 @@
         const role = document.getElementById('empRole').value;
         const status = document.getElementById('empStatus').value === 'true';
 
-        if (!name || !email || !password) { alert('يرجى ملء جميع الحقول.'); return; }
+        if (!name || !email || !password) {
+            alert('يرجى ملء جميع الحقول.');
+            return;
+        }
 
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) { alert('انتهت الجلسة.'); return; }
@@ -1695,24 +2072,30 @@
         try {
             const response = await fetch(`${SUPABASE_URL}/functions/v1/add-employee`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
                 body: JSON.stringify({ full_name: name, email, password, role, status })
             });
+
             const result = await response.json();
             if (response.ok) {
-                alert('✅ تم الإضافة!');
+                alert('✅ تم إضافة الموظف!');
                 await fetchEmployees();
                 document.getElementById('empName').value = '';
                 document.getElementById('empEmail').value = '';
                 document.getElementById('empPassword').value = '';
             } else {
-                alert('❌ ' + (result.error || 'خطأ'));
+                alert('❌ ' + (result.error || 'خطأ غير معروف'));
             }
-        } catch (err) { alert('❌ ' + err.message); }
+        } catch (err) {
+            alert('❌ ' + err.message);
+        }
     }
 
     // ============================================================
-    // 37. تشغيل
+    // 39. تشغيل التهيئة عند تحميل الصفحة
     // ============================================================
     document.addEventListener('DOMContentLoaded', initPage);
 
