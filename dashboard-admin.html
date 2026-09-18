@@ -683,126 +683,108 @@ else if (currentUser?.role === 'followup_staff') {
     let tasksHtml = '';
     
     if (myActiveTasks && myActiveTasks.length > 0) {
-        myActiveTasks.forEach((task) => {
-            const dueDate = task.next_followup ? new Date(task.next_followup).toLocaleDateString('ar-EG') : 'غير محدد';
-            const statusLabels = {
-                pending: { text: '⏳ بانتظار التنفيذ', color: '#ffc107' },
-                in_progress: { text: '🔄 قيد التنفيذ', color: '#17a2b8' },
-                completed: { text: '✅ تم التنفيذ', color: '#28a745' },
-                failed: { text: '❌ تعذر التنفيذ', color: '#dc3545' }
-            };
-            const status = statusLabels[task.followup_status] || { text: task.followup_status || 'غير محدد', color: '#6c757d' };
+myActiveTasks.forEach((task) => {
+    const dueDate = task.next_followup ? new Date(task.next_followup).toLocaleDateString('ar-EG') : 'غير محدد';
+    const statusLabels = {
+        pending: { text: '⏳ بانتظار التنفيذ', color: '#ffc107' },
+        in_progress: { text: '🔄 قيد التنفيذ', color: '#17a2b8' },
+        completed: { text: '✅ تم التنفيذ', color: '#28a745' },
+        failed: { text: '❌ تعذر التنفيذ', color: '#dc3545' }
+    };
+    const status = statusLabels[task.followup_status] || { text: task.followup_status || 'غير محدد', color: '#6c757d' };
 
-            // تحليل الإجراءات والمستندات المطلوبة
-            const actionText = task.action || '';
-            const actionParts = actionText.split('|');
-            const actionsList = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim() : '';
-            const docsList = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim() : '';
-            const actionsArray = actionsList ? actionsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
-            const docsArray = docsList ? docsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+    // تحليل الإجراءات والمستندات المطلوبة
+    const actionText = task.action || '';
+    const actionParts = actionText.split('|');
+    const actionsList = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim() : '';
+    const docsList = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim() : '';
+    const actionsArray = actionsList ? actionsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+    const docsArray = docsList ? docsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
 
-            // 🔴 استخراج العناصر المنجزة من notes
-            const doneActions = [];
-            const doneDocs = [];
-            if (task.notes && task.notes.includes('تم إنجاز:')) {
-                const parts = task.notes.split('—');
-                const aPart = parts[0] ? parts[0].replace('تم إنجاز:', '').trim() : '';
-                const dPart = parts[1] ? parts[1].replace('المستندات:', '').trim() : '';
-                if (aPart && aPart !== 'لا شيء') aPart.split(',').forEach(x => doneActions.push(x.trim()));
-                if (dPart && dPart !== 'لا شيء') dPart.split(',').forEach(x => doneDocs.push(x.trim()));
-            }
+    // 🔴 قراءة العناصر المنجزة من completed_items (JSONB)
+    const doneActions = task.completed_items?.actions || [];
+    const doneDocs = task.completed_items?.docs || [];
 
-            // 🔴 تحديد ما إذا كانت المهمة منتهية
-            const isFinished = task.followup_status === 'completed' || task.followup_status === 'failed';
+    const isFinished = task.followup_status === 'completed' || task.followup_status === 'failed';
+    const totalReq = actionsArray.length + docsArray.length;
+    const totalDone = doneActions.length + doneDocs.length;
+    const percent = totalReq > 0 ? Math.round((totalDone / totalReq) * 100) : 0;
 
-            // 🔴 حساب نسبة التقدم
-            const totalReq = actionsArray.length + docsArray.length;
-            const totalDone = doneActions.length + doneDocs.length;
-            const percent = totalReq > 0 ? Math.round((totalDone / totalReq) * 100) : 0;
+    tasksHtml += `
+        <div style="border: 1px solid #e9edf4; padding: 12px; border-radius: 8px; margin-bottom: 15px; background: #f8faff; border-right: 4px solid ${status.color};">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <strong style="color: #1a2a3a;">📋 مهمة #${task.id.slice(0, 8)}</strong>
+                <span style="background: ${status.color}; color: white; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">${status.text}</span>
+            </div>
 
-            tasksHtml += `
-                <div style="border: 1px solid #e9edf4; padding: 12px; border-radius: 8px; margin-bottom: 15px; background: #f8faff; border-right: 4px solid ${status.color};">
-                    <!-- رأس المهمة -->
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <strong style="color: #1a2a3a;">📋 مهمة #${task.id.slice(0, 8)}</strong>
-                        <span style="background: ${status.color}; color: white; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">${status.text}</span>
+            ${actionsArray.length > 0 ? `
+                <div style="margin-bottom: 10px;">
+                    <strong style="color: #333; font-size: 13px;">الإجراءات المطلوبة (${doneActions.length}/${actionsArray.length}):</strong>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
+                        ${actionsArray.map((act) => {
+                            const isDone = doneActions.includes(act);
+                            return `
+                                <label style="display: flex; align-items: center; gap: 5px; background: ${isDone ? '#e7f9ef' : 'white'}; padding: 6px 10px; border-radius: 6px; border: 1px solid ${isDone ? '#28a745' : '#dce1e8'}; font-size: 12px; ${isDone ? 'text-decoration: line-through; color: #28a745; font-weight: 600;' : ''}">
+                                    <input type="checkbox" class="employee-task-action" data-task-id="${task.id}" value="${act}" ${isDone ? 'checked disabled' : (isFinished ? 'disabled' : '')}>
+                                    ${isDone ? '✅' : ''} ${act}
+                                </label>
+                            `;
+                        }).join('')}
                     </div>
-
-                    <!-- الإجراءات المطلوبة -->
-                    ${actionsArray.length > 0 ? `
-                        <div style="margin-bottom: 10px;">
-                            <strong style="color: #333; font-size: 13px;">الإجراءات المطلوبة (${doneActions.length}/${actionsArray.length}):</strong>
-                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
-                                ${actionsArray.map((act) => {
-                                    const isDone = doneActions.includes(act);
-                                    return `
-                                        <label style="display: flex; align-items: center; gap: 5px; background: ${isDone ? '#e7f9ef' : 'white'}; padding: 6px 10px; border-radius: 6px; border: 1px solid ${isDone ? '#28a745' : '#dce1e8'}; font-size: 12px; ${isDone ? 'text-decoration: line-through; color: #28a745; font-weight: 600;' : ''}">
-                                            <input type="checkbox" class="employee-task-action" data-task-id="${task.id}" value="${act}" ${isDone ? 'checked disabled' : (isFinished ? 'disabled' : '')}>
-                                            ${isDone ? '✅' : ''} ${act}
-                                        </label>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    <!-- المستندات المطلوبة -->
-                    ${docsArray.length > 0 ? `
-                        <div style="margin-bottom: 10px;">
-                            <strong style="color: #333; font-size: 13px;">المستندات المطلوبة (${doneDocs.length}/${docsArray.length}):</strong>
-                            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
-                                ${docsArray.map((doc) => {
-                                    const isDone = doneDocs.includes(doc);
-                                    return `
-                                        <label style="display: flex; align-items: center; gap: 5px; background: ${isDone ? '#e7f9ef' : 'white'}; padding: 6px 10px; border-radius: 6px; border: 1px solid ${isDone ? '#28a745' : '#dce1e8'}; font-size: 12px; ${isDone ? 'text-decoration: line-through; color: #28a745; font-weight: 600;' : ''}">
-                                            <input type="checkbox" class="employee-task-doc" data-task-id="${task.id}" value="${doc}" ${isDone ? 'checked disabled' : (isFinished ? 'disabled' : '')}>
-                                            ${isDone ? '✅' : ''} ${doc}
-                                        </label>
-                                    `;
-                                }).join('')}
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    <!-- شريط التقدم -->
-                    ${(task.followup_status === 'in_progress' || task.followup_status === 'completed') && totalReq > 0 ? `
-                        <div style="margin-top: 10px;">
-                            <div style="display: flex; justify-content: space-between; font-size: 11px; color: #555; margin-bottom: 4px;">
-                                <span>نسبة الإنجاز</span>
-                                <span>${percent}%</span>
-                            </div>
-                            <div style="background: #f0f2f5; border-radius: 12px; height: 12px; overflow: hidden;">
-                                <div style="background: ${percent === 100 ? '#28a745' : '#2d7aff'}; height: 100%; width: ${percent}%; transition: width 0.3s;"></div>
-                            </div>
-                        </div>
-                    ` : ''}
-
-                    <!-- تعليمات المدير -->
-                    ${task.notes && !task.notes.includes('تم إنجاز:') ? `
-                        <div style="font-size: 12px; color: #555; margin-top: 8px; background: #fff9e6; padding: 8px; border-radius: 6px; border-right: 3px solid #ffc107;">
-                            <strong>📝 تعليمات المدير:</strong> ${task.notes}
-                        </div>
-                    ` : ''}
-
-                    <!-- موعد التنفيذ -->
-                    <div style="font-size: 12px; color: #555; margin-top: 8px;">
-                        <strong>📅 موعد التنفيذ:</strong> ${dueDate}
-                    </div>
-
-                    <!-- الأزرار أو رسالة الانتهاء -->
-                    ${!isFinished ? `
-                        <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                            <button class="btn-save-employee-tasks" data-id="${task.id}" style="background: #2d7aff; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">💾 حفظ حالة المهام</button>
-                            <button class="btn-fail-task" data-id="${task.id}" style="background: #dc3545; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">🔴 تعذر التنفيذ</button>
-                        </div>
-                    ` : `
-                        <div style="margin-top: 10px; padding: 8px; background: ${status.color}; color: white; border-radius: 6px; font-size: 12px; text-align: center; font-weight: 600;">
-                            ${task.followup_status === 'completed' ? '✅ المهمة مكتملة' : '❌ المهمة متعذرة'}
-                        </div>
-                    `}
                 </div>
-            `;
-        });
+            ` : ''}
+
+            ${docsArray.length > 0 ? `
+                <div style="margin-bottom: 10px;">
+                    <strong style="color: #333; font-size: 13px;">المستندات المطلوبة (${doneDocs.length}/${docsArray.length}):</strong>
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 5px;">
+                        ${docsArray.map((doc) => {
+                            const isDone = doneDocs.includes(doc);
+                            return `
+                                <label style="display: flex; align-items: center; gap: 5px; background: ${isDone ? '#e7f9ef' : 'white'}; padding: 6px 10px; border-radius: 6px; border: 1px solid ${isDone ? '#28a745' : '#dce1e8'}; font-size: 12px; ${isDone ? 'text-decoration: line-through; color: #28a745; font-weight: 600;' : ''}">
+                                    <input type="checkbox" class="employee-task-doc" data-task-id="${task.id}" value="${doc}" ${isDone ? 'checked disabled' : (isFinished ? 'disabled' : '')}>
+                                    ${isDone ? '✅' : ''} ${doc}
+                                </label>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            ` : ''}
+
+            ${(task.followup_status === 'in_progress' || task.followup_status === 'completed') && totalReq > 0 ? `
+                <div style="margin-top: 10px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #555; margin-bottom: 4px;">
+                        <span>نسبة الإنجاز</span><span>${percent}%</span>
+                    </div>
+                    <div style="background: #f0f2f5; border-radius: 12px; height: 12px; overflow: hidden;">
+                        <div style="background: ${percent === 100 ? '#28a745' : '#2d7aff'}; height: 100%; width: ${percent}%; transition: width 0.3s;"></div>
+                    </div>
+                </div>
+            ` : ''}
+
+            ${task.notes && !task.notes.includes('تم إنجاز:') ? `
+                <div style="font-size: 12px; color: #555; margin-top: 8px; background: #fff9e6; padding: 8px; border-radius: 6px; border-right: 3px solid #ffc107;">
+                    <strong>📝 تعليمات المدير:</strong> ${task.notes}
+                </div>
+            ` : ''}
+
+            <div style="font-size: 12px; color: #555; margin-top: 8px;">
+                <strong>📅 موعد التنفيذ:</strong> ${dueDate}
+            </div>
+
+            ${!isFinished ? `
+                <div style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <button class="btn-save-employee-tasks" data-id="${task.id}" style="background: #2d7aff; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">💾 حفظ حالة المهام</button>
+                    <button class="btn-fail-task" data-id="${task.id}" style="background: #dc3545; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; font-weight: 600;">🔴 تعذر التنفيذ</button>
+                </div>
+            ` : `
+                <div style="margin-top: 10px; padding: 8px; background: ${status.color}; color: white; border-radius: 6px; font-size: 12px; text-align: center; font-weight: 600;">
+                    ${task.followup_status === 'completed' ? '✅ المهمة مكتملة' : '❌ المهمة متعذرة'}
+                </div>
+            `}
+        </div>
+    `;
+});
     } else {
         tasksHtml = '<div class="message">✅ لا توجد مهام نشطة حالياً — كل شيء منجز.</div>';
     }
@@ -984,15 +966,13 @@ let followupsCard = '';
 const buildTaskLogItem = (f, editable) => {
     const date = f.followup_date ? new Date(f.followup_date).toLocaleString('ar-EG') : '—';
     const dueDate = f.next_followup ? new Date(f.next_followup).toLocaleDateString('ar-EG') : 'غير محدد';
-    
-    // اسم الموظف المنفذ
+
     let followerName = 'غير محدد';
     if (f.assigned_to) {
         const emp = allEmployees.find(e => e.id === f.assigned_to);
         if (emp) followerName = emp.full_name;
     }
 
-    // حالة المهمة
     const statusLabels = {
         pending: { text: '⏳ بانتظار التنفيذ', color: '#ffc107', bg: '#fff9e6' },
         in_progress: { text: '🔄 قيد التنفيذ', color: '#17a2b8', bg: '#e7f3ff' },
@@ -1001,46 +981,21 @@ const buildTaskLogItem = (f, editable) => {
     };
     const status = statusLabels[f.followup_status] || { text: f.followup_status || 'غير محدد', color: '#6c757d', bg: '#f0f2f5' };
 
-    // تحليل الإجراءات والمستندات
     const actionText = f.action || '';
     const actionParts = actionText.split('|');
     const actionsList = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim() : '';
     const docsList = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim() : '';
-    
     const actionsArray = actionsList ? actionsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
     const docsArray = docsList ? docsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
 
-    // تحليل ما تم إنجازه
-    let achievedHtml = '';
-    let notesHtml = '';
-    
-    if (f.notes) {
-        if (f.notes.includes('تم إنجاز:')) {
-            const parts = f.notes.split('—');
-            const achievedPart = parts[0] ? parts[0].replace('تم إنجاز:', '').trim() : '';
-            const docsPart = parts[1] ? parts[1].replace('المستندات:', '').trim() : '';
-            
-            achievedHtml = `
-                <div style="background: #e7f9ef; padding: 8px 10px; border-radius: 6px; margin-top: 8px; border-right: 3px solid #28a745;">
-                    <strong style="color: #28a745; font-size: 12px;">✅ ما تم إنجازه:</strong>
-                    <div style="font-size: 12px; color: #333; margin-top: 4px;">${achievedPart || 'لا شيء'}</div>
-                    ${docsPart ? `<div style="font-size: 12px; color: #333; margin-top: 4px;"><strong>📎 المستندات:</strong> ${docsPart}</div>` : ''}
-                </div>
-            `;
-        } else {
-            const notesColor = f.followup_status === 'failed' ? '#dc3545' : '#ffc107';
-            const notesBg = f.followup_status === 'failed' ? '#f8d7da' : '#fff9e6';
-            const notesLabel = f.followup_status === 'failed' ? '❌ سبب تعذر التنفيذ' : '📝 ملاحظات المدير';
-            notesHtml = `
-                <div style="background: ${notesBg}; padding: 8px 10px; border-radius: 6px; margin-top: 8px; border-right: 3px solid ${notesColor};">
-                    <strong style="color: ${notesColor}; font-size: 12px;">${notesLabel}:</strong>
-                    <div style="font-size: 12px; color: #333; margin-top: 4px;">${f.notes}</div>
-                </div>
-            `;
-        }
-    }
+    // 🔴 قراءة العناصر المنجزة من completed_items (JSONB)
+    const doneActions = f.completed_items?.actions || [];
+    const doneDocs = f.completed_items?.docs || [];
 
-    // أزرار التحديث (للموظف أو السكرتير فقط)
+    const totalReq = actionsArray.length + docsArray.length;
+    const totalDone = doneActions.length + doneDocs.length;
+    const percent = totalReq > 0 ? Math.round((totalDone / totalReq) * 100) : 0;
+
     let actionButtons = '';
     if (editable && (f.followup_status === 'pending' || f.followup_status === 'in_progress')) {
         actionButtons = `
@@ -1057,10 +1012,8 @@ const buildTaskLogItem = (f, editable) => {
                 <strong style="color: #1a2a3a; font-size: 13px;">📋 مهمة #${(f.id || '').slice(0, 8)}</strong>
                 <span style="background: ${status.color}; color: white; padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600;">${status.text}</span>
             </div>
-            
             <div style="font-size: 12px; color: #555; margin-bottom: 8px;">
-                <strong>👤 الموظف:</strong> ${followerName} | 
-                <strong>📅 تاريخ الإنشاء:</strong> ${date}
+                <strong>👤 الموظف:</strong> ${followerName} | <strong>📅 تاريخ الإنشاء:</strong> ${date}
             </div>
             <div style="font-size: 12px; color: #555; margin-bottom: 8px;">
                 <strong>⏰ موعد التنفيذ:</strong> ${dueDate}
@@ -1068,29 +1021,55 @@ const buildTaskLogItem = (f, editable) => {
 
             ${actionsArray.length > 0 ? `
                 <div style="margin-bottom: 6px;">
-                    <strong style="color: #333; font-size: 12px;">📌 الإجراءات المطلوبة:</strong>
+                    <strong style="color: #333; font-size: 12px;">📌 الإجراءات (${doneActions.length}/${actionsArray.length}):</strong>
                     <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                        ${actionsArray.map(a => `<span style="background: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; border: 1px solid #dce1e8;">${a}</span>`).join('')}
+                        ${actionsArray.map(a => {
+                            const isDone = doneActions.includes(a);
+                            return `<span style="background: ${isDone ? '#e7f9ef' : 'white'}; padding: 3px 8px; border-radius: 10px; font-size: 11px; border: 1px solid ${isDone ? '#28a745' : '#dce1e8'}; color: ${isDone ? '#28a745' : '#333'}; ${isDone ? 'text-decoration: line-through; font-weight: 600;' : ''}">${isDone ? '✅ ' : ''}${a}</span>`;
+                        }).join('')}
                     </div>
                 </div>
             ` : ''}
 
             ${docsArray.length > 0 ? `
                 <div style="margin-bottom: 6px;">
-                    <strong style="color: #333; font-size: 12px;">📎 المستندات المطلوبة:</strong>
+                    <strong style="color: #333; font-size: 12px;">📎 المستندات (${doneDocs.length}/${docsArray.length}):</strong>
                     <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px;">
-                        ${docsArray.map(d => `<span style="background: white; padding: 3px 8px; border-radius: 10px; font-size: 11px; border: 1px solid #dce1e8;">${d}</span>`).join('')}
+                        ${docsArray.map(d => {
+                            const isDone = doneDocs.includes(d);
+                            return `<span style="background: ${isDone ? '#e7f9ef' : 'white'}; padding: 3px 8px; border-radius: 10px; font-size: 11px; border: 1px solid ${isDone ? '#28a745' : '#dce1e8'}; color: ${isDone ? '#28a745' : '#333'}; ${isDone ? 'text-decoration: line-through; font-weight: 600;' : ''}">${isDone ? '✅ ' : ''}${d}</span>`;
+                        }).join('')}
                     </div>
                 </div>
             ` : ''}
 
-            ${achievedHtml}
-            ${notesHtml}
+            ${(f.followup_status === 'in_progress' || f.followup_status === 'completed') && totalReq > 0 ? `
+                <div style="margin-top: 8px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 11px; color: #555; margin-bottom: 4px;">
+                        <span>نسبة الإنجاز</span><span>${percent}%</span>
+                    </div>
+                    <div style="background: #f0f2f5; border-radius: 12px; height: 8px; overflow: hidden;">
+                        <div style="background: ${percent === 100 ? '#28a745' : '#2d7aff'}; height: 100%; width: ${percent}%;"></div>
+                    </div>
+                </div>
+            ` : ''}
+
+            ${f.notes && !f.notes.includes('تم إنجاز:') && f.followup_status !== 'failed' ? `
+                <div style="font-size: 12px; color: #555; margin-top: 8px; background: #fff9e6; padding: 8px; border-radius: 6px; border-right: 3px solid #ffc107;">
+                    <strong>📝 تعليمات المدير:</strong> ${f.notes}
+                </div>
+            ` : ''}
+
+            ${f.followup_status === 'failed' && f.notes ? `
+                <div style="font-size: 12px; color: #555; margin-top: 8px; background: #f8d7da; padding: 8px; border-radius: 6px; border-right: 3px solid #dc3545;">
+                    <strong>❌ سبب تعذر التنفيذ:</strong> ${f.notes}
+                </div>
+            ` : ''}
+
             ${actionButtons}
         </div>
     `;
 };
-
 if (currentUser?.role === 'manager') {
     // 🟢 المدير: يرى كل المهام (الأصلية + الإضافية)
     const allTasks = (followups || []).filter(f => !f.is_attachment_only);
@@ -1385,7 +1364,12 @@ document.querySelectorAll('.btn-fail-task-inline').forEach(btn => {
                     });
                 }
 // 🔴 زر حفظ حالة المهام (للموظف)
-document.querySelectorAll('.btn-save-employee-tasks').forEach(btn => {
+
+				// 🔴 زر تعذر التنفيذ (للموظف)
+document.querySelectorAll('.btn-fail-task').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const taskId = this.dataset.id;
+        document.querySelectorAll('.btn-save-employee-tasks').forEach(btn => {
     btn.addEventListener('click', async function() {
         const taskId = this.dataset.id;
 
@@ -1403,7 +1387,7 @@ document.querySelectorAll('.btn-save-employee-tasks').forEach(btn => {
         // جلب المهمة الحالية
         const { data: currentTask } = await supabase
             .from('client_followups')
-            .select('notes, action')
+            .select('notes, action, completed_items')
             .eq('id', taskId)
             .single();
 
@@ -1412,41 +1396,49 @@ document.querySelectorAll('.btn-save-employee-tasks').forEach(btn => {
         const allActions = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
         const allDocs = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
 
-        const managerNotes = currentTask?.notes && !currentTask.notes.includes('تم إنجاز:') 
+        // 🔴 تخزين العناصر المنجزة في عمود completed_items (JSONB)
+        const completedItems = {
+            actions: checkedActions,
+            docs: checkedDocs
+        };
+
+        // 🔴 الحفاظ على ملاحظات المدير الأصلية (إن وجدت)
+        const originalNotes = currentTask?.notes && !currentTask.notes.includes('تم إنجاز:') 
             ? currentTask.notes 
-            : '';
+            : (currentTask?.notes?.split('تم إنجاز:')[0].trim() || '');
 
-        const progressNotes = managerNotes 
-            ? `${managerNotes}\n\nتم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`
-            : `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
+        // 🔴 تحديث notes بملخص ما تم إنجازه (للعرض)
+        const progressSummary = `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
+        const finalNotes = originalNotes ? `${originalNotes}\n\n${progressSummary}` : progressSummary;
 
-        // 🔴 تحديد الحالة بدقة
+        // 🔴 تحديد الحالة
         const totalRequired = allActions.length + allDocs.length;
         const totalDone = checkedActions.length + checkedDocs.length;
         const isComplete = totalRequired > 0 && totalDone >= totalRequired;
+        const newStatus = isComplete ? 'completed' : 'in_progress';
 
+        // 🔴 التحديث: notes + completed_items + followup_status
         const { error } = await supabase
             .from('client_followups')
             .update({ 
-                notes: progressNotes,
-                followup_status: isComplete ? 'completed' : 'in_progress'
+                notes: finalNotes,
+                completed_items: completedItems,
+                followup_status: newStatus
             })
             .eq('id', taskId);
 
         if (error) {
-            alert('❌ فشل حفظ الحالة: ' + error.message);
+            alert('❌ فشل الحفظ: ' + error.message);
         } else {
-            alert(isComplete ? '✅ اكتملت المهمة! تم تحويل حالتها إلى "تم التنفيذ".' : '✅ تم حفظ التقدم. المهمة الآن "قيد التنفيذ".');
+            alert(isComplete 
+                ? '✅ اكتملت المهمة! تم تحويل حالتها إلى "تم التنفيذ".' 
+                : `✅ تم حفظ التقدم (${totalDone}/${totalRequired}). المهمة الآن "قيد التنفيذ".`);
             openPreview(consultationId);
         }
     });
 });
-				// 🔴 زر تعذر التنفيذ (للموظف)
-document.querySelectorAll('.btn-fail-task').forEach(btn => {
-    btn.addEventListener('click', async function() {
-        const taskId = this.dataset.id;
-        
-        // 🔴 إنشاء Modal داخلي
+       
+		// 🔴 إنشاء Modal داخلي
         const modalHtml = `
             <div id="failTaskModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; justify-content: center; align-items: center;">
                 <div style="background: white; border-radius: 12px; padding: 25px; width: 400px; max-width: 90%;">
