@@ -800,11 +800,26 @@ myActiveTasks.forEach((task) => {
                     ${task.followup_status === 'completed' ? '✅ المهمة مكتملة' : '❌ المهمة متعذرة'}
                 </div>
             `}
+            </div>
+    `;
+    });
+    } else {
+        tasksHtml = '<div class="message">✅ لا توجد مهام نشطة حالياً — كل شيء منجز.</div>';
+    }
+
+    tasksCard = `
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h3><span class="icon-circle">🔔</span> المهام المسندة إليّ</h3>
+            </div>
+            <div class="dashboard-card-body">
+                ${tasksHtml}
+            </div>
         </div>
     `;
-});
+}
 else if (currentUser?.role === 'secretary') {
-    // 🟢 للسكرتير: قسمان
+	// 🟢 للسكرتير: قسمان
     // 1) المهام المسندة إليه (مع إمكانية التحديث)
     // 2) المهام المسندة للموظف (للاطلاع فقط)
 
