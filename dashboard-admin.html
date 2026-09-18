@@ -152,8 +152,12 @@
 </div>       
 	   <h2>📋 قائمة الطلبات</h2>
         <div class="filters" id="filterContainer">
-            <label>📅 من:</label><input type="date" id="filterDateFrom">
-            <label>إلى:</label><input type="date" id="filterDateTo">
+               <label>🔍 اسم العميل:</label>
+    <input type="text" id="filterClientName" placeholder="ابحث باسم العميل...">
+    
+    <label>📅 من:</label><input type="date" id="filterDateFrom">
+
+			<label>إلى:</label><input type="date" id="filterDateTo">
             <label>📌 الخدمة:</label>
             <select id="filterService">
                 <option value="">الكل</option>
@@ -2728,27 +2732,32 @@ async function loadOverdueTasks() {
             filterSelect.value = currentValue;
         }
 
-        function applyFilters() {
-            const dateFrom = document.getElementById('filterDateFrom')?.value || '';
-            const dateTo = document.getElementById('filterDateTo')?.value || '';
-            const service = document.getElementById('filterService')?.value || '';
+function applyFilters() {
+    const dateFrom = document.getElementById('filterDateFrom')?.value || '';
+    const dateTo = document.getElementById('filterDateTo')?.value || '';
+    const service = document.getElementById('filterService')?.value || '';
+    const clientName = document.getElementById('filterClientName')?.value.trim().toLowerCase() || '';
 
-            let filtered = [...allConsultations];
+    let filtered = [...allConsultations];
 
-            if (dateFrom) {
-                const from = new Date(dateFrom); from.setHours(0,0,0,0);
-                filtered = filtered.filter(item => item.created_at && new Date(item.created_at) >= from);
-            }
-            if (dateTo) {
-                const to = new Date(dateTo); to.setHours(23,59,59,999);
-                filtered = filtered.filter(item => item.created_at && new Date(item.created_at) <= to);
-            }
-            if (service) filtered = filtered.filter(item => item.service === service);
+    if (dateFrom) {
+        const from = new Date(dateFrom); from.setHours(0,0,0,0);
+        filtered = filtered.filter(item => item.created_at && new Date(item.created_at) >= from);
+    }
+    if (dateTo) {
+        const to = new Date(dateTo); to.setHours(23,59,59,999);
+        filtered = filtered.filter(item => item.created_at && new Date(item.created_at) <= to);
+    }
+    if (service) filtered = filtered.filter(item => item.service === service);
+    if (clientName) {
+        filtered = filtered.filter(item => 
+            (item.client_name || '').toLowerCase().includes(clientName)
+        );
+    }
 
-            currentFilteredData = filtered;
-            renderConsultations(filtered, allEmployees);
-        }
-
+    currentFilteredData = filtered;
+    renderConsultations(filtered, allEmployees);
+}
         function showSection(sectionId) {
             document.querySelectorAll('.section').forEach(el => el.classList.remove('active'));
             const target = document.getElementById(sectionId);
@@ -2830,13 +2839,15 @@ async function loadOverdueTasks() {
             document.getElementById('btnLogout').addEventListener('click', handleLogout);
 
             document.getElementById('btnApplyFilters').addEventListener('click', applyFilters);
-            document.getElementById('btnResetFilters').addEventListener('click', function() {
-                document.getElementById('filterDateFrom').value = '';
-                document.getElementById('filterDateTo').value = '';
-                document.getElementById('filterService').value = '';
-                applyFilters();
-            });
-
+			// 🔴 البحث الفوري عن اسم العميل
+document.getElementById('filterClientName').addEventListener('input', applyFilters);
+document.getElementById('btnResetFilters').addEventListener('click', function() {
+    document.getElementById('filterDateFrom').value = '';
+    document.getElementById('filterDateTo').value = '';
+    document.getElementById('filterService').value = '';
+    document.getElementById('filterClientName').value = '';
+    applyFilters();
+});
             document.getElementById('btnAddEmployee').addEventListener('click', addEmployee);
             document.getElementById('btnAddManualConsultation').addEventListener('click', addManualConsultation);
 
