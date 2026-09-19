@@ -1198,8 +1198,275 @@ else if (currentUser?.role === 'followup_staff') {
                 `;
 
 body.innerHTML = `<div class="dashboard-container">${customerCard}${tasksCard}${initialCard}${followupsCard}${attachmentsCard}${addFollowupCard}</div>`;
-// 🔴 ربط أزرار تحديث المهام (للموظف أو السكرتير) داخل سجل المتابعة
+// ============================================================
+// 🔴 ربط أزرار المهام بعد عرض المحتوى
+// ============================================================
+
+// 1. زر حفظ حالة المهام (للموظف والسكرتير)
+document.querySelectorAll('.btn-save-employee-tasks').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const taskId = this.dataset.id;
+
+        const checkedActions = [];
+        const checkedDocs = [];
+        document.querySelectorAll(`.employee-task-action[data-task-id="${taskId}"]:checked`).forEach(cb => checkedActions.push(cb.value));
+        document.querySelectorAll(`.employee-task-doc[data-task-id="${taskId}"]:checked`).forEach(cb => checkedDocs.push(cb.value));
+
+        if (checkedActions.length === 0 && checkedDocs.length === 0) {
+            alert('يرجى تحديد عنصر واحد على الأقل قبل الحفظ.');
+            return;
+        }
+
+        const { data: currentTask } = await supabase
+            .from('client_followups')
+            .select('notes, action, completed_items')
+            .eq('id', taskId)
+            .single();
+
+        const actionParts = (currentTask?.action || '').split('|');
+        const allActions = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+        const allDocs = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+
+        const completedItems = {
+            actions: checkedActions,
+            docs: checkedDocs
+        };
+
+        const originalNotes = currentTask?.notes && !currentTask.notes.includes('تم إنجاز:') 
+            ? currentTask.notes 
+            : (currentTask?.notes?.split('تم إنجاز:')[0].trim() || '');
+
+        const progressSummary = `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
+        const finalNotes = originalNotes ? `${originalNotes}\n\n${progressSummary}` : progressSummary;
+
+        const totalRequired = allActions.length + allDocs.length;
+        const totalDone = checkedActions.length + checkedDocs.length;
+        const isComplete = totalRequired > 0 && totalDone >= totalRequired;
+        const newStatus = isComplete ? 'completed' : 'in_progress';
+
+        const { error } = await supabase
+            .from('client_followups')
+            .update({ 
+                notes: finalNotes,
+                completed_items: completedItems,
+                followup_status: newStatus
+            })
+            .eq('id', taskId);
+
+        if (error) {
+            alert('❌ فشل الحفظ: ' + error.message);
+        } else {
+            alert(isComplete 
+                ? '✅ اكتملت المهمة! تم تحويل حالتها إلى "تم التنفيذ".' 
+                : `✅ تم حفظ التقدم (${totalDone}/${totalRequired}). المهمة الآن "قيد التنفيذ".`);
+            openPreview(consultationId);
+        }
+    });
+});
+
+// 2. زر تعذر التنفيذ (للموظف)
+document.querySelectorAll('.btn-fail-task').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const taskId = this.dataset.id;
+        
+        const modalHtml = `
+            <div id="failTaskModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; justify-content: center; align-items: center;">
+                <div style="background: white; border-radius: 12px; padding: 25px; width: 400px; max-width: 90%;">
+                    <h3 style="color: #1a2a3a; margin-bottom: 15px;">🔴 سبب تعذر التنفيذ</h3>
+                    <textarea id="failReasonInput" rows="4" style="width: 100%; padding: 10px; border: 1px solid #dce1e8; border-radius: 8px; font-family: inherit;" placeholder="اكتب سبب تعذر التنفيذ هنا..."></textarea>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button id="failReasonSave" style="flex: 1; background: #dc3545; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">حفظ</button>
+                        <button id="failReasonCancel" style="flex: 1; background: #6c757d; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        document.getElementById('failReasonSave').addEventListener('click', async function() {
+            const reason = document.getElementById('failReasonInput').value.trim();
+            if (!reason) {
+                alert('يرجى إدخال سبب تعذر التنفيذ.');
+                return;
+            }
+
+            const { error } = await supabase
+                .from('client_followups')
+                .update({ followup_status: 'failed', notes: reason })
+                .eq('id', taskId);
+
+            document.getElementById('failTaskModal').remove();
+
+            if (error) {
+                alert('❌ فشل تحديث الحالة: ' + error.message);
+            } else {
+                alert('✅ تم تسجيل تعذر التنفيذ.');
+                openPreview(consultationId);
+            }
+        });
+
+        document.getElementById('failReasonCancel').addEventListener('click', function() {
+            document.getElementById('failTaskModal').remove();
+        });
+    });
+});
+
+// 3. زر تحديث المهمة (للكارت الأيسر)
 document.querySelectorAll('.btn-update-task').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const taskId = this.dataset.id;
+        
+        const { data: task } = await supabase.from('client_followups').select('*').eq('id', taskId).single();
+        if (!task) { alert('❌ لم يتم العثور على المهمة.'); return; }
+
+        const actionText = task.action || '';
+        const actionParts = actionText.split('|');
+        const actionsList = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim() : '';
+        const docsList = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim() : '';
+        const actionsArray = actionsList ? actionsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+        const docsArray = docsList ? docsList.split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+
+        const doneActions = task.completed_items?.actions || [];
+        const doneDocs = task.completed_items?.docs || [];
+
+        const modalHtml = `
+            <div id="updateTaskModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 9999; display: flex; justify-content: center; align-items: center; padding: 20px;">
+                <div style="background: white; border-radius: 16px; padding: 25px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto;">
+                    <h3 style="color: #1a2a3a; margin-bottom: 15px; border-bottom: 2px solid #2d7aff; padding-bottom: 10px;">✏️ تحديث المهمة</h3>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #333;">الإجراءات:</strong>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
+                            ${actionsArray.map(act => `
+                                <label style="display: flex; align-items: center; gap: 5px; background: ${doneActions.includes(act) ? '#e7f9ef' : '#f0f4ff'}; padding: 6px 10px; border-radius: 6px; font-size: 13px;">
+                                    <input type="checkbox" class="update-action-checkbox" value="${act}" ${doneActions.includes(act) ? 'checked' : ''}> ${act}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #333;">المستندات:</strong>
+                        <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px;">
+                            ${docsArray.map(doc => `
+                                <label style="display: flex; align-items: center; gap: 5px; background: ${doneDocs.includes(doc) ? '#e7f9ef' : '#f0f4ff'}; padding: 6px 10px; border-radius: 6px; font-size: 13px;">
+                                    <input type="checkbox" class="update-doc-checkbox" value="${doc}" ${doneDocs.includes(doc) ? 'checked' : ''}> ${doc}
+                                </label>
+                            `).join('')}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        <button id="saveTaskUpdate" style="flex: 1; background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">💾 حفظ</button>
+                        <button id="cancelTaskUpdate" style="flex: 1; background: #6c757d; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: 600;">إلغاء</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        document.getElementById('saveTaskUpdate').addEventListener('click', async function() {
+            const checkedActions = [];
+            const checkedDocs = [];
+            document.querySelectorAll('.update-action-checkbox:checked').forEach(cb => checkedActions.push(cb.value));
+            document.querySelectorAll('.update-doc-checkbox:checked').forEach(cb => checkedDocs.push(cb.value));
+
+            if (checkedActions.length === 0 && checkedDocs.length === 0) {
+                alert('يرجى تحديد عنصر.');
+                return;
+            }
+
+            const originalNotes = task.notes && !task.notes.includes('تم إنجاز:') ? task.notes : '';
+            const progressSummary = `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
+            const finalNotes = originalNotes ? `${originalNotes}\n\n${progressSummary}` : progressSummary;
+
+            const totalRequired = actionsArray.length + docsArray.length;
+            const totalDone = checkedActions.length + checkedDocs.length;
+            const isComplete = totalRequired > 0 && totalDone >= totalRequired;
+
+            const { error } = await supabase.from('client_followups').update({
+                notes: finalNotes,
+                completed_items: { actions: checkedActions, docs: checkedDocs },
+                followup_status: isComplete ? 'completed' : 'in_progress'
+            }).eq('id', taskId);
+
+            document.getElementById('updateTaskModal').remove();
+
+            if (error) alert('❌ فشل الحفظ: ' + error.message);
+            else { alert('✅ تم الحفظ!'); openPreview(consultationId); }
+        });
+
+        document.getElementById('cancelTaskUpdate').addEventListener('click', function() {
+            document.getElementById('updateTaskModal').remove();
+        });
+    });
+});
+
+// 4. زر تعذر التنفيذ (للكارت الأيسر)
+document.querySelectorAll('.btn-fail-task-inline').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const taskId = this.dataset.id;
+        const reason = prompt('يرجى إدخال سبب تعذر التنفيذ:');
+        if (!reason) return;
+
+        const { error } = await supabase
+            .from('client_followups')
+            .update({ followup_status: 'failed', notes: reason })
+            .eq('id', taskId);
+
+        if (error) alert('❌ ' + error.message);
+        else { alert('✅ تم التسجيل'); openPreview(consultationId); }
+    });
+});
+
+// 5. زر إضافة مرفق
+document.getElementById('btnAddFollowupAttachment')?.addEventListener('click', async function() {
+    const consId = this.dataset.id;
+    const file = document.getElementById('newFollowupAttachment').files[0];
+    if (!file) { alert('يرجى اختيار ملف.'); return; }
+
+    const filePath = `${Date.now()}_${file.name}`;
+    const { error: uploadError } = await supabase.storage.from('consultation-files').upload(filePath, file);
+    if (uploadError) { alert('❌ ' + uploadError.message); return; }
+
+    const { data: urlData } = supabase.storage.from('consultation-files').getPublicUrl(filePath);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const { error } = await supabase.from('client_followups').insert({
+        request_id: consId, notes: '', followup_status: 'new', created_by: user?.id,
+        contact_method: 'other', action: '', followup_date: new Date().toISOString(),
+        attachment_path: urlData.publicUrl, is_attachment_only: true
+    });
+
+    if (error) alert('❌ ' + error.message);
+    else { alert('✅ تم الإضافة!'); openPreview(consultationId); }
+});
+
+// 6. زر إضافة متابعة
+document.getElementById('btnAddFollowup')?.addEventListener('click', async function() {
+    const consId = this.dataset.id;
+    const note = document.getElementById('newFollowupNote').value.trim();
+    const status = document.getElementById('newFollowupStatus').value.trim() || null;
+    if (!note) { alert('يرجى كتابة ملاحظة.'); return; }
+
+    const { data: { user } } = await supabase.auth.getUser();
+    const { error } = await supabase.from('client_followups').insert({
+        request_id: consId, notes: note, followup_status: status, created_by: user?.id,
+        contact_method: 'other', action: 'متابعة', followup_date: new Date().toISOString()
+    });
+
+    if (error) alert('❌ ' + error.message);
+    else { alert('✅ تم الإضافة!'); openPreview(consultationId); }
+});
+
+// 7. زر حذف المرفق
+document.querySelectorAll('.btn-delete-attachment').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const attachmentId = this.dataset.id;
+        if (!confirm('حذف المرفق؟')) return;
+        const { error } = await supabase.from('client_followups').delete().eq('id', attachmentId);
+        if (error) alert('❌ ' + error.message);
+        else { alert('✅ تم الحذف!'); openPreview(consultationId); }
+    });
+});
+				document.querySelectorAll('.btn-update-task').forEach(btn => {
     btn.addEventListener('click', async function() {
         const taskId = this.dataset.id;
         
@@ -1369,375 +1636,6 @@ document.querySelectorAll('.btn-fail-task-inline').forEach(btn => {
 document.querySelectorAll('.btn-fail-task').forEach(btn => {
     btn.addEventListener('click', async function() {
         const taskId = this.dataset.id;
-        document.querySelectorAll('.btn-save-employee-tasks').forEach(btn => {
-    btn.addEventListener('click', async function() {
-        const taskId = this.dataset.id;
-
-        // جمع العناصر المحددة
-        const checkedActions = [];
-        const checkedDocs = [];
-        document.querySelectorAll(`.employee-task-action[data-task-id="${taskId}"]:checked`).forEach(cb => checkedActions.push(cb.value));
-        document.querySelectorAll(`.employee-task-doc[data-task-id="${taskId}"]:checked`).forEach(cb => checkedDocs.push(cb.value));
-
-        if (checkedActions.length === 0 && checkedDocs.length === 0) {
-            alert('يرجى تحديد عنصر واحد على الأقل قبل الحفظ.');
-            return;
-        }
-
-        // جلب المهمة الحالية
-        const { data: currentTask } = await supabase
-            .from('client_followups')
-            .select('notes, action, completed_items')
-            .eq('id', taskId)
-            .single();
-
-        // استخراج كل المتطلبات لحساب الاكتمال
-        const actionParts = (currentTask?.action || '').split('|');
-        const allActions = actionParts[0] ? actionParts[0].replace('الإجراءات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
-        const allDocs = actionParts[1] ? actionParts[1].replace('المستندات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
-
-        // 🔴 تخزين العناصر المنجزة في عمود completed_items (JSONB)
-        const completedItems = {
-            actions: checkedActions,
-            docs: checkedDocs
-        };
-
-        // 🔴 الحفاظ على ملاحظات المدير الأصلية (إن وجدت)
-        const originalNotes = currentTask?.notes && !currentTask.notes.includes('تم إنجاز:') 
-            ? currentTask.notes 
-            : (currentTask?.notes?.split('تم إنجاز:')[0].trim() || '');
-
-        // 🔴 تحديث notes بملخص ما تم إنجازه (للعرض)
-        const progressSummary = `تم إنجاز: ${checkedActions.join(', ') || 'لا شيء'} — المستندات: ${checkedDocs.join(', ') || 'لا شيء'}`;
-        const finalNotes = originalNotes ? `${originalNotes}\n\n${progressSummary}` : progressSummary;
-
-        // 🔴 تحديد الحالة
-        const totalRequired = allActions.length + allDocs.length;
-        const totalDone = checkedActions.length + checkedDocs.length;
-        const isComplete = totalRequired > 0 && totalDone >= totalRequired;
-        const newStatus = isComplete ? 'completed' : 'in_progress';
-
-        // 🔴 التحديث: notes + completed_items + followup_status
-        const { error } = await supabase
-            .from('client_followups')
-            .update({ 
-                notes: finalNotes,
-                completed_items: completedItems,
-                followup_status: newStatus
-            })
-            .eq('id', taskId);
-
-        if (error) {
-            alert('❌ فشل الحفظ: ' + error.message);
-        } else {
-            alert(isComplete 
-                ? '✅ اكتملت المهمة! تم تحويل حالتها إلى "تم التنفيذ".' 
-                : `✅ تم حفظ التقدم (${totalDone}/${totalRequired}). المهمة الآن "قيد التنفيذ".`);
-            openPreview(consultationId);
-        }
-    });
-});
-       
-		// 🔴 إنشاء Modal داخلي
-        const modalHtml = `
-            <div id="failTaskModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; justify-content: center; align-items: center;">
-                <div style="background: white; border-radius: 12px; padding: 25px; width: 400px; max-width: 90%;">
-                    <h3 style="color: #1a2a3a; margin-bottom: 15px;">🔴 سبب تعذر التنفيذ</h3>
-                    <textarea id="failReasonInput" rows="4" style="width: 100%; padding: 10px; border: 1px solid #dce1e8; border-radius: 8px; font-family: inherit;" placeholder="اكتب سبب تعذر التنفيذ هنا..."></textarea>
-                    <div style="display: flex; gap: 10px; margin-top: 15px;">
-                        <button id="failReasonSave" style="flex: 1; background: #dc3545; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">حفظ</button>
-                        <button id="failReasonCancel" style="flex: 1; background: #6c757d; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600;">إلغاء</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHtml);
-
-        // زر الحفظ
-        document.getElementById('failReasonSave').addEventListener('click', async function() {
-            const reason = document.getElementById('failReasonInput').value.trim();
-            if (!reason) {
-                alert('يرجى إدخال سبب تعذر التنفيذ.');
-                return;
-            }
-
-            const { error } = await supabase
-                .from('client_followups')
-                .update({ followup_status: 'failed', notes: reason })
-                .eq('id', taskId);
-
-            document.getElementById('failTaskModal').remove();
-
-            if (error) {
-                alert('❌ فشل تحديث الحالة: ' + error.message);
-            } else {
-                alert('✅ تم تسجيل تعذر التنفيذ.');
-                openPreview(consultationId);
-            }
-        });
-
-        // زر الإلغاء
-        document.getElementById('failReasonCancel').addEventListener('click', function() {
-            document.getElementById('failTaskModal').remove();
-        });
-    });
-});
-				document.getElementById('btnAddFollowupAttachment')?.addEventListener('click', async function() {
-                    const consId = this.dataset.id;
-                    const file = document.getElementById('newFollowupAttachment').files[0];
-                    if (!file) {
-                        alert('يرجى اختيار ملف أولاً');
-                        return;
-                    }
-                    const filePath = `${Date.now()}_${file.name}`;
-                    const { error: uploadError } = await supabase.storage.from('consultation-files').upload(filePath, file);
-                    if (uploadError) {
-                        alert('❌ فشل رفع المرفق: ' + uploadError.message);
-                        return;
-                    }
-                    const { data: urlData } = supabase.storage.from('consultation-files').getPublicUrl(filePath);
-                    const attachmentUrl = urlData.publicUrl;
-                    const { data: { user } } = await supabase.auth.getUser();
-                    const { error } = await supabase.from('client_followups').insert({
-                        request_id: consId,
-                        notes: '',
-                        followup_status: 'new',
-                        created_by: user?.id,
-                        contact_method: 'other',
-                        action: '',
-                        followup_date: new Date().toISOString(),
-                        attachment_path: attachmentUrl,
-                        is_attachment_only: true
-                    });
-                    if (error) {
-                        alert('❌ فشل إضافة المرفق: ' + error.message);
-                    } else {
-                        alert('✅ تم إضافة المرفق بنجاح!');
-                        openPreview(consId);
-                    }
-                });
-
-                document.getElementById('btnAddFollowup')?.addEventListener('click', async function() {
-                    const consId = this.dataset.id;
-                    const note = document.getElementById('newFollowupNote').value.trim();
-                    const status = document.getElementById('newFollowupStatus').value.trim() || null;
-                    if (!note) {
-                        alert('يرجى كتابة ملاحظة المتابعة');
-                        return;
-                    }
-                    const { data: { user } } = await supabase.auth.getUser();
-                    const { error } = await supabase.from('client_followups').insert({
-                        request_id: consId,
-                        notes: note,
-                        followup_status: status,
-                        created_by: user?.id,
-                        contact_method: 'other',
-                        action: 'متابعة',
-                        followup_date: new Date().toISOString()
-                    });
-                    if (error) {
-                        alert('❌ فشل إضافة المتابعة: ' + error.message);
-                    } else {
-                        alert('✅ تم إضافة المتابعة بنجاح!');
-                        openPreview(consId);
-                    }
-                });
-	// 🔴 ربط زر إنشاء المتابعة وتكليف الموظف (للمدير فقط)
-document.getElementById('btnCreateTask')?.addEventListener('click', async function() {
-    const assigneeId = document.getElementById('assigneeSelect').value;
-    const dueDate = document.getElementById('followupDueDate').value;
-    const notes = document.getElementById('managerNotes').value.trim();
-
-    if (!assigneeId) {
-        alert('يرجى اختيار الموظف المكلف.');
-        return;
-    }
-
-    const selectedActions = [];
-    const selectedDocs = [];
-    document.querySelectorAll('.task-action-checkbox:checked').forEach(cb => selectedActions.push(cb.value));
-    document.querySelectorAll('.task-doc-checkbox:checked').forEach(cb => selectedDocs.push(cb.value));
-
-    if (selectedActions.length === 0 && selectedDocs.length === 0) {
-        alert('يرجى تحديد الإجراءات أو المستندات المطلوبة.');
-        return;
-    }
-
-    // 🔴 التحقق من وجود مهمة سابقة لنفس الطلب ونفس الموظف
-    const { data: existingTasks, error: checkError } = await supabase
-        .from('client_followups')
-        .select('id, action, followup_status')
-        .eq('request_id', consultationId)
-        .eq('assigned_to', assigneeId)
-        .eq('is_attachment_only', false)
-        .in('followup_status', ['pending', 'in_progress']);
-
-    if (checkError) console.warn('خطأ في فحص المهام السابقة:', checkError);
-
-    const actionText = `الإجراءات: ${selectedActions.join(', ') || 'لا يوجد'} | المستندات: ${selectedDocs.join(', ') || 'لا يوجد'}`;
-    const taskData = {
-        request_id: consultationId,
-        followup_date: new Date().toISOString(),
-        contact_method: 'other',
-        action: actionText,
-        notes: notes,
-        next_followup: dueDate ? new Date(dueDate).toISOString() : null,
-        followup_status: 'pending',
-        created_by: currentUser.id,
-        assigned_to: assigneeId,
-        is_attachment_only: false
-    };
-
-    // 🔴 إذا كانت هناك مهمة سابقة لنفس الموظف
-    if (existingTasks && existingTasks.length > 0) {
-        const existing = existingTasks[0];
-        const userChoice = confirm(
-            `⚠️ يوجد مهمة سابقة لهذا الموظف على نفس الطلب:\n\n` +
-            `المهمة الحالية: ${existing.action || 'لا يوجد'}\n\n` +
-            `هل تريد تحديث المهمة الحالية بالمعلومات الجديدة؟\n` +
-            `اضغط "موافق" لتحديثها.\n` +
-            `اضغط "إلغاء" لإنشاء مهمة جديدة منفصلة.`
-        );
-
-        if (userChoice) {
-            // 🔴 تحديث المهمة الحالية (بدون تحديث assigned_to في consultation_requests)
-            const { error: updateError } = await supabase
-                .from('client_followups')
-                .update({
-                    action: actionText,
-                    notes: notes,
-                    next_followup: taskData.next_followup,
-                    followup_status: 'pending',
-                    followup_date: new Date().toISOString()
-                })
-                .eq('id', existing.id);
-
-            if (updateError) {
-                alert('❌ فشل تحديث المهمة: ' + updateError.message);
-            } else {
-                alert('✅ تم تحديث المهمة بنجاح!');
-                openPreview(consultationId);
-            }
-            return;
-        }
-        // إذا اختار "إلغاء"، يكمل الكود لإنشاء مهمة جديدة
-    }
-
-    // 🔴 إنشاء مهمة جديدة
-    const { error } = await supabase
-        .from('client_followups')
-        .insert(taskData);
-
-    if (error) {
-        alert('❌ فشل إنشاء المتابعة: ' + error.message);
-    } else {
-       // 🔴 تحديث assigned_to (المتابع الأصلي) بشرط ألا يكون هناك متابعة أصلية بالفعل
-const assignedEmp = allEmployees.find(e => e.id === assigneeId);
-
-// 🔴 جلب الطلب الحالي لمعرفة هل له متابعة أصلية
-const { data: currentRequest } = await supabase
-    .from('consultation_requests')
-    .select('assigned_to')
-    .eq('id', consultationId)
-    .single();
-
-const hasOriginalAssignee = currentRequest?.assigned_to != null;
-
-// 🔴 نحدّث assigned_to فقط في الحالتين:
-// 1. الموظف المكلف من نوع followup_staff (وهذا هو المتابع الأصلي)
-// 2. لا يوجد متابعة أصلية بعد (حتى لو كان المكلف سكرتير)
-if (assignedEmp && assignedEmp.role === 'followup_staff') {
-    // دائماً نحدّث إذا كان موظف متابعة (هو المتابع الأصلي)
-    const { error: updateError } = await supabase
-        .from('consultation_requests')
-        .update({ assigned_to: assigneeId })
-        .eq('id', consultationId);
-
-    if (updateError) {
-        console.error('خطأ في تحديث assigned_to:', updateError);
-    }
-} else if (!hasOriginalAssignee) {
-    // إذا لم يكن هناك متابعة أصلية، نحدّث حتى لو كان سكرتير
-    const { error: updateError } = await supabase
-        .from('consultation_requests')
-        .update({ assigned_to: assigneeId })
-        .eq('id', consultationId);
-
-    if (updateError) {
-        console.error('خطأ في تحديث assigned_to:', updateError);
-    }
-}
-// إذا كان هناك متابعة أصلية بالفعل والمكلف سكرتير → لا نحدّث
-        alert('✅ تم إنشاء المتابعة وتكليف الموظف بنجاح!');
-        openPreview(consultationId);
-    }
-});
-				// 🔴 زر إضافة إلى قائمة السكرتير (للمدير فقط)
-document.getElementById('btnAddToSecretary')?.addEventListener('click', async function() {
-    const secretaryId = document.getElementById('secretarySelect').value;
-    const dueDate = document.getElementById('followupDueDate').value;
-    const notes = document.getElementById('managerNotes').value.trim();
-
-    if (!secretaryId) {
-        alert('يرجى اختيار السكرتير.');
-        return;
-    }
-
-    const selectedActions = [];
-    const selectedDocs = [];
-    document.querySelectorAll('.task-action-checkbox:checked').forEach(cb => selectedActions.push(cb.value));
-    document.querySelectorAll('.task-doc-checkbox:checked').forEach(cb => selectedDocs.push(cb.value));
-
-    if (selectedActions.length === 0 && selectedDocs.length === 0) {
-        alert('يرجى تحديد الإجراءات أو المستندات المطلوبة.');
-        return;
-    }
-
-    const actionText = `الإجراءات: ${selectedActions.join(', ') || 'لا يوجد'} | المستندات: ${selectedDocs.join(', ') || 'لا يوجد'}`;
-
-    const taskData = {
-        request_id: consultationId,
-        followup_date: new Date().toISOString(),
-        contact_method: 'other',
-        action: actionText,
-        notes: notes,
-        next_followup: dueDate ? new Date(dueDate).toISOString() : null,
-        followup_status: 'pending',
-        created_by: currentUser.id,
-        assigned_to: secretaryId,
-        is_attachment_only: false
-    };
-
-    const { error } = await supabase
-        .from('client_followups')
-        .insert(taskData);
-
-    if (error) {
-        alert('❌ فشل إضافة السكرتير: ' + error.message);
-    } else {
-        alert('✅ تم إضافة السكرتير إلى قائمة المتابعة بنجاح!');
-        openPreview(consultationId);
-    }
-});
-// 🔴 ربط أزرار المهام (للموظف فقط)
-
-document.querySelectorAll('.btn-fail-task').forEach(btn => {
-    btn.addEventListener('click', async function() {
-        const taskId = this.dataset.id;
-        const reason = prompt('يرجى إدخال سبب تعذر التنفيذ:');
-        if (reason) {
-            const { error } = await supabase
-                .from('client_followups')
-                .update({ followup_status: 'failed', notes: reason })
-                .eq('id', taskId);
-            if (error) alert('❌ فشل تحديث الحالة: ' + error.message);
-            else {
-                alert('تم تسجيل تعذر التنفيذ.');
-                openPreview(consultationId);
-            }
-        }
-    });
-});
 
                 document.querySelectorAll('.btn-delete-attachment').forEach(btn => {
                     btn.addEventListener('click', async function() {
