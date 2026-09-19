@@ -383,6 +383,15 @@
         const container = document.getElementById('consultationsContainer');
         if (!container) return;
         if (!data || data.length === 0) {
+		// 🔴 DEBUG
+console.log('🔍 [DEBUG] عدد الطلبات:', data.length);
+console.log('🔍 [DEBUG] عدد الموظفين:', employees?.length);
+console.log('🔍 [DEBUG] أول طلب:', {
+    client_name: data[0]?.client_name,
+    assigned_to: data[0]?.assigned_to,
+    type_of_assigned_to: typeof data[0]?.assigned_to
+});
+console.log('🔍 [DEBUG] كل الموظفين:', employees?.map(e => ({id: e.id, name: e.full_name, type: typeof e.id})));
             container.innerHTML = `<div class="message">📭 لا توجد طلبات.</div>`;
             return;
         }
