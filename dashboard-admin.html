@@ -397,6 +397,24 @@ async function initPage() {
         await fetchEmployees();
         await fetchConsultations();
         await loadSmartAlerts();
+        async function initPage() {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        // ... (التحقق من الجلسة والصلاحيات)
+
+        // ... (بقية الأكواد داخل initPage)
+
+        await fetchEmployees();
+        await fetchConsultations();
+        await loadSmartAlerts();
+
+        // 👈 ضع استدعاء دالة التحديث اللحظي هنا لتفعل فور تحميل الصفحة
+        setupRealtimeSubscriptions();
+
+        showSection('sectionConsultations');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        // ...
+    }
 
         showSection('sectionConsultations');
 
