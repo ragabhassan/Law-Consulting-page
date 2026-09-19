@@ -1235,7 +1235,46 @@
             else alert('❌ ' + (result.error || 'خطأ'));
         } catch (e) { alert('❌ ' + e.message); }
     }
+// ============================================================
+// 🔴 زر الفحص المؤقت - للتشخيص
+// ============================================================
+document.getElementById('btnDebugTask')?.addEventListener('click', async function() {
+    try {
+        // جلب أول مهمة من النوع غير المرفقات
+        const { data, error } = await supabase
+            .from('client_followups')
+            .select('id, action, notes, completed_items, followup_status, assigned_to')
+            .eq('is_attachment_only', false)
+            .not('assigned_to', 'is', null)
+            .order('followup_date', { ascending: false })
+            .limit(3);
 
+        if (error) {
+            alert('❌ خطأ: ' + error.message);
+            return;
+        }
+
+        // عرض النتيجة في alert
+        let output = '=== آخر 3 مهام ===\n\n';
+        (data || []).forEach((task, i) => {
+            output += `المهمة ${i + 1}: #${task.id.slice(0, 8)}\n`;
+            output += `  الحالة: ${task.followup_status}\n`;
+            output += `  الإجراء: ${(task.action || '').substring(0, 50)}\n`;
+            output += `  completed_items: ${JSON.stringify(task.completed_items)}\n`;
+            output += `  notes: ${(task.notes || '').substring(0, 80)}\n`;
+            output += '\n';
+        });
+
+        // عرضها في alert + console
+        console.log('=== النتيجة الكاملة ===');
+        console.log(data);
+        alert(output);
+
+    } catch (err) {
+        alert('❌ خطأ غير متوقع: ' + err.message);
+        console.error(err);
+    }
+});
     document.addEventListener('DOMContentLoaded', initPage);
 
 })();
