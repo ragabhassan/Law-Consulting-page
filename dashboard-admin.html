@@ -313,6 +313,33 @@
     let allEmployees = [];
     let currentFilteredData = [];
 
+   // أضف هذه الدالة هنا
+function setupRealtimeSubscriptions() {
+    supabase
+        .channel('public-db-changes')
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'consultation_requests' },
+            (payload) => {
+                console.log('تم تحديث الطلبات تلقائياً:', payload);
+                fetchConsultations(); 
+                loadSmartAlerts();    
+            }
+        )
+        .on(
+            'postgres_changes',
+            { event: '*', schema: 'public', table: 'client_followups' },
+            (payload) => {
+                console.log('تم تحديث المهام تلقائياً:', payload);
+                fetchConsultations(); 
+                loadSmartAlerts();
+            }
+        )
+        .subscribe();
+}
+
+async function initPage() {
+    // ... بقية الكود ...
     async function initPage() {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error || !session) {
