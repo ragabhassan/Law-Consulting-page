@@ -836,9 +836,13 @@
                 ? (parseArrayField(serviceReq.required_documents).length > 0 ? parseArrayField(serviceReq.required_documents) : DEFAULT_DOCS)
                 : DEFAULT_DOCS;
 
-            const { data: followups } = await supabase
-                .from('client_followups').select('*').eq('request_id', consultationId).order('followup_date', { ascending: false });
-
+           const { data: followups } = await supabase
+    .from('client_followups')
+    .select('*')
+    .eq('request_id', consultationId)
+    .neq('task_type', 'attachment')     // 🆕 استبعاد المرفقات
+    .order('followup_date', { ascending: false });
+            
             const { data: attachmentsData } = await supabase
                 .from('client_followups')
                 .select('id, attachment_path, attachment_name, followup_date')
