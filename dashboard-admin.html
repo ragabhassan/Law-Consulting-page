@@ -836,13 +836,12 @@
                 ? (parseArrayField(serviceReq.required_documents).length > 0 ? parseArrayField(serviceReq.required_documents) : DEFAULT_DOCS)
                 : DEFAULT_DOCS;
 
-           const { data: followups } = await supabase
+const { data: followups } = await supabase
     .from('client_followups')
     .select('*')
     .eq('request_id', consultationId)
-    .neq('task_type', 'attachment')     // 🆕 استبعاد المرفقات
     .order('followup_date', { ascending: false });
-            
+
             const { data: attachmentsData } = await supabase
                 .from('client_followups')
                 .select('id, attachment_path, attachment_name, followup_date')
@@ -1105,34 +1104,225 @@
                     : `<button id="btnFinalComplete" data-id="${consultationId}" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">🏁 اكتمال الخدمة</button>`;
 
                 actionCardHtml = `<div class="dashboard-card"><div class="dashboard-card-header"><h3><span class="icon-circle">📋</span> متابعة تنفيذ الإجراءات</h3></div><div class="dashboard-card-body"><div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;"><button id="btnManagerAction" data-id="${consultationId}" style="background: #2d7aff; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">📝 إضافة ملاحظة / طلب إجراء</button>${finalBtn}</div>${tableHtml}</div></div>`;
-            } else if (currentUser.role === 'followup_staff' || currentUser.role === 'secretary') {
-                const myActions = (actionFollowups || []).filter(a => String(a.assigned_to) === String(currentUser.id));
-                const otherActions = currentUser.role === 'secretary'
-                    ? (actionFollowups || []).filter(a => String(a.assigned_to) !== String(currentUser.id))
-                    : [];
+          } else if (currentUser.role === 'followup_staff' || currentUser.role === 'secretary') {
+    // إجراءاتي
+    const myActions = (actionFollowups || []).filter(a => 
+        String(a.assigned_to) === String(currentUser.id)
+    );
+    
+    // 🆕 إجراءات الموظفين الآخرين (للسكرتير)
+    const otherActions = currentUser.role === 'secretary'
+        ? (actionFollowups || []).filter(a => 
+            String(a.assigned_to) !== String(currentUser.id)
+          )
+        : [];
 
-                let myTableHtml = '';
-                if (myActions.length > 0) {
-                    myTableHtml = `<div class="table-responsive" style="margin-top: 10px;"><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #2d7aff; color: white;"><th style="padding: 8px; text-align: center; font-size: 12px;">#</th><th style="padding: 8px; text-align: center; font-size: 12px;">الإجراء</th><th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ التسجيل</th><th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ الانتهاء</th><th style="padding: 8px; text-align: center; font-size: 12px;">الحالة</th><th style="padding: 8px; text-align: center; font-size: 12px;">ملاحظة المدير</th></tr></thead><tbody>${myActions.map((a, i) => buildActionRow(a, i, { showEmployee: false, showManagerNote: true, showReadStatus: true })).join('')}</tbody></table></div>`;
-                } else {
-                    myTableHtml = '<div class="message" style="text-align: center; padding: 15px; background: #f0f4ff; border-radius: 8px; font-size: 13px;">📭 لا توجد إجراءات مسجلة بعد.</div>';
-                }
+    // ============================================================
+    // كارت إجراءاتي
+    // ============================================================
+    let myTableHtml = '';
+    if (myActions.length > 0) {
+        myTableHtml = `
+            <div class="table-responsive" style="margin-top: 10px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #2d7aff; color: white;">
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">#</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">الإجراء</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ التسجيل</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ الانتهاء</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">الحالة</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">ملاحظة المدير</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${myActions.map((a, i) => buildActionRow(a, i, { 
+                            showEmployee: false, 
+                            showManagerNote: true, 
+                            showReadStatus: true 
+                        })).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } else {
+        myTableHtml = '<div class="message" style="text-align: center; padding: 15px; background: #f0f4ff; border-radius: 8px; font-size: 13px;">📭 لا توجد إجراءات مسجلة بعد.</div>';
+    }
 
-                const hasPending = myActions.some(a => a.status !== 'completed');
-                const completeBtn = hasPending && myActions.length > 0
-                    ? `<button id="btnCompleteAllActions" data-id="${consultationId}" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">✅ اكتمال الإجراءات</button>`
-                    : (myActions.length > 0 ? `<div style="padding: 10px 18px; background: #e7f9ef; color: #155724; border-radius: 8px; font-weight: 600; font-size: 13px; border: 2px solid #28a745;">✅ جميع إجراءاتك مكتملة</div>` : '');
+    const hasPending = myActions.some(a => a.status !== 'completed');
+    const completeBtn = hasPending && myActions.length > 0
+        ? `<button id="btnCompleteAllActions" data-id="${consultationId}" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">✅ اكتمال الإجراءات</button>`
+        : (myActions.length > 0 
+            ? `<div style="padding: 10px 18px; background: #e7f9ef; color: #155724; border-radius: 8px; font-weight: 600; font-size: 13px; border: 2px solid #28a745;">✅ جميع إجراءاتك مكتملة</div>` 
+            : '');
 
-                let cards = `<div class="dashboard-card"><div class="dashboard-card-header"><h3><span class="icon-circle">📋</span> إجراءاتي</h3></div><div class="dashboard-card-body"><div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;"><button id="btnAddAction" data-id="${consultationId}" style="background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">➕ إضافة</button><button id="btnEditAction" data-id="${consultationId}" style="background: #ffc107; color: #000; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">✏️ تعديل</button><button id="btnDeleteAction" data-id="${consultationId}" style="background: #dc3545; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">🗑️ حذف</button>${completeBtn}</div>${myTableHtml}</div></div>`;
+    let cards = `
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h3><span class="icon-circle">📋</span> إجراءاتي</h3>
+            </div>
+            <div class="dashboard-card-body">
+                <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button id="btnAddAction" data-id="${consultationId}" style="background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">➕ إضافة</button>
+                    <button id="btnEditAction" data-id="${consultationId}" style="background: #ffc107; color: #000; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">✏️ تعديل</button>
+                    <button id="btnDeleteAction" data-id="${consultationId}" style="background: #dc3545; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">🗑️ حذف</button>
+                    ${completeBtn}
+                </div>
+                ${myTableHtml}
+            </div>
+        </div>
+    `;
 
-                if (currentUser.role === 'secretary' && otherActions.length > 0) {
-                    const otherTableHtml = `<div class="table-responsive" style="margin-top: 10px;"><table style="width: 100%; border-collapse: collapse;"><thead><tr style="background: #6c757d; color: white;"><th style="padding: 8px; text-align: center; font-size: 12px;">#</th><th style="padding: 8px; text-align: center; font-size: 12px;">الإجراء</th><th style="padding: 8px; text-align: center; font-size: 12px;">الموظف</th><th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ التسجيل</th><th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ الانتهاء</th><th style="padding: 8px; text-align: center; font-size: 12px;">الحالة</th></tr></thead><tbody>${otherActions.map((a, i) => buildActionRow(a, i, { showEmployee: true, showManagerNote: false })).join('')}</tbody></table></div>`;
-                    cards += `<div class="dashboard-card"><div class="dashboard-card-header"><h3><span class="icon-circle" style="background: linear-gradient(135deg, #6c757d, #495057);">👁️</span> إجراءات الموظف (للاطلاع)</h3></div><div class="dashboard-card-body">${otherTableHtml}</div></div>`;
-                }
+    // ============================================================
+    // 🆕 كارت إجراءات الموظف (للاطلاع) — للسكرتير فقط
+    // ============================================================
+    if (currentUser.role === 'secretary' && otherActions.length > 0) {
+        const otherTableHtml = `
+            <div class="table-responsive" style="margin-top: 10px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #6c757d; color: white;">
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">#</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">الإجراء</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">الموظف</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ التسجيل</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ الانتهاء</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${otherActions.map((a, i) => buildActionRow(a, i, { 
+                            showEmployee: true, 
+                            showManagerNote: false 
+                        })).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        cards += `
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h3><span class="icon-circle" style="background: linear-gradient(135deg, #6c757d, #495057);">👁️</span> إجراءات الموظف (للاطلاع)</h3>
+                </div>
+                <div class="dashboard-card-body">
+                    ${otherTableHtml}
+                </div>
+            </div>
+        `;
+    }
 
-                actionCardHtml = cards;
-            }
+    actionCardHtml = cards;
+}} else if (currentUser.role === 'followup_staff' || currentUser.role === 'secretary') {
+    // إجراءاتي
+    const myActions = (actionFollowups || []).filter(a => 
+        String(a.assigned_to) === String(currentUser.id)
+    );
+    
+    // 🆕 إجراءات الموظفين الآخرين (للسكرتير)
+    const otherActions = currentUser.role === 'secretary'
+        ? (actionFollowups || []).filter(a => 
+            String(a.assigned_to) !== String(currentUser.id)
+          )
+        : [];
 
+    // ============================================================
+    // كارت إجراءاتي
+    // ============================================================
+    let myTableHtml = '';
+    if (myActions.length > 0) {
+        myTableHtml = `
+            <div class="table-responsive" style="margin-top: 10px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #2d7aff; color: white;">
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">#</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">الإجراء</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ التسجيل</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ الانتهاء</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">الحالة</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">ملاحظة المدير</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${myActions.map((a, i) => buildActionRow(a, i, { 
+                            showEmployee: false, 
+                            showManagerNote: true, 
+                            showReadStatus: true 
+                        })).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+    } else {
+        myTableHtml = '<div class="message" style="text-align: center; padding: 15px; background: #f0f4ff; border-radius: 8px; font-size: 13px;">📭 لا توجد إجراءات مسجلة بعد.</div>';
+    }
+
+    const hasPending = myActions.some(a => a.status !== 'completed');
+    const completeBtn = hasPending && myActions.length > 0
+        ? `<button id="btnCompleteAllActions" data-id="${consultationId}" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">✅ اكتمال الإجراءات</button>`
+        : (myActions.length > 0 
+            ? `<div style="padding: 10px 18px; background: #e7f9ef; color: #155724; border-radius: 8px; font-weight: 600; font-size: 13px; border: 2px solid #28a745;">✅ جميع إجراءاتك مكتملة</div>` 
+            : '');
+
+    let cards = `
+        <div class="dashboard-card">
+            <div class="dashboard-card-header">
+                <h3><span class="icon-circle">📋</span> إجراءاتي</h3>
+            </div>
+            <div class="dashboard-card-body">
+                <div style="display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <button id="btnAddAction" data-id="${consultationId}" style="background: #28a745; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">➕ إضافة</button>
+                    <button id="btnEditAction" data-id="${consultationId}" style="background: #ffc107; color: #000; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">✏️ تعديل</button>
+                    <button id="btnDeleteAction" data-id="${consultationId}" style="background: #dc3545; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">🗑️ حذف</button>
+                    ${completeBtn}
+                </div>
+                ${myTableHtml}
+            </div>
+        </div>
+    `;
+
+    // ============================================================
+    // 🆕 كارت إجراءات الموظف (للاطلاع) — للسكرتير فقط
+    // ============================================================
+    if (currentUser.role === 'secretary' && otherActions.length > 0) {
+        const otherTableHtml = `
+            <div class="table-responsive" style="margin-top: 10px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #6c757d; color: white;">
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">#</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">الإجراء</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">الموظف</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ التسجيل</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">تاريخ الانتهاء</th>
+                            <th style="padding: 8px; text-align: center; font-size: 12px;">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${otherActions.map((a, i) => buildActionRow(a, i, { 
+                            showEmployee: true, 
+                            showManagerNote: false 
+                        })).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        cards += `
+            <div class="dashboard-card">
+                <div class="dashboard-card-header">
+                    <h3><span class="icon-circle" style="background: linear-gradient(135deg, #6c757d, #495057);">👁️</span> إجراءات الموظف (للاطلاع)</h3>
+                </div>
+                <div class="dashboard-card-body">
+                    ${otherTableHtml}
+                </div>
+            </div>
+        `;
+    }
+
+    actionCardHtml = cards;
+}
             // عرض كل الكروت
             body.innerHTML = `<div class="dashboard-container">${customerCard}${tasksCard}${initialCard}${attachmentsCard}${actionCardHtml}</div>`;
 
