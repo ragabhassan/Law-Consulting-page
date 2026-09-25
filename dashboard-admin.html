@@ -1222,108 +1222,353 @@
 
         // تكليف الموظف الرئيسي
         document.getElementById('btnCreateTask')?.addEventListener('click', async function() {
-            const assigneeId = document.getElementById('assigneeSelect').value;
-            const dueDate = document.getElementById('followupDueDate').value;
-            const notes = document.getElementById('managerNotes').value.trim();
-            if (!assigneeId) { toast('⚠️ اختر الموظف.', 'warning'); return; }
-            const selectedActions = [], selectedDocs = [];
-            document.querySelectorAll('.task-action-checkbox:checked').forEach(cb => selectedActions.push(cb.value));
-            document.querySelectorAll('.task-doc-checkbox:checked').forEach(cb => selectedDocs.push(cb.value));
-            if (selectedActions.length === 0 && selectedDocs.length === 0) { toast('⚠️ حدد الإجراءات أو المستندات.', 'warning'); return; }
-            const actionText = `الإجراءات: ${selectedActions.join(', ') || 'لا يوجد'} | المستندات: ${selectedDocs.join(', ') || 'لا يوجد'}`;
-
-            const { data: existingTasks } = await supabase
-                .from('client_followups').select('id, action, notes, next_followup, assigned_to')
-                .eq('request_id', consultationId).eq('is_attachment_only', false)
-                .order('followup_date', { ascending: false }).limit(1);
-
-            const existingTask = (existingTasks && existingTasks.length > 0) ? existingTasks[0] : null;
-
-            if (existingTask && String(existingTask.assigned_to) === String(assigneeId)) {
-                const oldDueDate = existingTask.next_followup ? existingTask.next_followup.split('T')[0] : '';
-                if ((existingTask.action || '') === actionText && (existingTask.notes || '') === (notes || '') && oldDueDate === (dueDate || '')) {
-                    toast('⚠️ لم يتم الحفظ: نفس البيانات موجودة.', 'warning');
-                    return;
-                }
-            }
-
-            let error, isUpdate = false, isTransfer = false;
-            if (existingTask) {
-                isUpdate = true;
-                isTransfer = String(existingTask.assigned_to) !== String(assigneeId);
-                const { error: updateError } = await supabase.from('client_followups').update({
-                    assigned_to: assigneeId, action: actionText, notes: notes,
+    const assigneeId = document.getElementById('assigneeSelect').value;
+    const dueDate = document.getElementById('followupDueDate').value;
+    const notes = document.getElementById('managerNotes').value.trim();
+    
+    if (!assigneeId) { toast('⚠️ اختر الموظف.', 'warning'); return; }
+    
+    // جمع الإجراءات والمستندات المختارة
+    const selectedActions = [];
+    const selectedDocs = [];
+    document.querySelectorAll('.task-action-checkbox:checked').forEach(cb => selectedActions.push(cb.value));
+    document.querySelectorAll('.task-doc-checkbox:checked').forEach(cb => selectedDocs.push(cb.value));
+    
+    if (selectedActions.length === 0 && selectedDocs.length === 0) {
+        toast('⚠️ حدد الإجراءات أو المستندات.', 'warning');
+        return;
+    }
+    
+    // 🆕 اجلب كل المهام للموظف المحدد على هذا الطلب
+    const { data: existingTasks, error: findError } = await supabase
+        .from('client_followups')
+        .select('id, action, notes, next_followup, assigned_to')
+        .eq('request_id', consultationId)
+        .eq('assigned_to', assigneeId)
+        .eq('is_attachment_only', false)
+        .order('followup_date', { ascending: false });
+    
+    if (findError) { toast('❌ ' + findError.message, 'error'); return; }
+    
+    const existingTask = (existingTasks && existingTasks.length > 0) ? existingTasks[0] : null;
+    
+    // ============================================================
+    // 🆕 منطق المقارنة الذكي
+    // ============================================================
+    
+    // دالة لتحويل action من نص إلى مصفوفتين
+    function parseAction(actionStr) {
+        const parts = (actionStr || '').split('|');
+        const actions = parts[0] ? parts[0].replace('الإجراءات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+        const docs = parts[1] ? parts[1].replace('المستندات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+        return { actions, docs };
+    }
+    
+    // دالة لبناء action من مصفوفتين
+    function buildAction(actions, docs) {
+        return `الإجراءات: ${actions.join(', ') || 'لا يوجد'} | المستندات: ${docs.join(', ') || 'لا يوجد'}`;
+    }
+    
+    let finalActions = selectedActions;
+    let finalDocs = selectedDocs;
+    let isUpdate = false;
+    let isTransfer = false;
+    let actionText = buildAction(finalActions, finalDocs);
+    
+    if (existingTask) {
+        // 🆕 استخرج الإجراءات القديمة
+        const old = parseAction(existingTask.action);
+        const oldActions = old.actions;
+        const oldDocs = old.docs;
+        
+        // 🆕 احسب الفروق
+        const actionsRemoved = oldActions.filter(a => !selectedActions.includes(a));
+        const actionsAdded = selectedActions.filter(a => !oldActions.includes(a));
+        const docsRemoved = oldDocs.filter(d => !selectedDocs.includes(d));
+        const docsAdded = selectedDocs.filter(d => !oldDocs.includes(d));
+        
+        const hasRemoved = actionsRemoved.length > 0 || docsRemoved.length > 0;
+        const hasAdded = actionsAdded.length > 0 || docsAdded.length > 0;
+        
+        // ============================================================
+        // الحالة 1: متطابقة تماماً
+        // ============================================================
+        if (!hasRemoved && !hasAdded) {
+            toast('⚠️ المهمة موجودة مسبقاً بنفس البيانات.', 'warning');
+            return;
+        }
+        
+        // ============================================================
+        // الحالة 2: جديدة أكبر (لا محذوف، هناك مضاف) — حدّث
+        // ============================================================
+        if (!hasRemoved && hasAdded) {
+            // ادمج الإجراءات (القديمة + الجديدة)
+            finalActions = [...new Set([...oldActions, ...selectedActions])];
+            finalDocs = [...new Set([...oldDocs, ...selectedDocs])];
+            actionText = buildAction(finalActions, finalDocs);
+            isUpdate = true;
+            
+            // تحديث المهمة نفسها
+            const { error: updateError } = await supabase
+                .from('client_followups')
+                .update({
+                    action: actionText,
+                    notes: notes,
                     next_followup: dueDate ? new Date(dueDate).toISOString() : null,
-                    followup_status: 'pending', followup_date: new Date().toISOString(),
+                    followup_status: 'pending',
+                    followup_date: new Date().toISOString(),
                     completed_items: { actions: [], docs: [] }
-                }).eq('id', existingTask.id);
-                error = updateError;
-            } else {
-                const { error: insertError } = await supabase.from('client_followups').insert({
-                    request_id: consultationId, followup_date: new Date().toISOString(),
-                    contact_method: 'other', action: actionText, notes: notes,
-                    next_followup: dueDate ? new Date(dueDate).toISOString() : null,
-                    followup_status: 'pending', created_by: currentUser.id, assigned_to: assigneeId,
-                    is_attachment_only: false, completed_items: { actions: [], docs: [] }
-                });
-                error = insertError;
-            }
-            if (error) { toast('❌ ' + error.message, 'error'); return; }
-            const assignedEmp = getStaff(assigneeId);
-            if (assignedEmp && assignedEmp.role === 'followup_staff') {
-                await supabase.from('consultation_requests').update({ assigned_to: assigneeId }).eq('id', consultationId);
-            }
-            if (isTransfer) toast('✅ تم نقل المهمة بنجاح!');
-            else if (isUpdate) toast('✅ تم تحديث المهمة!');
-            else toast('✅ تم إنشاء المهمة!');
+                })
+                .eq('id', existingTask.id);
+            
+            if (updateError) { toast('❌ ' + updateError.message, 'error'); return; }
+            
+            toast(`✅ تم تحديث المهمة (${actionsAdded.length + docsAdded.length} عنصر جديد).`);
             openPreview(consultationId);
-        });
-
+            return;
+        }
+        
+        // ============================================================
+        // الحالة 3: جديدة أصغر أو مختلفة (هناك محذوف) — حذّر
+        // ============================================================
+        if (hasRemoved) {
+            const removedList = [...actionsRemoved, ...docsRemoved];
+            const addedList = [...actionsAdded, ...docsAdded];
+            
+            let msg = '⚠️ يوجد مهمة مسجلة لهذا الموظف.\n\n';
+            if (actionsRemoved.length > 0) msg += `📌 إجراءات سيتم حذفها:\n- ${actionsRemoved.join('\n- ')}\n\n`;
+            if (docsRemoved.length > 0) msg += `📎 مستندات سيتم حذفها:\n- ${docsRemoved.join('\n- ')}\n\n`;
+            if (actionsAdded.length > 0) msg += `➕ إجراءات جديدة:\n- ${actionsAdded.join('\n- ')}\n\n`;
+            if (docsAdded.length > 0) msg += `➕ مستندات جديدة:\n- ${docsAdded.join('\n- ')}\n\n`;
+            msg += 'هل تريد تعديل المهمة الحالية؟';
+            
+            if (!confirm(msg)) {
+                toast('تم الإلغاء.', 'info');
+                return;
+            }
+            
+            // المستخدم أكد التعديل
+            isUpdate = true;
+            const { error: updateError } = await supabase
+                .from('client_followups')
+                .update({
+                    action: actionText,
+                    notes: notes,
+                    next_followup: dueDate ? new Date(dueDate).toISOString() : null,
+                    followup_status: 'pending',
+                    followup_date: new Date().toISOString(),
+                    completed_items: { actions: [], docs: [] }
+                })
+                .eq('id', existingTask.id);
+            
+            if (updateError) { toast('❌ ' + updateError.message, 'error'); return; }
+            
+            toast('✅ تم تعديل المهمة.');
+            openPreview(consultationId);
+            return;
+        }
+    }
+    
+    // ============================================================
+    // لا توجد مهمة سابقة — أنشئ مهمة جديدة
+    // ============================================================
+    const { error: insertError } = await supabase.from('client_followups').insert({
+        request_id: consultationId,
+        followup_date: new Date().toISOString(),
+        contact_method: 'other',
+        action: actionText,
+        notes: notes,
+        next_followup: dueDate ? new Date(dueDate).toISOString() : null,
+        followup_status: 'pending',
+        created_by: currentUser.id,
+        assigned_to: assigneeId,
+        is_attachment_only: false,
+        completed_items: { actions: [], docs: [] }
+    });
+    
+    if (insertError) { toast('❌ ' + insertError.message, 'error'); return; }
+    
+    // تحديث الطلب ليعكس الموظف المسند (إن كان followup_staff)
+    const assignedEmp = getStaff(assigneeId);
+    if (assignedEmp && assignedEmp.role === 'followup_staff') {
+        await supabase.from('consultation_requests').update({ assigned_to: assigneeId }).eq('id', consultationId);
+    }
+    
+    toast('✅ تم إنشاء المهمة!');
+    openPreview(consultationId);
+});
         // الأعمال الإضافية
-        document.getElementById('btnCreateExtraTask')?.addEventListener('click', async function() {
-            const extraAssigneeId = document.getElementById('extraAssigneeSelect').value;
-            const extraDueDate = document.getElementById('extraDueDate').value;
-            const extraNotes = document.getElementById('extraNotes').value.trim();
-            if (!extraAssigneeId) { toast('اختر الشخص المكلف.', 'warning'); return; }
-            const selectedExtraActions = [], selectedExtraDocs = [];
-            document.querySelectorAll('.extra-action-checkbox:checked').forEach(cb => selectedExtraActions.push(cb.value));
-            document.querySelectorAll('.extra-doc-checkbox:checked').forEach(cb => selectedExtraDocs.push(cb.value));
-            if (selectedExtraActions.length === 0 && selectedExtraDocs.length === 0) { toast('حدد الإجراءات أو المستندات.', 'warning'); return; }
-            const actionText = `الإجراءات: ${selectedExtraActions.join(', ') || 'لا يوجد'} | المستندات: ${selectedExtraDocs.join(', ') || 'لا يوجد'}`;
-
-            const { data: existingExtraTasks } = await supabase
-                .from('client_followups').select('id, action, notes, next_followup')
-                .eq('request_id', consultationId).eq('assigned_to', extraAssigneeId)
-                .eq('is_attachment_only', false)
-                .order('followup_date', { ascending: false }).limit(1);
-
-            const existingExtraTask = (existingExtraTasks && existingExtraTasks.length > 0) ? existingExtraTasks[0] : null;
-
-            let error, isUpdate = false;
-            if (existingExtraTask) {
-                isUpdate = true;
-                const { error: updateError } = await supabase.from('client_followups').update({
-                    action: actionText, notes: extraNotes,
+document.getElementById('btnCreateExtraTask')?.addEventListener('click', async function() {
+    const extraAssigneeId = document.getElementById('extraAssigneeSelect').value;
+    const extraDueDate = document.getElementById('extraDueDate').value;
+    const extraNotes = document.getElementById('extraNotes').value.trim();
+    
+    if (!extraAssigneeId) { toast('⚠️ اختر الشخص المكلف.', 'warning'); return; }
+    
+    // جمع الإجراءات والمستندات الإضافية
+    const selectedExtraActions = [];
+    const selectedExtraDocs = [];
+    document.querySelectorAll('.extra-action-checkbox:checked').forEach(cb => selectedExtraActions.push(cb.value));
+    document.querySelectorAll('.extra-doc-checkbox:checked').forEach(cb => selectedExtraDocs.push(cb.value));
+    
+    if (selectedExtraActions.length === 0 && selectedExtraDocs.length === 0) {
+        toast('⚠️ حدد الإجراءات أو المستندات الإضافية.', 'warning');
+        return;
+    }
+    
+    // 🆕 اجلب كل المهام الإضافية لهذا الموظف على هذا الطلب
+    const { data: existingExtraTasks, error: findError } = await supabase
+        .from('client_followups')
+        .select('id, action, notes, next_followup, assigned_to')
+        .eq('request_id', consultationId)
+        .eq('assigned_to', extraAssigneeId)
+        .eq('is_attachment_only', false)
+        .order('followup_date', { ascending: false });
+    
+    if (findError) { toast('❌ ' + findError.message, 'error'); return; }
+    
+    // 🆕 ابحث عن مهمة "الأعمال الإضافية" (المميزة)
+    // الأعمال الإضافية لها إجراءات من قائمة: متابعة هاتفية، تذكير بموعد، إلخ
+    const EXTRA_ACTIONS = ['متابعة هاتفية', 'تذكير بموعد', 'تنسيق مع جهة خارجية', 'أعمال إدارية'];
+    const EXTRA_DOCS = ['تقارير', 'مراسلات', 'نماذج'];
+    
+    // مهمة إضافية = مهمة تحتوي على أي إجراء من القائمة الإضافية
+    const existingExtraTask = (existingExtraTasks || []).find(t => {
+        const parsed = parseActionString(t.action);
+        return parsed.actions.some(a => EXTRA_ACTIONS.includes(a)) ||
+               parsed.docs.some(d => EXTRA_DOCS.includes(d));
+    }) || null;
+    
+    // ============================================================
+    // 🆕 منطق المقارنة الذكي
+    // ============================================================
+    
+    function parseActionString(actionStr) {
+        const parts = (actionStr || '').split('|');
+        const actions = parts[0] ? parts[0].replace('الإجراءات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+        const docs = parts[1] ? parts[1].replace('المستندات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
+        return { actions, docs };
+    }
+    
+    function buildActionString(actions, docs) {
+        return `الإجراءات: ${actions.join(', ') || 'لا يوجد'} | المستندات: ${docs.join(', ') || 'لا يوجد'}`;
+    }
+    
+    let actionText = buildActionString(selectedExtraActions, selectedExtraDocs);
+    
+    if (existingExtraTask) {
+        // 🆕 استخرج الإجراءات القديمة
+        const old = parseActionString(existingExtraTask.action);
+        const oldActions = old.actions;
+        const oldDocs = old.docs;
+        
+        // 🆕 احسب الفروق
+        const actionsRemoved = oldActions.filter(a => !selectedExtraActions.includes(a));
+        const actionsAdded = selectedExtraActions.filter(a => !oldActions.includes(a));
+        const docsRemoved = oldDocs.filter(d => !selectedExtraDocs.includes(d));
+        const docsAdded = selectedExtraDocs.filter(d => !oldDocs.includes(d));
+        
+        const hasRemoved = actionsRemoved.length > 0 || docsRemoved.length > 0;
+        const hasAdded = actionsAdded.length > 0 || docsAdded.length > 0;
+        
+        // ============================================================
+        // الحالة 1: متطابقة تماماً
+        // ============================================================
+        if (!hasRemoved && !hasAdded) {
+            toast('⚠️ الأعمال الإضافية موجودة مسبقاً بنفس البيانات.', 'warning');
+            return;
+        }
+        
+        // ============================================================
+        // الحالة 2: جديدة أكبر (لا محذوف، هناك مضاف) — حدّث
+        // ============================================================
+        if (!hasRemoved && hasAdded) {
+            // ادمج الإجراءات (القديمة + الجديدة)
+            const finalActions = [...new Set([...oldActions, ...selectedExtraActions])];
+            const finalDocs = [...new Set([...oldDocs, ...selectedExtraDocs])];
+            actionText = buildActionString(finalActions, finalDocs);
+            
+            const { error: updateError } = await supabase
+                .from('client_followups')
+                .update({
+                    action: actionText,
+                    notes: extraNotes,
                     next_followup: extraDueDate ? new Date(extraDueDate).toISOString() : null,
-                    followup_status: 'pending', followup_date: new Date().toISOString(),
+                    followup_status: 'pending',
+                    followup_date: new Date().toISOString(),
                     completed_items: { actions: [], docs: [] }
-                }).eq('id', existingExtraTask.id);
-                error = updateError;
-            } else {
-                const { error: insertError } = await supabase.from('client_followups').insert({
-                    request_id: consultationId, followup_date: new Date().toISOString(),
-                    contact_method: 'other', action: actionText, notes: extraNotes,
-                    next_followup: extraDueDate ? new Date(extraDueDate).toISOString() : null,
-                    followup_status: 'pending', created_by: currentUser.id, assigned_to: extraAssigneeId,
-                    is_attachment_only: false, completed_items: { actions: [], docs: [] }
-                });
-                error = insertError;
-            }
-            if (error) { toast('❌ ' + error.message, 'error'); return; }
-            toast(isUpdate ? '✅ تم التحديث!' : '✅ تم الإسناد!');
+                })
+                .eq('id', existingExtraTask.id);
+            
+            if (updateError) { toast('❌ ' + updateError.message, 'error'); return; }
+            
+            toast(`✅ تم تحديث الأعمال الإضافية (${actionsAdded.length + docsAdded.length} عنصر جديد).`);
             openPreview(consultationId);
-        });
-
+            return;
+        }
+        
+        // ============================================================
+        // الحالة 3: جديدة أصغر أو مختلفة (هناك محذوف) — حذّر
+        // ============================================================
+        if (hasRemoved) {
+            const removedList = [...actionsRemoved, ...docsRemoved];
+            const addedList = [...actionsAdded, ...docsAdded];
+            
+            let msg = '⚠️ يوجد أعمال إضافية مسجلة لهذا الموظف.\n\n';
+            if (actionsRemoved.length > 0) msg += `📌 إجراءات سيتم حذفها:\n- ${actionsRemoved.join('\n- ')}\n\n`;
+            if (docsRemoved.length > 0) msg += `📎 مستندات سيتم حذفها:\n- ${docsRemoved.join('\n- ')}\n\n`;
+            if (actionsAdded.length > 0) msg += `➕ إجراءات جديدة:\n- ${actionsAdded.join('\n- ')}\n\n`;
+            if (docsAdded.length > 0) msg += `➕ مستندات جديدة:\n- ${docsAdded.join('\n- ')}\n\n`;
+            msg += 'هل تريد تعديل الأعمال الإضافية الحالية؟';
+            
+            if (!confirm(msg)) {
+                toast('تم الإلغاء.', 'info');
+                return;
+            }
+            
+            // المستخدم أكد التعديل
+            const { error: updateError } = await supabase
+                .from('client_followups')
+                .update({
+                    action: actionText,
+                    notes: extraNotes,
+                    next_followup: extraDueDate ? new Date(extraDueDate).toISOString() : null,
+                    followup_status: 'pending',
+                    followup_date: new Date().toISOString(),
+                    completed_items: { actions: [], docs: [] }
+                })
+                .eq('id', existingExtraTask.id);
+            
+            if (updateError) { toast('❌ ' + updateError.message, 'error'); return; }
+            
+            toast('✅ تم تعديل الأعمال الإضافية.');
+            openPreview(consultationId);
+            return;
+        }
+    }
+    
+    // ============================================================
+    // لا توجد أعمال إضافية سابقة — أنشئ مهمة جديدة
+    // ============================================================
+    const { error: insertError } = await supabase.from('client_followups').insert({
+        request_id: consultationId,
+        followup_date: new Date().toISOString(),
+        contact_method: 'other',
+        action: actionText,
+        notes: extraNotes,
+        next_followup: extraDueDate ? new Date(extraDueDate).toISOString() : null,
+        followup_status: 'pending',
+        created_by: currentUser.id,
+        assigned_to: extraAssigneeId,
+        is_attachment_only: false,
+        completed_items: { actions: [], docs: [] }
+    });
+    
+    if (insertError) { toast('❌ ' + insertError.message, 'error'); return; }
+    
+    toast('✅ تم إسناد الأعمال الإضافية!');
+    openPreview(consultationId);
+});
         // modal إجراء
         function openActionModal(mode, actionId = null, actionData = null, presetAssignee = null) {
             const isEdit = mode === 'edit';
