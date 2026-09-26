@@ -284,7 +284,14 @@
             <div id="statAttachmentTasks" style="font-size: 24px; font-weight: 700; color: #6c757d;">0</div>
         </div>
     </div>
+            <!-- 🆕 المهام حسب الموظف -->
+<div style="margin-top: 25px;">
+    <h3>👥 المهام حسب الموظف</h3>
+    <div id="tasksByEmployee" style="background: white; border-radius: 12px; padding: 15px;">
+        <div class="spinner"></div>
+    </div>
 </div>
+       </div>
     </div>
 </div>
 
@@ -2048,6 +2055,7 @@ document.getElementById('btnCreateExtraTask')?.addEventListener('click', async f
             await loadOverdueActions();
             await loadUnreadManagerNotes();
             await loadTasksStatistics();   // 🆕
+            await loadTasksByEmployee();   // 🆕
 
         } catch (e) { console.error(e); }
     }
@@ -2220,6 +2228,113 @@ document.getElementById('btnCreateExtraTask')?.addEventListener('click', async f
             console.error('Tasks statistics error:', e);
             if (typeof logError === 'function') {
                 logError(e.message, 'loadTasksStatistics');
+            }
+        }
+    }
+    // ============================================================
+    // 🆕 المهام حسب الموظف
+    // ============================================================
+    async function loadTasksByEmployee() {
+        const container = document.getElementById('tasksByEmployee');
+        if (!container) {
+            console.warn('⚠️ tasksByEmployee container not found');
+            return;
+        }
+        
+        try {
+            // جلب الموظفين النشطين
+            const { data: emps, error: empError } = await supabase
+                .from('staff_profiles')
+                .select('id, full_name, role')
+                .eq('is_active', true)
+                .order('full_name');
+            
+            if (empError) throw empError;
+            
+            // جلب كل المهام
+            const { data: tasks, error: taskError } = await supabase
+                .from('client_followups')
+                .select('assigned_to, followup_status, task_type, next_followup, is_attachment_only')
+                .not('assigned_to', 'is', null)
+                .eq('is_attachment_only', false);
+            
+            if (taskError) throw taskError;
+            
+            if (!emps || emps.length === 0) {
+                container.innerHTML = '<div class="message">👤 لا يوجد موظفون نشطون.</div>';
+                return;
+            }
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            // 🆕 Log للتشخيص
+            console.log('👥 Tasks by employee:', {
+                employees: emps.length,
+                totalTasks: (tasks || []).length,
+                employeesWithTasks: emps.filter(e => 
+                    (tasks || []).some(t => String(t.assigned_to) === String(e.id))
+                ).length
+            });
+            
+            let html = `<div class="table-responsive"><table style="width: 100%;">
+                <thead>
+                    <tr style="background: #2d7aff; color: white;">
+                        <th style="padding: 10px;">#</th>
+                        <th style="padding: 10px;">الموظف</th>
+                        <th style="padding: 10px;">الدور</th>
+                        <th style="padding: 10px;">رئيسية</th>
+                        <th style="padding: 10px;">إضافية</th>
+                        <th style="padding: 10px;">قيد التنفيذ</th>
+                        <th style="padding: 10px;">مكتملة</th>
+                        <th style="padding: 10px;">متأخرة</th>
+                        <th style="padding: 10px;">النسبة</th>
+                    </tr>
+                </thead><tbody>`;
+            
+            emps.forEach((emp, i) => {
+                const empTasks = (tasks || []).filter(t => String(t.assigned_to) === String(emp.id));
+                const mainCount = empTasks.filter(t => t.task_type === 'main').length;
+                const extraCount = empTasks.filter(t => t.task_type === 'extra').length;
+                const pendingCount = empTasks.filter(t => 
+                    t.followup_status === 'pending' || t.followup_status === 'in_progress'
+                ).length;
+                const completedCount = empTasks.filter(t => t.followup_status === 'completed').length;
+                const overdueCount = empTasks.filter(t => 
+                    (t.followup_status === 'pending' || t.followup_status === 'in_progress') &&
+                    t.next_followup && t.next_followup.split('T')[0] < today
+                ).length;
+                
+                const total = empTasks.length;
+                const rate = total > 0 ? Math.round((completedCount / total) * 100) : 0;
+                const rc = rate >= 80 ? '#28a745' : rate >= 50 ? '#ffc107' : '#dc3545';
+                const roleLabel = emp.role === 'manager' ? 'مدير' : emp.role === 'secretary' ? 'سكرتير' : 'موظف';
+                
+                html += `<tr style="border-bottom: 1px solid #e9edf4;">
+                    <td style="padding: 10px; text-align: center;">${i+1}</td>
+                    <td style="padding: 10px; text-align: center; font-weight: 600;">${escapeHtml(emp.full_name || 'بدون اسم')}</td>
+                    <td style="padding: 10px; text-align: center; font-size: 11px;">${roleLabel}</td>
+                    <td style="padding: 10px; text-align: center; background: #f0f4ff; font-weight: 600;">${mainCount}</td>
+                    <td style="padding: 10px; text-align: center; background: #e7f3ff; font-weight: 600;">${extraCount}</td>
+                    <td style="padding: 10px; text-align: center; color: #ffc107; font-weight: 600;">${pendingCount}</td>
+                    <td style="padding: 10px; text-align: center; color: #28a745; font-weight: 600;">${completedCount}</td>
+                    <td style="padding: 10px; text-align: center; color: #dc3545; font-weight: 600;">${overdueCount}</td>
+                    <td style="padding: 10px; text-align: center;">
+                        <div style="background: #f0f2f5; border-radius: 12px; height: 22px; position: relative; min-width: 80px;">
+                            <div style="background: ${rc}; height: 100%; width: ${rate}%; border-radius: 12px; transition: width 0.3s;"></div>
+                            <span style="position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); font-size: 11px; font-weight: 700; color: ${rate > 50 ? 'white' : '#333'};">${rate}%</span>
+                        </div>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+            
+        } catch (e) {
+            console.error('Tasks by employee error:', e);
+            container.innerHTML = `<div class="message error">❌ ${escapeHtml(e.message)}</div>`;
+            if (typeof logError === 'function') {
+                logError(e.message, 'loadTasksByEmployee');
             }
         }
     }
