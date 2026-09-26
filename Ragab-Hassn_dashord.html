@@ -2034,43 +2034,6 @@ document.getElementById('btnCreateExtraTask')?.addEventListener('click', async f
     // ============================================================
     // 18. التقارير
     // ============================================================
-  (async () => {
-  console.log('=== 🔍 تشخيص المهام حسب الموظف ===');
-  
-  // 1. هل HTML موجود؟
-  const container = document.getElementById('tasksByEmployee');
-  console.log('1. Container:', container ? '✅ موجود' : '❌ غير موجود');
-  
-  // 2. هل الدالة موجودة؟
-  console.log('2. Function:', typeof loadTasksByEmployee);
-  
-  // 3. جرّب استدعاء الدالة يدوياً
-  if (typeof loadTasksByEmployee === 'function') {
-    console.log('3. ⏳ استدعاء الدالة...');
-    await loadTasksByEmployee();
-    console.log('3. ✅ تم');
-    console.log('   Container content (first 200 chars):', container?.innerHTML?.substring(0, 200));
-  }
-  
-  // 4. جرّب الاستعلام مباشرة
-  console.log('4. ⏳ جلب البيانات...');
-  const { data: tasks, error } = await supabase
-    .from('client_followups')
-    .select('id, assigned_to, task_type, followup_status')
-    .not('assigned_to', 'is', null)
-    .eq('is_attachment_only', false);
-  console.log('   Tasks:', tasks?.length || 0);
-  console.log('   Error:', error);
-  
-  const { data: emps, error: empErr } = await supabase
-    .from('staff_profiles')
-    .select('id, full_name, role')
-    .eq('is_active', true);
-  console.log('   Employees:', emps?.length || 0);
-  console.log('   Emp Error:', empErr);
-  
-  console.log('=== انتهى ===');
-})();
     async function loadReports() {
         try {
             const { count: t } = await supabase.from('consultation_requests').select('*', { count: 'exact', head: true });
