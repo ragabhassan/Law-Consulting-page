@@ -291,7 +291,49 @@
         <div class="spinner"></div>
     </div>
 </div>
-       </div>
+                 <!-- 🆕 متابعة تواريخ المهام -->
+        <div style="margin-top: 25px;">
+            <h3>📅 متابعة تواريخ المهام</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 15px;">
+                <div class="dashboard-card" style="text-align: center; border-right: 4px solid #dc3545; padding: 12px;">
+                    <div style="font-size: 20px;">⏰</div>
+                    <div style="font-size: 12px; color: #555;">تنتهي اليوم</div>
+                    <div id="statTasksToday" style="font-size: 20px; font-weight: 700; color: #dc3545;">0</div>
+                </div>
+                <div class="dashboard-card" style="text-align: center; border-right: 4px solid #ffc107; padding: 12px;">
+                    <div style="font-size: 20px;">🔔</div>
+                    <div style="font-size: 12px; color: #555;">تنتهي غداً</div>
+                    <div id="statTasksTomorrow" style="font-size: 20px; font-weight: 700; color: #ffc107;">0</div>
+                </div>
+                <div class="dashboard-card" style="text-align: center; border-right: 4px solid #17a2b8; padding: 12px;">
+                    <div style="font-size: 20px;">📅</div>
+                    <div style="font-size: 12px; color: #555;">خلال 7 أيام</div>
+                    <div id="statTasksThisWeek" style="font-size: 20px; font-weight: 700; color: #17a2b8;">0</div>
+                </div>
+                <div class="dashboard-card" style="text-align: center; border-right: 4px solid #fd7e14; padding: 12px;">
+                    <div style="font-size: 20px;">⚠️</div>
+                    <div style="font-size: 12px; color: #555;">متأخرة 3-7 أيام</div>
+                    <div id="statTasksOverdue3" style="font-size: 20px; font-weight: 700; color: #fd7e14;">0</div>
+                </div>
+                <div class="dashboard-card" style="text-align: center; border-right: 4px solid #dc3545; padding: 12px;">
+                    <div style="font-size: 20px;">🚨</div>
+                    <div style="font-size: 12px; color: #555;">متأخرة > 7 أيام</div>
+                    <div id="statTasksOverdue7" style="font-size: 20px; font-weight: 700; color: #dc3545;">0</div>
+                </div>
+            </div>
+            <div id="tasksTimelineTable" style="background: white; border-radius: 12px; padding: 15px;">
+                <div class="spinner"></div>
+            </div>
+        </div>
+
+        <!-- 🆕 المهام المتأخرة بالتفصيل -->
+        <div style="margin-top: 25px;">
+            <h3>⚠️ المهام المتأخرة بالتفصيل</h3>
+            <div id="overdueTasksDetailedTable" style="background: white; border-radius: 12px; padding: 15px;">
+                <div class="spinner"></div>
+            </div>
+        </div>      
+	  </div>
     </div>
 </div>
 
@@ -2056,6 +2098,9 @@ document.getElementById('btnCreateExtraTask')?.addEventListener('click', async f
             await loadUnreadManagerNotes();
             await loadTasksStatistics();   // 🆕
             await loadTasksByEmployee();   // 🆕
+await loadTasksTimelineStatistics();     // 🆕
+await loadTasksTimelineTable();          // 🆕
+await loadOverdueTasksDetailedTable();   // 🆕
 
         } catch (e) { console.error(e); }
     }
@@ -2339,7 +2384,200 @@ document.getElementById('btnCreateExtraTask')?.addEventListener('click', async f
         }
     }
 
-    async function loadUnreadManagerNotes() {
+       // ============================================================
+    // 🆕 إحصائيات التواريخ
+    // ============================================================
+    async function loadTasksTimelineStatistics() {
+        try {
+            const { data: tasks } = await supabase
+                .from('client_followups')
+                .select('followup_status, next_followup')
+                .in('followup_status', ['pending', 'in_progress'])
+                .eq('is_attachment_only', false)
+                .not('next_followup', 'is', null);
+            
+            const list = tasks || [];
+            const today = new Date().toISOString().split('T')[0];
+            const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+            const inSevenDays = new Date(Date.now() + 7 * 86400000).toISOString().split('T')[0];
+            const sevenDaysAgo = new Date(Date.now() - 7 * 86400000).toISOString().split('T')[0];
+            
+            document.getElementById('statTasksToday').textContent = 
+                list.filter(t => t.next_followup.split('T')[0] === today).length;
+            document.getElementById('statTasksTomorrow').textContent = 
+                list.filter(t => t.next_followup.split('T')[0] === tomorrow).length;
+            document.getElementById('statTasksThisWeek').textContent = 
+                list.filter(t => {
+                    const d = t.next_followup.split('T')[0];
+                    return d > tomorrow && d <= inSevenDays;
+                }).length;
+            document.getElementById('statTasksOverdue3').textContent = 
+                list.filter(t => {
+                    const d = t.next_followup.split('T')[0];
+                    return d < today && d >= sevenDaysAgo;
+                }).length;
+            document.getElementById('statTasksOverdue7').textContent = 
+                list.filter(t => t.next_followup.split('T')[0] < sevenDaysAgo).length;
+            
+        } catch (e) {
+            console.error('Tasks timeline stats error:', e);
+        }
+    }
+
+    // ============================================================
+    // 🆕 Timeline المهام
+    // ============================================================
+    async function loadTasksTimelineTable() {
+        const container = document.getElementById('tasksTimelineTable');
+        if (!container) return;
+        
+        try {
+            const { data: tasks } = await supabase
+                .from('client_followups')
+                .select(`
+                    id, action, next_followup, followup_status, assigned_to, task_type,
+                    consultation_requests!inner(client_name, service)
+                `)
+                .eq('is_attachment_only', false)
+                .in('followup_status', ['pending', 'in_progress'])
+                .not('next_followup', 'is', null)
+                .order('next_followup', { ascending: true })
+                .limit(20);
+            
+            if (!tasks || tasks.length === 0) {
+                container.innerHTML = '<div class="message">✅ لا توجد مهام قادمة.</div>';
+                return;
+            }
+            
+            let html = `<div class="table-responsive"><table style="width: 100%;">
+                <thead><tr style="background: #2d7aff; color: white;">
+                    <th style="padding: 10px;">#</th>
+                    <th style="padding: 10px;">العميل</th>
+                    <th style="padding: 10px;">الإجراء</th>
+                    <th style="padding: 10px;">الموظف</th>
+                    <th style="padding: 10px;">النوع</th>
+                    <th style="padding: 10px;">تاريخ الانتهاء</th>
+                    <th style="padding: 10px;">الحالة</th>
+                </tr></thead><tbody>`;
+            
+            const today = new Date().toISOString().split('T')[0];
+            
+            tasks.forEach((t, i) => {
+                const dueDate = t.next_followup ? new Date(t.next_followup) : null;
+                const dueStr = t.next_followup.split('T')[0];
+                const daysUntil = Math.ceil((dueDate - new Date()) / (1000 * 60 * 60 * 24));
+                
+                let badge, color;
+                if (dueStr < today) {
+                    badge = `⚠️ متأخر ${Math.abs(daysUntil)} يوم`;
+                    color = '#dc3545';
+                } else if (dueStr === today) {
+                    badge = '⏰ اليوم';
+                    color = '#dc3545';
+                } else if (daysUntil === 1) {
+                    badge = '🔔 غداً';
+                    color = '#ffc107';
+                } else if (daysUntil <= 7) {
+                    badge = `📅 خلال ${daysUntil} أيام`;
+                    color = '#17a2b8';
+                } else {
+                    badge = `📅 ${daysUntil} يوم`;
+                    color = '#6c757d';
+                }
+                
+                const typeLabel = t.task_type === 'extra' ? '📋 إضافية' : '📌 رئيسية';
+                const empName = getStaffName(t.assigned_to);
+                
+                html += `<tr style="border-bottom: 1px solid #e9edf4;">
+                    <td style="padding: 10px; text-align: center;">${i+1}</td>
+                    <td style="padding: 10px; text-align: center; font-weight: 600;">${safeText(t.consultation_requests?.client_name)}</td>
+                    <td style="padding: 10px; text-align: center; font-size: 12px;">${safeText(t.action?.substring(0, 40))}</td>
+                    <td style="padding: 10px; text-align: center;">${escapeHtml(empName)}</td>
+                    <td style="padding: 10px; text-align: center; font-size: 11px;">${typeLabel}</td>
+                    <td style="padding: 10px; text-align: center;">${dueDate ? dueDate.toLocaleDateString('ar-EG') : '—'}</td>
+                    <td style="padding: 10px; text-align: center;">
+                        <span style="background: ${color}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;">${badge}</span>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+            
+        } catch (e) {
+            console.error('Tasks timeline error:', e);
+            container.innerHTML = `<div class="message error">❌ ${escapeHtml(e.message)}</div>`;
+        }
+    }
+
+    // ============================================================
+    // 🆕 المهام المتأخرة التفصيلية
+    // ============================================================
+    async function loadOverdueTasksDetailedTable() {
+        const container = document.getElementById('overdueTasksDetailedTable');
+        if (!container) return;
+        
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const { data: tasks } = await supabase
+                .from('client_followups')
+                .select(`
+                    id, action, next_followup, followup_status, assigned_to, task_type,
+                    consultation_requests!inner(client_name, service)
+                `)
+                .eq('is_attachment_only', false)
+                .in('followup_status', ['pending', 'in_progress'])
+                .lt('next_followup', today)
+                .order('next_followup', { ascending: true });
+            
+            if (!tasks || tasks.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 20px; color: #28a745; background: #e7f9ef; border-radius: 8px;">✅ لا توجد مهام متأخرة.</div>';
+                return;
+            }
+            
+            let html = `<div class="table-responsive"><table style="width: 100%;">
+                <thead><tr style="background: #dc3545; color: white;">
+                    <th style="padding: 10px;">#</th>
+                    <th style="padding: 10px;">العميل</th>
+                    <th style="padding: 10px;">الخدمة</th>
+                    <th style="padding: 10px;">الإجراء</th>
+                    <th style="padding: 10px;">الموظف</th>
+                    <th style="padding: 10px;">النوع</th>
+                    <th style="padding: 10px;">تاريخ الانتهاء</th>
+                    <th style="padding: 10px;">أيام التأخير</th>
+                </tr></thead><tbody>`;
+            
+            tasks.forEach((t, i) => {
+                const dd = t.next_followup ? new Date(t.next_followup) : null;
+                const days = dd ? Math.floor((new Date() - dd) / (1000 * 60 * 60 * 24)) : 0;
+                const daysColor = days > 7 ? '#dc3545' : days > 3 ? '#fd7e14' : '#ffc107';
+                const typeLabel = t.task_type === 'extra' ? '📋 إضافية' : '📌 رئيسية';
+                const empName = getStaffName(t.assigned_to);
+                
+                html += `<tr style="border-bottom: 1px solid #e9edf4; background: #fff8f8;">
+                    <td style="padding: 10px; text-align: center;">${i+1}</td>
+                    <td style="padding: 10px; text-align: center; font-weight: 600;">${safeText(t.consultation_requests?.client_name)}</td>
+                    <td style="padding: 10px; text-align: center;">${getServiceNameAr(t.consultation_requests?.service)}</td>
+                    <td style="padding: 10px; text-align: center; font-size: 12px;">${safeText(t.action?.substring(0, 40))}</td>
+                    <td style="padding: 10px; text-align: center;">${escapeHtml(empName)}</td>
+                    <td style="padding: 10px; text-align: center; font-size: 11px;">${typeLabel}</td>
+                    <td style="padding: 10px; text-align: center;">${dd ? dd.toLocaleDateString('ar-EG') : '—'}</td>
+                    <td style="padding: 10px; text-align: center;">
+                        <span style="background: ${daysColor}; color: white; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600;">${days} يوم</span>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+            
+        } catch (e) {
+            console.error('Overdue tasks detailed error:', e);
+            container.innerHTML = `<div class="message error">❌ ${escapeHtml(e.message)}</div>`;
+        }
+    }
+
+   async function loadUnreadManagerNotes() {
         const container = document.getElementById('unreadManagerNotes');
         if (!container) return;
         try {
