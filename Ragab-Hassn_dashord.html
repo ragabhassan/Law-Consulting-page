@@ -2047,6 +2047,8 @@ document.getElementById('btnCreateExtraTask')?.addEventListener('click', async f
             await loadActionsByService();
             await loadOverdueActions();
             await loadUnreadManagerNotes();
+            await loadTasksStatistics();   // 🆕
+
         } catch (e) { console.error(e); }
     }
 
