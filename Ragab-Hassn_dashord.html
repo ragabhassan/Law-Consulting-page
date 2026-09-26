@@ -2167,6 +2167,61 @@ document.getElementById('btnCreateExtraTask')?.addEventListener('click', async f
         } catch (e) { container.innerHTML = `<div class="message error">❌ ${escapeHtml(e.message)}</div>`; }
     }
 
+       // ============================================================
+    // 🆕 إحصائيات المهام
+    // ============================================================
+    async function loadTasksStatistics() {
+        try {
+            const { data: allTasks, error } = await supabase
+                .from('client_followups')
+                .select('id, followup_status, task_type, next_followup, is_attachment_only');
+            
+            if (error) throw error;
+            
+            const tasks = allTasks || [];
+            const today = new Date().toISOString().split('T')[0];
+            
+            // 🆕 Log للتشخيص
+            console.log('📊 Tasks statistics:', {
+                total: tasks.length,
+                task_types: tasks.reduce((acc, t) => { 
+                    acc[t.task_type || 'null'] = (acc[t.task_type || 'null'] || 0) + 1; 
+                    return acc; 
+                }, {}),
+                statuses: tasks.reduce((acc, t) => { 
+                    acc[t.followup_status || 'null'] = (acc[t.followup_status || 'null'] || 0) + 1; 
+                    return acc; 
+                }, {})
+            });
+            
+            // إحصائيات أساسية
+            const totalEl = document.getElementById('statTotalTasks');
+            const pendingEl = document.getElementById('statPendingTasks');
+            const completedEl = document.getElementById('statCompletedTasks');
+            const overdueEl = document.getElementById('statOverdueTasks');
+            const attachmentEl = document.getElementById('statAttachmentTasks');
+            
+            if (totalEl) totalEl.textContent = tasks.length;
+            if (pendingEl) pendingEl.textContent = 
+                tasks.filter(t => t.followup_status === 'pending' || t.followup_status === 'in_progress').length;
+            if (completedEl) completedEl.textContent = 
+                tasks.filter(t => t.followup_status === 'completed').length;
+            if (overdueEl) overdueEl.textContent = 
+                tasks.filter(t => 
+                    (t.followup_status === 'pending' || t.followup_status === 'in_progress') &&
+                    t.next_followup && t.next_followup.split('T')[0] < today
+                ).length;
+            if (attachmentEl) attachmentEl.textContent = 
+                tasks.filter(t => t.is_attachment_only).length;
+            
+        } catch (e) {
+            console.error('Tasks statistics error:', e);
+            if (typeof logError === 'function') {
+                logError(e.message, 'loadTasksStatistics');
+            }
+        }
+    }
+
     async function loadUnreadManagerNotes() {
         const container = document.getElementById('unreadManagerNotes');
         if (!container) return;
