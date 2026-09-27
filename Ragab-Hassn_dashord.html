@@ -1386,14 +1386,13 @@ const { data: followups } = await supabase
         });
 
         // تكليف الموظف الرئيسي
-        document.getElementById('btnCreateTask')?.addEventListener('click', async function() {
+document.getElementById('btnCreateTask')?.addEventListener('click', async function() {
     const assigneeId = document.getElementById('assigneeSelect').value;
     const dueDate = document.getElementById('followupDueDate').value;
     const notes = document.getElementById('managerNotes').value.trim();
     
     if (!assigneeId) { toast('⚠️ اختر الموظف.', 'warning'); return; }
     
-    // جمع الإجراءات والمستندات المختارة
     const selectedActions = [];
     const selectedDocs = [];
     document.querySelectorAll('.task-action-checkbox:checked').forEach(cb => selectedActions.push(cb.value));
@@ -1404,49 +1403,39 @@ const { data: followups } = await supabase
         return;
     }
     
-    // 🆕 اجلب كل المهام للموظف المحدد على هذا الطلب
+    // 🆕 جلب المهمة الرئيسية الوحيدة على الطلب (بغض النظر عن الموظف)
     const { data: existingTasks, error: findError } = await supabase
         .from('client_followups')
-        .select('id, action, notes, next_followup, assigned_to')
+        .select('id, action, notes, next_followup, assigned_to, task_type')
         .eq('request_id', consultationId)
-        .eq('assigned_to', assigneeId)
+        .eq('task_type', 'main')              // 🆕 المهمة الرئيسية فقط
         .eq('is_attachment_only', false)
-        .order('followup_date', { ascending: false });
+        .order('created_at', { ascending: false });
     
     if (findError) { toast('❌ ' + findError.message, 'error'); return; }
     
-    const existingTask = (existingTasks && existingTasks.length > 0) ? existingTasks[0] : null;
-    
-    // ============================================================
-    // 🆕 منطق المقارنة الذكي
-    // ============================================================
-    
-    // دالة لتحويل action من نص إلى مصفوفتين
-    function parseAction(actionStr) {
+    // دوال مساعدة
+    function parseActionString(actionStr) {
         const parts = (actionStr || '').split('|');
         const actions = parts[0] ? parts[0].replace('الإجراءات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
         const docs = parts[1] ? parts[1].replace('المستندات:', '').trim().split(',').map(i => i.trim()).filter(i => i && i !== 'لا يوجد') : [];
         return { actions, docs };
     }
     
-    // دالة لبناء action من مصفوفتين
-    function buildAction(actions, docs) {
+    function buildActionString(actions, docs) {
         return `الإجراءات: ${actions.join(', ') || 'لا يوجد'} | المستندات: ${docs.join(', ') || 'لا يوجد'}`;
     }
     
-    let finalActions = selectedActions;
-    let finalDocs = selectedDocs;
-    let isUpdate = false;
-    let isTransfer = false;
-    let actionText = buildAction(finalActions, finalDocs);
+    const actionText = buildActionString(selectedActions, selectedDocs);
+    
+    // 🆕 البحث عن أي مهمة رئيسية (لأي موظف)
+    const existingTask = (existingTasks && existingTasks.length > 0) ? existingTasks[0] : null;
     
     if (existingTask) {
-        // 🆕 استخرج الإجراءات القديمة
-        const old = parseAction(existingTask.action);
+        const old = parseActionString(existingTask.action);
         const oldActions = old.actions;
         const oldDocs = old.docs;
         
-        // 🆕 احسب الفروق
         const actionsRemoved = oldActions.filter(a => !selectedActions.includes(a));
         const actionsAdded = selectedActions.filter(a => !oldActions.includes(a));
         const docsRemoved = oldDocs.filter(d => !selectedDocs.includes(d));
@@ -1455,8 +1444,57 @@ const { data: followups } = await supabase
         const hasRemoved = actionsRemoved.length > 0 || docsRemoved.length > 0;
         const hasAdded = actionsAdded.length > 0 || docsAdded.length > 0;
         
+        // 🆕 هل الموظف مختلف؟
+        const differentEmployee = String(existingTask.assigned_to) !== String(assigneeId);
+        const oldEmpName = getStaffName(existingTask.assigned_to);
+        const newEmpName = getStaffName(assigneeId);
+        
         // ============================================================
-        // الحالة 1: متطابقة تماماً
+        // الحالة 0: الموظف مختلف — حذّر وأكّد
+        // ============================================================
+        if (differentEmployee) {
+            let msg = `⚠️ يوجد مهمة مسجلة مسبقاً على هذا الطلب.\n\n`;
+            msg += `📌 الموظف الحالي: ${oldEmpName}\n`;
+            msg += `🔄 الموظف الجديد: ${newEmpName}\n\n`;
+            if (actionsRemoved.length > 0) msg += `📌 إجراءات سيتم حذفها:\n- ${actionsRemoved.join('\n- ')}\n\n`;
+            if (docsRemoved.length > 0) msg += `📎 مستندات سيتم حذفها:\n- ${docsRemoved.join('\n- ')}\n\n`;
+            if (actionsAdded.length > 0) msg += `➕ إجراءات جديدة:\n- ${actionsAdded.join('\n- ')}\n\n`;
+            if (docsAdded.length > 0) msg += `➕ مستندات جديدة:\n- ${docsAdded.join('\n- ')}\n\n`;
+            msg += `هل تريد نقل المهمة إلى ${newEmpName}؟`;
+            
+            if (!confirm(msg)) {
+                toast('تم الإلغاء.', 'info');
+                return;
+            }
+            
+            // المستخدم أكد النقل — حدّث المهمة
+            const { error: updateError } = await supabase
+                .from('client_followups')
+                .update({
+                    assigned_to: assigneeId,
+                    action: actionText,
+                    notes: notes,
+                    next_followup: dueDate ? new Date(dueDate).toISOString() : null,
+                    followup_status: 'pending',
+                    followup_date: new Date().toISOString(),
+                    completed_items: { actions: [], docs: [] }
+                })
+                .eq('id', existingTask.id);
+            
+            if (updateError) { toast('❌ ' + updateError.message, 'error'); return; }
+            
+            // 🆕 حدّث consultation_requests
+            await supabase.from('consultation_requests')
+                .update({ assigned_to: assigneeId })
+                .eq('id', consultationId);
+            
+            toast(`✅ تم نقل المهمة إلى ${newEmpName}.`);
+            openPreview(consultationId);
+            return;
+        }
+        
+        // ============================================================
+        // الحالة 1: نفس الموظف، نفس البيانات — تجاهل
         // ============================================================
         if (!hasRemoved && !hasAdded) {
             toast('⚠️ المهمة موجودة مسبقاً بنفس البيانات.', 'warning');
@@ -1464,22 +1502,19 @@ const { data: followups } = await supabase
         }
         
         // ============================================================
-        // الحالة 2: جديدة أكبر (لا محذوف، هناك مضاف) — حدّث
+        // الحالة 2: نفس الموظف، إضافة إجراءات — حدّث
         // ============================================================
         if (!hasRemoved && hasAdded) {
-            // ادمج الإجراءات (القديمة + الجديدة)
-            finalActions = [...new Set([...oldActions, ...selectedActions])];
-            finalDocs = [...new Set([...oldDocs, ...selectedDocs])];
-            actionText = buildAction(finalActions, finalDocs);
-            isUpdate = true;
+            const finalActions = [...new Set([...oldActions, ...selectedActions])];
+            const finalDocs = [...new Set([...oldDocs, ...selectedDocs])];
+            const mergedAction = buildActionString(finalActions, finalDocs);
             
-            // تحديث المهمة نفسها
             const { error: updateError } = await supabase
                 .from('client_followups')
                 .update({
-                    action: actionText,
-                    notes: notes,
-                    next_followup: dueDate ? new Date(dueDate).toISOString() : null,
+                    action: mergedAction,
+                    notes: notes || existingTask.notes,
+                    next_followup: dueDate ? new Date(dueDate).toISOString() : existingTask.next_followup,
                     followup_status: 'pending',
                     followup_date: new Date().toISOString(),
                     completed_items: { actions: [], docs: [] }
@@ -1494,12 +1529,9 @@ const { data: followups } = await supabase
         }
         
         // ============================================================
-        // الحالة 3: جديدة أصغر أو مختلفة (هناك محذوف) — حذّر
+        // الحالة 3: نفس الموظف، هناك محذوف — حذّر
         // ============================================================
         if (hasRemoved) {
-            const removedList = [...actionsRemoved, ...docsRemoved];
-            const addedList = [...actionsAdded, ...docsAdded];
-            
             let msg = '⚠️ يوجد مهمة مسجلة لهذا الموظف.\n\n';
             if (actionsRemoved.length > 0) msg += `📌 إجراءات سيتم حذفها:\n- ${actionsRemoved.join('\n- ')}\n\n`;
             if (docsRemoved.length > 0) msg += `📎 مستندات سيتم حذفها:\n- ${docsRemoved.join('\n- ')}\n\n`;
@@ -1507,13 +1539,8 @@ const { data: followups } = await supabase
             if (docsAdded.length > 0) msg += `➕ مستندات جديدة:\n- ${docsAdded.join('\n- ')}\n\n`;
             msg += 'هل تريد تعديل المهمة الحالية؟';
             
-            if (!confirm(msg)) {
-                toast('تم الإلغاء.', 'info');
-                return;
-            }
+            if (!confirm(msg)) { toast('تم الإلغاء.', 'info'); return; }
             
-            // المستخدم أكد التعديل
-            isUpdate = true;
             const { error: updateError } = await supabase
                 .from('client_followups')
                 .update({
@@ -1548,20 +1575,21 @@ const { data: followups } = await supabase
         created_by: currentUser.id,
         assigned_to: assigneeId,
         is_attachment_only: false,
+        task_type: 'main',
         completed_items: { actions: [], docs: [] }
     });
     
     if (insertError) { toast('❌ ' + insertError.message, 'error'); return; }
     
-    // تحديث الطلب ليعكس الموظف المسند (إن كان followup_staff)
-    const assignedEmp = getStaff(assigneeId);
-    if (assignedEmp && assignedEmp.role === 'followup_staff') {
-        await supabase.from('consultation_requests').update({ assigned_to: assigneeId }).eq('id', consultationId);
-    }
+    // 🆕 حدّث consultation_requests دائماً (وليس فقط followup_staff)
+    await supabase.from('consultation_requests')
+        .update({ assigned_to: assigneeId })
+        .eq('id', consultationId);
     
-    toast('✅ تم إنشاء المهمة!');
+    toast(`✅ تم إنشاء المهمة وإسنادها إلى ${getStaffName(assigneeId)}.`);
     openPreview(consultationId);
 });
+		
         // الأعمال الإضافية
 document.getElementById('btnCreateExtraTask')?.addEventListener('click', async function() {
     const extraAssigneeId = document.getElementById('extraAssigneeSelect').value;
